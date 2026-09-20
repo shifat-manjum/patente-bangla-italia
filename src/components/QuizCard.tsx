@@ -115,24 +115,31 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       )}
 
       {/* Official Italian Question Box */}
-      <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/10 space-y-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black tracking-wider uppercase px-2 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-400/30">
-            অফিশিয়াল ইতালিয়ান প্রশ্ন (Testo Ufficiale)
+      <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 shadow-inner space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+              <span>🇮🇹</span>
+              <span>মূল অফিসিয়াল ইতালিয়ান প্রশ্ন</span>
+            </span>
+          </div>
+          <span className="text-[11px] text-slate-400 font-medium">
+            (ইতালির আসল পরীক্ষার স্ক্রিনে এই লেখাটি আসবে)
           </span>
         </div>
-        <p className="text-base sm:text-lg font-bold text-white leading-relaxed">
+        <p className="text-base sm:text-xl font-black text-white leading-relaxed tracking-wide pt-1">
           "{question.questionIt}"
         </p>
       </div>
 
       {/* Prominent Bangla Translation Box */}
       {showBanglaTranslation && (
-        <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 space-y-1">
-          <div className="flex items-center gap-1.5 text-[11px] font-black text-emerald-400 uppercase tracking-wider">
-            <span>🇧🇩 বাংলা সহজ অনুবাদ:</span>
+        <div className="p-4 sm:p-5 rounded-2xl bg-blue-950/40 border border-blue-500/40 space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-black text-blue-300">
+            <span>🇧🇩</span>
+            <span>সহজ বাংলা অনুবাদ ও অর্থ:</span>
           </div>
-          <p className="text-sm sm:text-base font-semibold text-emerald-100 leading-relaxed">
+          <p className="text-base sm:text-lg font-bold text-blue-100 leading-relaxed">
             {question.questionBn}
           </p>
         </div>
@@ -230,7 +237,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               <div className="mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2 text-xs text-amber-300">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="font-black block">পরীক্ষার গোপন কৌশল (Exam Tip):</strong>
+                  <strong className="font-black block">পরীক্ষার ট্রিক ও পাস করার টেকনিক:</strong>
                   <span>{question.trapTipBn}</span>
                 </div>
               </div>

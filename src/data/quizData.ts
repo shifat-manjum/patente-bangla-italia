@@ -32,7 +32,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: 'precedenza',
     titleIt: 'Precedenze e Incroci',
-    titleBn: 'অগ্রাধিকার ও রাস্তার মোড় (Right of Way)',
+    titleBn: 'অগ্রাধিকার ও রাস্তার মোড় (Precedenza)',
     icon: 'CornerDownRight',
     descriptionBn: 'ডান দিকের অগ্রাধিকার নিয়ম (Regola della destra), ট্রাফিক মোড়ে কোন গাড়ি আগে যাবে এবং স্টপ চিহ্নের নিয়ম।',
     questionCount: 8,
@@ -40,7 +40,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: 'segnali-pericolo',
     titleIt: 'Segnali di Pericolo',
-    titleBn: 'বিপদজনক ট্রাফিক চিহ্ন (Danger Signs)',
+    titleBn: 'বিপদজনক ট্রাফিক সংকেত (Segnali di Pericolo)',
     icon: 'AlertTriangle',
     descriptionBn: '১৫০ মিটার আগের ত্রিভুজাকার বিপদ সংকেত, খাড়া ঢাল, বাঁক এবং পথচারী পারাপার।',
     questionCount: 8,
@@ -48,7 +48,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: 'velocita-distanza',
     titleIt: 'Velocità e Distanza di Sicurezza',
-    titleBn: 'গতিসীমা ও নিরাপদ দূরত্ব (Speed Limits & Safety)',
+    titleBn: 'গতিসীমা ও নিরাপদ দূরত্ব (Velocità e Distanza)',
     icon: 'Gauge',
     descriptionBn: 'শহরে ও হাইওয়েতে গতিসীমা, ব্রেকিং দূরত্ব এবং আবহাওয়ার প্রভাবে গতি নিয়ন্ত্রণ।',
     questionCount: 6,
@@ -56,7 +56,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: 'sosta-fermata',
     titleIt: 'Sosta, Fermata e Arresto',
-    titleBn: 'পার্কিং ও গাড়ি থামানোর নিয়ম (Parking vs Stopping)',
+    titleBn: 'পার্কিং ও সাময়িক থামা (Sosta e Fermata)',
     icon: 'SquareParking',
     descriptionBn: 'সোস্তা (Sosta) ও ফেরমাতা (Fermata)-র মধ্যে আসল পার্থক্য এবং কোথায় পার্কিং সম্পূর্ণ নিষিদ্ধ।',
     questionCount: 6,
@@ -64,7 +64,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: 'sorpasso',
     titleIt: 'Norme sul Sorpasso',
-    titleBn: 'ওভারটেকিংয়ের নিয়ম (Overtaking Rules)',
+    titleBn: 'ওভারটেকিংয়ের নিয়ম (Norme sul Sorpasso)',
     icon: 'ChevronsRight',
     descriptionBn: 'কখন বাঁ দিক দিয়ে ওভারটেক করা যায়, কখন ওভারটেকিং সম্পূর্ণ নিষিদ্ধ (বাঁকে, রেললাইনে, জেব্রাক্রসিংয়ে)।',
     questionCount: 6,
