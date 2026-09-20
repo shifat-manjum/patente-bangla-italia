@@ -103,9 +103,9 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       </div>
 
       {/* Road Sign Banner (Centered Graphic if present) */}
-      {question.signCode && (
+      {(question.signCode || question.image) && (
         <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-900/90 border border-white/10 shadow-inner">
-          <RoadSign code={question.signCode} size={110} />
+          <RoadSign code={question.signCode || String(question.image)} size={110} />
           {question.signSymbol && (
             <span className="mt-2 text-[11px] font-bold text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
               {question.signSymbol}

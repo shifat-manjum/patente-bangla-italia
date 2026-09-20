@@ -16,6 +16,7 @@ export interface QuizQuestion {
   signType?: 'danger' | 'priority' | 'prohibition' | 'obligation' | 'indication';
   signSymbol?: string;
   signCode?: string;
+  image?: number | string;
   vocabulary: VocabularyItem[];
 }
 

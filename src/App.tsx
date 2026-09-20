@@ -120,6 +120,8 @@ export function App() {
     }
   };
 
+  const [currentRoundId, setCurrentRoundId] = useState<number | null>(null);
+
   const handleStartRound = (roundId: number) => {
     // If round is not free and user is not VIP, show paywall!
     if (roundId >= 8 && !isVip) {
@@ -127,6 +129,7 @@ export function App() {
       return;
     }
     // Switch to exam simulator to take the round
+    setCurrentRoundId(roundId);
     setActiveTab('exam');
   };
 
@@ -145,7 +148,12 @@ export function App() {
       {/* Navigation Header */}
       <Header
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => {
+          if (tab === 'exam') {
+            setCurrentRoundId(null);
+          }
+          setActiveTab(tab);
+        }}
         mistakesCount={mistakeIds.length}
         totalQuestionsAnswered={totalQuestionsAnswered}
         isVip={isVip}
@@ -167,6 +175,11 @@ export function App() {
 
         {activeTab === 'exam' && (
           <ExamSimulator
+            roundId={currentRoundId}
+            onBackToRounds={() => {
+              setCurrentRoundId(null);
+              setActiveTab('rounds');
+            }}
             onSaveMistakes={handleSaveExamMistakes}
             onGoToTopics={() => setActiveTab('topics')}
           />

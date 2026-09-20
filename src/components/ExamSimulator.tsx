@@ -9,25 +9,31 @@ import {
   ArrowRight,
   ArrowLeft
 } from 'lucide-react';
-import { QUIZ_QUESTIONS } from '../data/quizData';
 import type { QuizQuestion } from '../data/quizData';
+import { getQuestionsForRound, ALL_200_QUESTIONS } from '../data/roundQuestions';
 import { QuizCard } from './QuizCard';
 
 interface ExamSimulatorProps {
   onSaveMistakes: (questionIds: string[]) => void;
   onGoToTopics: () => void;
+  roundId?: number | null;
+  onBackToRounds?: () => void;
 }
 
-export const ExamSimulator: React.FC<ExamSimulatorProps> = ({ onSaveMistakes, onGoToTopics }) => {
-  // Select 30 questions (or duplicate pool if currently under 30 in MVP demo)
+export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
+  onSaveMistakes,
+  onGoToTopics,
+  roundId,
+  onBackToRounds
+}) => {
+  // Select questions based on round or general mock test
   const generateExamQuestions = (): QuizQuestion[] => {
-    const pool = [...QUIZ_QUESTIONS];
-    // If pool has fewer than 30, repeat questions with unique index wrappers
-    let selected: QuizQuestion[] = [];
-    while (selected.length < 30) {
-      selected = selected.concat(pool);
+    if (roundId) {
+      return getQuestionsForRound(roundId);
     }
-    return selected.slice(0, 30);
+    // General Mock test: pick 30 random questions from ALL_200_QUESTIONS
+    const shuffled = [...ALL_200_QUESTIONS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 30);
   };
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -36,6 +42,18 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({ onSaveMistakes, on
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(20 * 60); // 20 minutes
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [isStarted, setIsStarted] = useState<boolean>(false);
+
+  // When roundId changes, reset and auto-start or prepare round questions
+  useEffect(() => {
+    if (roundId) {
+      setQuestions(getQuestionsForRound(roundId));
+      setAnswers({});
+      setCurrentIdx(0);
+      setTimeLeftSeconds(20 * 60);
+      setIsSubmitted(false);
+      setIsStarted(true);
+    }
+  }, [roundId]);
 
   const startNewExam = () => {
     setQuestions(generateExamQuestions());
@@ -161,8 +179,32 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({ onSaveMistakes, on
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
       {/* Top Status Bar: Timer + Progress */}
-      <div className="glass-box rounded-3xl p-4 sm:p-6 flex items-center justify-between gap-4">
-        {/* Timer */}
+      <div className="glass-box rounded-3xl p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+        {/* Round or Mock Test Label */}
+        <div className="flex items-center gap-3">
+          {onBackToRounds && (
+            <button
+              type="button"
+              onClick={onBackToRounds}
+              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+              title="রাউন্ড তালিকায় ফিরে যান"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">রাউন্ড তালিকা</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-black text-xs border border-emerald-500/30">
+              {roundId ? `রাউন্ড #${roundId}` : 'মডেল টেস্ট'}
+            </span>
+            <span className="text-xs text-slate-300 font-bold hidden md:inline">
+              {roundId ? `লেভেল ${roundId} পরীক্ষা` : '৩০টি অফিসিয়াল প্রশ্ন (২০ মিনিট)'}
+            </span>
+          </div>
+        </div>
+
+        {/* Timer & Answered Count */}
         <div className="flex items-center gap-3">
           <div
             className={`p-2.5 rounded-2xl flex items-center gap-2 font-black text-sm ${
@@ -178,7 +220,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({ onSaveMistakes, on
           </div>
 
           <span className="text-xs text-slate-400 hidden sm:inline">
-            উত্তর দেওয়া হয়েছে: <strong className="text-white">{totalAnswered} / 30</strong>
+            উত্তর: <strong className="text-white">{totalAnswered} / {questions.length}</strong>
           </span>
         </div>
 

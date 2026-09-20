@@ -27,6 +27,30 @@ interface RoadSignProps {
 }
 
 export const RoadSign: React.FC<RoadSignProps> = ({ code, size = 110, className = '' }) => {
+  // If code is numeric (e.g. 240, '097', '153') or contains image path, render official ministerial sign GIF
+  const isNumeric = /^\d+$/.test(String(code).trim());
+  if (isNumeric) {
+    const imgId = String(code).trim();
+    return (
+      <div className={`inline-flex items-center justify-center p-2 rounded-2xl bg-white shadow-lg border border-slate-200 ${className}`}>
+        <img
+          src={`/signs/${imgId}.gif`}
+          alt={`Segnale ${imgId}`}
+          style={{ maxHeight: size, maxWidth: size * 1.5 }}
+          className="object-contain"
+          onError={(e) => {
+            // If direct id fails, try with 3-digit padding
+            const target = e.currentTarget;
+            const padded = imgId.padStart(3, '0');
+            if (!target.src.includes(padded)) {
+              target.src = `/signs/${padded}.gif`;
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
   switch (code) {
     // 🛑 STOP: Red octagon, white border, bold white STOP text
     case 'stop':
