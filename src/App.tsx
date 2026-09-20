@@ -7,11 +7,13 @@ import { TopicPractice } from './components/TopicPractice';
 import { VocabularyBank } from './components/VocabularyBank';
 import { MistakeReview } from './components/MistakeReview';
 import { VipPaywallModal } from './components/VipPaywallModal';
+import { AboutModal } from './components/AboutModal';
 import { Footer } from './components/Footer';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('rounds');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   // VIP State
   const [isVip, setIsVip] = useState<boolean>(() => {
@@ -158,6 +160,7 @@ export function App() {
         totalQuestionsAnswered={totalQuestionsAnswered}
         isVip={isVip}
         onOpenPaywall={() => setIsPaywallOpen(true)}
+        onOpenAbout={() => setIsAboutOpen(true)}
       />
 
       {/* Main Content */}
@@ -216,8 +219,17 @@ export function App() {
         questionsAnsweredCount={totalQuestionsAnswered}
       />
 
+      {/* About Us Modal (Shifat Manjum & Zentixx Story) */}
+      <AboutModal
+        isOpen={isAboutOpen}
+        onClose={() => setIsAboutOpen(false)}
+      />
+
       {/* Footer */}
-      <Footer setActiveTab={setActiveTab} />
+      <Footer
+        setActiveTab={setActiveTab}
+        onOpenAbout={() => setIsAboutOpen(true)}
+      />
     </div>
   );
 }

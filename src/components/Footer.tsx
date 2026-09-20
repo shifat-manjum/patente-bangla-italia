@@ -3,9 +3,10 @@ import type { NavTab } from './Header';
 
 interface FooterProps {
   setActiveTab: (tab: NavTab) => void;
+  onOpenAbout: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
+export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout }) => {
   return (
     <footer className="mt-20 border-t border-white/10 glass-box bg-slate-950/85 backdrop-blur-2xl">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
@@ -29,6 +30,15 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
               দ্রুত লিঙ্ক (Navigazione)
             </h4>
             <ul className="space-y-1.5 text-xs text-slate-400">
+              <li>
+                <button
+                  type="button"
+                  onClick={onOpenAbout}
+                  className="hover:text-emerald-400 font-bold text-emerald-300 transition cursor-pointer flex items-center gap-1.5"
+                >
+                  ℹ️ আমাদের সম্পর্কে (Chi Siamo)
+                </button>
+              </li>
               <li>
                 <button
                   type="button"
@@ -83,7 +93,15 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
           <div>
             © {new Date().getFullYear()} PatenteBangla Italia. 100% Free &amp; Open Learning.
           </div>
-          <div className="flex items-center gap-1 text-slate-400">
+          <div className="flex items-center gap-3 text-slate-400">
+            <button
+              type="button"
+              onClick={onOpenAbout}
+              className="hover:text-emerald-400 underline transition cursor-pointer font-medium"
+            >
+              Shifat Manjum (Zentixx)
+            </button>
+            <span>•</span>
             <span>কমিউনিটির উপকারের জন্য নির্মিত</span>
           </div>
         </div>

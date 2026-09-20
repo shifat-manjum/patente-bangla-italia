@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, Sparkles, ShieldCheck } from 'lucide-react';
+import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, Sparkles, ShieldCheck, Info } from 'lucide-react';
 
 export type NavTab = 'rounds' | 'exam' | 'topics' | 'vocab' | 'mistakes';
 
@@ -10,6 +10,7 @@ interface HeaderProps {
   totalQuestionsAnswered: number;
   isVip: boolean;
   onOpenPaywall: () => void;
+  onOpenAbout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   totalQuestionsAnswered,
   isVip,
   onOpenPaywall,
+  onOpenAbout,
 }) => {
   return (
     <header className="sticky top-0 z-50 w-full glass-box bg-slate-950/90 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
@@ -46,8 +48,17 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Right Status / Paywall Action Button */}
-          <div className="flex items-center gap-3">
+          {/* Right Status / Paywall / About Us Action Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={onOpenAbout}
+              className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              title="আমাদের সম্পর্কে ও প্রতিষ্ঠাতা"
+            >
+              <Info className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">পরিচিতি</span>
+            </button>
             {!isVip ? (
               <div className="flex items-center gap-2">
                 <div className="text-right hidden sm:block">

@@ -103,3 +103,4 @@ function findTrapTip(text) {
 }
 
 console.log('Building round structure generator...');
+

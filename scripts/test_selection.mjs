@@ -42,3 +42,4 @@ const r6Raw = pickBalanced([...ch1, ...ch6, ...ch7], 30);
 const r7Raw = pickBalanced([...ch2, ...ch5, ...ch11, ...ch16, ...ch3], 20);
 
 console.log(`Selected: R1=${r1Raw.length}, R2=${r2Raw.length}, R3=${r3Raw.length}, R4=${r4Raw.length}, R5=${r5Raw.length}, R6=${r6Raw.length}, R7=${r7Raw.length}. Total = ${r1Raw.length + r2Raw.length + r3Raw.length + r4Raw.length + r5Raw.length + r6Raw.length + r7Raw.length}`);
+
