@@ -193,33 +193,32 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
   return (
     <div className="max-w-5xl mx-auto space-y-10 animate-fadeIn">
       {/* Top Progression Banner */}
-      <div className="glass-box rounded-3xl p-6 sm:p-8 relative overflow-hidden border border-[#FB6C00]/30 shadow-2xl">
-        <div className="absolute -right-16 -top-16 w-80 h-80 bg-[#E73F1E]/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-white rounded-3xl p-6 sm:p-8 relative overflow-hidden border border-slate-200 shadow-sm">
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E73F1E]/15 border border-[#FB6C00]/30 text-xs font-black text-[#FFDD9C]">
-              <Award className="w-4 h-4 text-[#F9B637]" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-xs font-black text-orange-700">
+              <Award className="w-4 h-4 text-[#FB6C00]" />
               <span>ধাপে ধাপে পাস করার রোডম্যাপ • Mappa dei 240 Round</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
               লেভেল বাই লেভেল আনলক করুন
             </h1>
-            <p className="text-slate-300 text-sm sm:text-base max-w-xl leading-relaxed">
+            <p className="text-slate-600 text-sm sm:text-base max-w-xl leading-relaxed">
               প্রতিটি রাউন্ডে ৩০টি অফিশিয়াল কুইজ। সর্বোচ্চ ৩টি বা তার কম ভুল করলেই পরবর্তী রাউন্ড সঙ্গে সঙ্গে আনলক হয়ে যাবে!
             </p>
           </div>
 
           {/* Progress Tracker Card */}
-          <div className="p-5 rounded-2xl bg-[#141012]/95 border border-[#FFDD9C]/20 shrink-0 w-full md:w-80 space-y-3 shadow-xl">
+          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 shrink-0 w-full md:w-80 space-y-3 shadow-inner">
             <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-slate-400">ফ্রি ট্রায়াল কোটা:</span>
-              <span className="text-[#F9B637] font-mono text-sm font-black">
+              <span className="text-slate-500">ফ্রি ট্রায়াল কোটা:</span>
+              <span className="text-[#FB6C00] font-mono text-sm font-black">
                 {Math.min(200, totalQuestionsAnswered)} / 200 প্রশ্ন
               </span>
             </div>
-            <div className="w-full h-2.5 rounded-full bg-slate-900 overflow-hidden ring-1 ring-white/10">
+            <div className="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-[#E73F1E] via-[#FB6C00] to-[#F9B637] transition-all duration-500 rounded-full"
+                className="h-full bg-gradient-to-r from-[#FB6C00] to-[#F9B637] transition-all duration-500 rounded-full"
                 style={{ width: `${Math.min(100, (totalQuestionsAnswered / 200) * 100)}%` }}
               />
             </div>
@@ -227,18 +226,18 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
               <button
                 type="button"
                 onClick={onOpenPaywall}
-                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#E73F1E] via-[#FB6C00] to-[#F9B637] text-slate-950 font-black text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-[#FB6C00]/25 hover:opacity-90"
+                className="w-full py-2.5 px-3 rounded-xl bg-[#FB6C00] text-white font-black text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:bg-orange-600"
               >
                 <Sparkles className="w-4 h-4 fill-current" />
                 <span>VIP আনলক করুন (€49)</span>
               </button>
             ) : isVip ? (
-              <div className="text-xs font-black text-[#FFDD9C] flex items-center justify-center gap-1.5 py-1 bg-[#FB6C00]/15 rounded-xl border border-[#FB6C00]/30">
-                <ShieldCheck className="w-4 h-4 text-[#F9B637]" />
+              <div className="text-xs font-black text-emerald-700 flex items-center justify-center gap-1.5 py-1 bg-emerald-50 rounded-xl border border-emerald-200">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 <span>লাইফটাইম VIP মেম্বার আনলকড</span>
               </div>
             ) : (
-              <p className="text-[11px] text-slate-400 text-center">
+              <p className="text-[11px] text-slate-500 text-center">
                 ২০০ প্রশ্ন পর্যন্ত সম্পূর্ণ ফ্রি ট্রায়াল সুযোগ
               </p>
             )}
@@ -248,24 +247,24 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
 
       {/* Main Rounds Section with Bigger Eye-Catching Header */}
       <div className="space-y-6">
-        <div className="glass-box rounded-2xl p-5 border border-[#FFDD9C]/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
           <div>
             <div className="flex items-center gap-2">
               <Flag className="w-6 h-6 text-[#FB6C00] shrink-0" />
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-wide">
                 রাউন্ড তালিকা (১ - ২৪০) • <span className="text-[#FB6C00]">Lista dei Round</span>
               </h2>
             </div>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
               ধারাবাহিকভাবে রাউন্ডগুলো সম্পূর্ণ করুন। পরীক্ষায় পাস করতে সকল রাউন্ডে সবুজ টিক অর্জন করুন!
             </p>
           </div>
-          <div className="flex items-center gap-3 text-xs font-bold text-slate-300 shrink-0 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
-            <span className="flex items-center gap-1 text-[#F9B637]">
+          <div className="flex items-center gap-3 text-xs font-bold text-slate-600 shrink-0 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+            <span className="flex items-center gap-1 text-emerald-600">
               <CheckCircle2 className="w-3.5 h-3.5" /> পাস
             </span>
             <span>•</span>
-            <span className="flex items-center gap-1 text-[#E73F1E]">
+            <span className="flex items-center gap-1 text-slate-400">
               <Lock className="w-3.5 h-3.5" /> লক করা
             </span>
           </div>
@@ -282,48 +281,45 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
             return (
               <div
                 key={round.id}
-                className={`glass-box rounded-3xl p-6 flex flex-col justify-between gap-5 transition-all duration-300 relative overflow-hidden ${
+                className={`bg-white rounded-2xl p-6 flex flex-col justify-between gap-5 transition-all duration-200 relative overflow-hidden border ${
                   isCurrentActive
-                    ? 'border-[#FB6C00]/80 ring-2 ring-[#FB6C00]/40 bg-[#FB6C00]/10 shadow-xl shadow-[#FB6C00]/15 scale-[1.01]'
+                    ? 'border-[#FB6C00] ring-2 ring-orange-200 shadow-md scale-[1.01]'
+                    : isPassed
+                    ? 'border-emerald-200 shadow-sm hover:border-emerald-300'
                     : isUnlocked
-                    ? 'border-[#FFDD9C]/15 hover:border-[#FB6C00]/50 hover:bg-[#181316]/90 shadow-lg'
-                    : 'opacity-75 border-white/5 bg-[#120f11]/60'
+                    ? 'border-slate-200 hover:border-slate-300 shadow-sm'
+                    : 'opacity-80 border-slate-200 bg-slate-50/70'
                 }`}
               >
-                {/* Background glow for current active round */}
-                {isCurrentActive && (
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-[#FB6C00]/15 rounded-full blur-2xl pointer-events-none" />
-                )}
-
                 <div className="space-y-3 relative z-10">
                   {/* Top Bar: Bilingual Badge + Unlock/Pass Status */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     {/* Bilingual Topic Badge: Bangla + Italian */}
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-[#E73F1E]/20 text-[#FFDD9C] border border-[#FB6C00]/40 shadow-sm">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-800 border border-orange-200">
                       <span>{round.topicBadgeBn}</span>
-                      <span className="text-[#F9B637] font-normal">|</span>
-                      <span className="italic font-bold text-white">{round.topicBadgeIt}</span>
+                      <span className="text-orange-400 font-normal">|</span>
+                      <span className="italic font-semibold text-orange-900">{round.topicBadgeIt}</span>
                     </div>
 
                     {/* Status Badge */}
                     {isPassed ? (
-                      <span className="flex items-center gap-1.5 text-xs font-black text-[#FFDD9C] bg-[#F9B637]/20 px-3 py-1 rounded-full border border-[#F9B637]/40 shadow-sm">
-                        <CheckCircle2 className="w-4 h-4 text-[#F9B637]" />
+                      <span className="flex items-center gap-1.5 text-xs font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         <span>পাস ({roundResult.errors} ভুল)</span>
                       </span>
                     ) : roundResult ? (
-                      <span className="flex items-center gap-1.5 text-xs font-black text-rose-200 bg-[#E73F1E]/25 px-3 py-1 rounded-full border border-[#E73F1E]/40 shadow-sm">
-                        <XCircle className="w-4 h-4 text-[#E73F1E]" />
+                      <span className="flex items-center gap-1.5 text-xs font-black text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
+                        <XCircle className="w-4 h-4 text-rose-600" />
                         <span>অনুত্তীর্ণ ({roundResult.errors} ভুল)</span>
                       </span>
                     ) : isUnlocked ? (
-                      <span className="text-xs font-black text-[#F9B637] flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
-                        <Unlock className="w-3.5 h-3.5" />
+                      <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                        <Unlock className="w-3.5 h-3.5 text-emerald-600" />
                         <span>আনলক করা</span>
                       </span>
                     ) : (
-                      <span className="text-xs font-bold text-[#FFDD9C] flex items-center gap-1.5 bg-[#E73F1E]/15 px-2.5 py-1 rounded-full border border-[#FB6C00]/30">
-                        <Lock className="w-3.5 h-3.5 text-[#FB6C00]" />
+                      <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                        <Lock className="w-3.5 h-3.5 text-slate-400" />
                         <span>লক করা (VIP)</span>
                       </span>
                     )}
@@ -331,36 +327,36 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
 
                   {/* Balanced Titles (Bangla & Italian equal prominence) */}
                   <div className="space-y-1 pt-1">
-                    <h3 className="text-lg sm:text-xl font-black text-white leading-snug tracking-tight">
+                    <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug tracking-tight">
                       {round.titleBn}
                     </h3>
-                    <p className="text-base sm:text-lg font-bold text-[#F9B637] tracking-tight leading-snug">
+                    <p className="text-sm sm:text-base font-bold text-[#FB6C00] tracking-tight leading-snug">
                       {round.titleIt}
                     </p>
                   </div>
 
                   {/* Quick Meta Info */}
-                  <div className="flex items-center gap-4 text-xs text-slate-300 font-medium pt-1">
+                  <div className="flex items-center gap-4 text-xs text-slate-500 font-medium pt-1">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-[#FB6C00]" />
                       {round.questionsCount}টি কুইজ (30 Quiz)
                     </span>
                     <span>•</span>
-                    <span className="text-slate-400">
+                    <span className="text-slate-500">
                       সর্বোচ্চ ৩টি ভুল পাস
                     </span>
                   </div>
                 </div>
 
                 {/* Bottom Action Button */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-3 relative z-10">
-                  <span className="text-xs font-bold text-slate-400">
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 relative z-10">
+                  <span className="text-xs font-bold text-slate-500">
                     {round.isFree ? (
-                      <span className="text-[#F9B637] font-black">বিনামূল্যে ট্রায়াল</span>
+                      <span className="text-emerald-700 font-bold">বিনামূল্যে ট্রায়াল</span>
                     ) : isVip ? (
-                      <span className="text-[#FFDD9C] font-black">VIP সক্রিয়</span>
+                      <span className="text-orange-700 font-bold">VIP সক্রিয়</span>
                     ) : (
-                      <span className="text-[#FB6C00] font-bold">VIP মেম্বারশিপ প্রয়োজন</span>
+                      <span className="text-slate-500">VIP মেম্বারশিপ প্রয়োজন</span>
                     )}
                   </span>
 
@@ -368,23 +364,23 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                     <button
                       type="button"
                       onClick={() => onStartRound(round.id)}
-                      className={`py-2 px-4 rounded-xl font-black text-xs transition cursor-pointer flex items-center gap-2 shadow-md ${
-                        isPassed
-                          ? 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
-                          : isCurrentActive
-                          ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] hover:opacity-95 text-slate-950 shadow-[#FB6C00]/30 scale-[1.02]'
-                          : 'bg-[#FB6C00]/20 hover:bg-[#FB6C00]/30 text-[#FFDD9C] border border-[#FB6C00]/30'
+                      className={`py-2 px-5 rounded-xl font-black text-xs flex items-center gap-2 transition cursor-pointer shadow-sm ${
+                        isCurrentActive
+                          ? 'bg-[#FB6C00] text-white hover:bg-orange-600'
+                          : isPassed
+                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                          : 'bg-slate-900 hover:bg-black text-white'
                       }`}
                     >
                       {isPassed ? (
                         <>
                           <RotateCcw className="w-3.5 h-3.5" />
-                          <span>পুনরায় দিন • Ripeti</span>
+                          <span>আবার দিন</span>
                         </>
                       ) : (
                         <>
                           <Play className="w-3.5 h-3.5 fill-current" />
-                          <span>শুরু করুন • Inizia</span>
+                          <span>রাউন্ড শুরু</span>
                         </>
                       )}
                     </button>
@@ -392,10 +388,10 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                     <button
                       type="button"
                       onClick={onOpenPaywall}
-                      className="py-2 px-4 rounded-xl bg-[#E73F1E]/20 hover:bg-[#E73F1E]/30 text-[#FFDD9C] border border-[#E73F1E]/30 font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
+                      className="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200"
                     >
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>আনলক করুন (€49)</span>
+                      <Lock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>আনলক করুন</span>
                     </button>
                   )}
                 </div>

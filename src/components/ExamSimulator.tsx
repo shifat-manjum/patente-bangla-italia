@@ -127,51 +127,51 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
 
   if (!isStarted) {
     return (
-      <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn">
-        {/* Intro Banner */}
-        <div className="glass-box rounded-3xl p-6 sm:p-10 space-y-6 text-center relative overflow-hidden border border-[#FB6C00]/30 shadow-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#E73F1E] via-[#FB6C00] to-[#F9B637] mx-auto flex items-center justify-center text-slate-950 shadow-xl shadow-[#FB6C00]/25">
-            <Award className="w-8 h-8" />
-          </div>
-
-          <div className="space-y-2 max-w-xl mx-auto">
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              সিমুলেশন পরীক্ষা (Simulazione Esame Patente B)
-            </h1>
-            <p className="text-slate-300 text-sm">
-              ইতালির মোটরিজ্জাসিওনে (Motorizzazione)-র হুবহু অফিশিয়াল নিয়মে ৩০টি প্রশ্নের পরীক্ষা।
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto text-left">
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-              <span className="text-xs text-slate-400 font-bold block">মোট প্রশ্ন:</span>
-              <span className="text-lg font-black text-white">৩০টি কুইজ</span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-              <span className="text-xs text-slate-400 font-bold block">সময় সীমা:</span>
-              <span className="text-lg font-black text-[#F9B637]">২০ মিনিট</span>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-              <span className="text-xs text-slate-400 font-bold block">পাস করার শর্ত:</span>
-              <span className="text-lg font-black text-white">সর্বোচ্চ ৩টি ভুল</span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#E73F1E]/15 border border-[#FB6C00]/30 max-w-2xl mx-auto text-xs text-[#FFDD9C] text-left">
-            💡 <strong>আমাদের বিশেষ সুবিধা:</strong> পরীক্ষার সময় বা পরীক্ষা শেষে প্রতিটি প্রশ্নের নিচে <strong>[বাংলা অর্থ ও বিস্তারিত ব্যাখ্যা]</strong> দেখতে পারবেন, যাতে বুঝতে পারেন কেন ভুল হলো।
-          </div>
-
-          <button
-            type="button"
-            onClick={startNewExam}
-            className="py-4 px-8 rounded-2xl bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 font-black text-base shadow-xl shadow-[#FB6C00]/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            পরীক্ষা শুরু করুন (Inizia Esame) 🚀
-          </button>
+      <div className="max-w-2xl mx-auto bg-white rounded-3xl p-8 sm:p-10 text-center space-y-6 animate-fadeIn border border-slate-200 shadow-sm">
+        <div className="w-16 h-16 rounded-2xl bg-orange-50 text-[#FB6C00] border border-orange-200 flex items-center justify-center mx-auto shadow-sm">
+          <Award className="w-8 h-8" />
         </div>
+
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-black text-orange-800">
+            <span>অফিসিয়াল ফরম্যাট • Simulazione Esame Ufficiale</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            {roundId ? `রাউন্ড #${roundId} এর ৩০টি কুইজ পরীক্ষা` : 'সরকারি ড্রাইভিং লাইসেন্স সিমুলেশন পরীক্ষা'}
+          </h2>
+          <p className="text-slate-600 text-sm max-w-md mx-auto leading-relaxed">
+            ইতালির পরিবহন মন্ত্রণালয়ের (Ministero dei Trasporti) অফিসিয়াল নিয়মে ৩০টি প্রশ্ন এবং ২০ মিনিট সময়।
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 max-w-md mx-auto text-left">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <span className="text-xs text-slate-500 font-bold block">মোট প্রশ্ন:</span>
+            <span className="text-lg font-black text-slate-900">৩০টি কুইজ</span>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <span className="text-xs text-slate-500 font-bold block">সময় সীমা:</span>
+            <span className="text-lg font-black text-[#FB6C00]">২০ মিনিট</span>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <span className="text-xs text-slate-500 font-bold block">পাস করার শর্ত:</span>
+            <span className="text-lg font-black text-emerald-700">সর্বোচ্চ ৩ ভুল</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-orange-50 border border-orange-200 max-w-xl mx-auto text-xs text-orange-900 text-left">
+          💡 <strong>আমাদের বিশেষ সুবিধা:</strong> পরীক্ষার সময় বা পরীক্ষা শেষে প্রতিটি প্রশ্নের নিচে <strong>[বাংলা অর্থ ও বিস্তারিত ব্যাখ্যা]</strong> দেখতে পারবেন, যাতে বুঝতে পারেন কেন ভুল হলো।
+        </div>
+
+        <button
+          type="button"
+          onClick={startNewExam}
+          className="py-3.5 px-8 rounded-xl bg-[#FB6C00] hover:bg-orange-600 text-white font-black text-base shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
+        >
+          পরীক্ষা শুরু করুন (Inizia Esame) 🚀
+        </button>
       </div>
     );
   }
@@ -179,14 +179,14 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
       {/* Top Status Bar: Timer + Progress */}
-      <div className="glass-box rounded-3xl p-4 sm:p-6 flex flex-wrap items-center justify-between gap-4 border border-[#FFDD9C]/15 shadow-xl">
+      <div className="bg-white rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 border border-slate-200 shadow-sm">
         {/* Round or Mock Test Label */}
         <div className="flex items-center gap-3">
           {onBackToRounds && (
             <button
               type="button"
               onClick={onBackToRounds}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
               title="রাউন্ড তালিকায় ফিরে যান"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -195,10 +195,10 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           )}
 
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-xl bg-[#E73F1E]/20 text-[#FFDD9C] font-black text-xs border border-[#FB6C00]/30">
+            <span className="px-3 py-1 rounded-md bg-orange-50 text-[#FB6C00] font-black text-xs border border-orange-200">
               {roundId ? `রাউন্ড #${roundId}` : 'মডেল টেস্ট'}
             </span>
-            <span className="text-xs text-slate-300 font-bold hidden md:inline">
+            <span className="text-xs text-slate-600 font-bold hidden md:inline">
               {roundId ? `লেভেল ${roundId} পরীক্ষা` : '৩০টি অফিসিয়াল প্রশ্ন (২০ মিনিট)'}
             </span>
           </div>
@@ -207,20 +207,20 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
         {/* Timer & Answered Count */}
         <div className="flex items-center gap-3">
           <div
-            className={`p-2.5 rounded-2xl flex items-center gap-2 font-black text-sm ${
+            className={`p-2.5 rounded-xl flex items-center gap-2 font-black text-sm border ${
               timeLeftSeconds < 180
-                ? 'bg-[#E73F1E]/25 text-rose-300 border border-[#E73F1E]/40 animate-pulse'
+                ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
                 : timeLeftSeconds < 360
-                ? 'bg-[#FB6C00]/20 text-[#FFDD9C] border border-[#FB6C00]/30'
-                : 'bg-[#FB6C00]/20 text-[#F9B637] border border-[#FB6C00]/30'
+                ? 'bg-orange-50 text-orange-700 border-orange-200'
+                : 'bg-slate-100 text-slate-800 border-slate-200'
             }`}
           >
-            <Clock className="w-4 h-4" />
+            <Clock className="w-4 h-4 text-[#FB6C00]" />
             <span className="text-base tracking-wider font-mono">{timeFormatted}</span>
           </div>
 
-          <span className="text-xs text-slate-400 hidden sm:inline">
-            উত্তর: <strong className="text-white">{totalAnswered} / {questions.length}</strong>
+          <span className="text-xs text-slate-500 hidden sm:inline">
+            উত্তর: <strong className="text-slate-900">{totalAnswered} / {questions.length}</strong>
           </span>
         </div>
 
@@ -229,7 +229,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           <button
             type="button"
             onClick={handleSubmitExam}
-            className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 font-black text-xs shadow-lg shadow-[#FB6C00]/25 hover:scale-105 active:scale-95 transition cursor-pointer"
+            className="py-2.5 px-5 rounded-xl bg-[#FB6C00] hover:bg-orange-600 text-white font-black text-xs shadow-sm hover:scale-105 active:scale-95 transition cursor-pointer"
           >
             পরীক্ষা জমা দিন (Consegna)
           </button>
@@ -237,7 +237,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           <button
             type="button"
             onClick={startNewExam}
-            className="py-2.5 px-5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-xs border border-white/20 flex items-center gap-2 transition cursor-pointer"
+            className="py-2.5 px-5 rounded-xl bg-slate-900 hover:bg-black text-white font-black text-xs flex items-center gap-2 transition cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>নতুন পরীক্ষা</span>
@@ -248,28 +248,32 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
       {/* Results Banner if submitted */}
       {isSubmitted && (
         <div
-          className={`glass-box rounded-3xl p-6 sm:p-8 space-y-4 text-center border ${
-            isPassed ? 'border-[#F9B637]/40 bg-[#F9B637]/10' : 'border-[#E73F1E]/40 bg-[#E73F1E]/10'
+          className={`p-6 sm:p-8 rounded-2xl border text-center space-y-4 shadow-sm animate-fadeIn ${
+            isPassed
+              ? 'bg-emerald-50/70 border-emerald-300'
+              : 'bg-rose-50/70 border-rose-300'
           }`}
         >
-          <div className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-white">
+          <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white shadow-sm">
             {isPassed ? (
-              <div className="w-full h-full bg-gradient-to-tr from-[#FB6C00] to-[#F9B637] rounded-2xl flex items-center justify-center text-slate-950">
-                <CheckCircle2 className="w-8 h-8" />
+              <div className="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-white" />
               </div>
             ) : (
-              <div className="w-full h-full bg-[#E73F1E] rounded-2xl flex items-center justify-center text-white">
-                <XCircle className="w-8 h-8" />
+              <div className="w-16 h-16 rounded-2xl bg-rose-600 flex items-center justify-center">
+                <XCircle className="w-8 h-8 text-white" />
               </div>
             )}
           </div>
 
           <div className="space-y-1">
-            <h2 className="text-2xl font-black text-white">
-              {isPassed ? '🎉 অভিনন্দন! আপনি পাস করেছেন (IDONEO)' : '❌ দুঃখিত! আপনি ফেল করেছেন (BOCCIATO)'}
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+              {isPassed ? '🎉 অভিনন্দন! আপনি পরীক্ষায় পাস করেছেন!' : '❌ দুঃখিত! আপনি পরীক্ষায় ফেল করেছেন'}
             </h2>
-            <p className="text-xs text-slate-300">
-              মোট ভুল হয়েছে: <strong className={isPassed ? 'text-[#F9B637]' : 'text-[#E73F1E]'}>{errorCount}টি</strong> (পাস করার জন্য সর্বোচ্চ ৩টি ভুল গ্রহণযোগ্য)।
+            <p className="text-sm font-bold text-slate-600">
+              {isPassed
+                ? `IDONEO: আপনি মোট ৩০টি প্রশ্নের মধ্যে ${errorCount}টি ভুল করেছেন (অনুমোদিত সর্বোচ্চ ৩টি)।`
+                : `RESPINTO: আপনি মোট ৩০টি প্রশ্নের মধ্যে ${errorCount}টি ভুল করেছেন। পাস করতে সর্বোচ্চ ৩টি ভুলের সুযোগ আছে।`}
             </p>
           </div>
 
@@ -277,16 +281,17 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
             <button
               type="button"
               onClick={startNewExam}
-              className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 font-black text-xs transition hover:scale-105 cursor-pointer"
+              className="py-2.5 px-6 rounded-xl bg-slate-900 hover:bg-black text-white font-black text-xs transition cursor-pointer flex items-center gap-2 shadow-sm"
             >
-              আবার পরীক্ষা দিন
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>পুনরায় পরীক্ষা দিন</span>
             </button>
             <button
               type="button"
               onClick={onGoToTopics}
-              className="py-2.5 px-5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-xs border border-white/20 transition cursor-pointer"
+              className="py-2.5 px-6 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200 transition cursor-pointer"
             >
-              অধ্যায়ভিত্তিক প্র্যাকটিস করুন
+              অধ্যায়ভিত্তিক রিভিশন নিন
             </button>
           </div>
         </div>
