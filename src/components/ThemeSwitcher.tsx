@@ -58,3 +58,4 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, onTh
     </div>
   );
 };
+

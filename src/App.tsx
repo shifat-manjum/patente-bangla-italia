@@ -11,6 +11,8 @@ import { VipPaywallModal } from './components/VipPaywallModal';
 import { AboutModal } from './components/AboutModal';
 import { AdminQuestionExplorer } from './components/AdminQuestionExplorer';
 import { StudentLeadModal } from './components/StudentLeadModal';
+import { StudentAuthModal } from './components/StudentAuthModal';
+import type { StudentUser } from './components/StudentAuthModal';
 import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
 
@@ -43,6 +45,34 @@ export function App() {
       root.classList.add('theme-sepia');
     }
   }, [currentTheme]);
+
+  // Current Student User State (Mandatory login system)
+  const [currentUser, setCurrentUser] = useState<StudentUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('patente_student_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authForcedMessage, setAuthForcedMessage] = useState('');
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('patente_student_user');
+    } catch {}
+    setCurrentUser(null);
+  };
+
+  const requireLogin = (action = 'কুইজ ও রাউন্ড শুরু করতে'): boolean => {
+    if (!currentUser) {
+      setAuthForcedMessage(`${action} দয়া করে আপনার ফ্রি স্টুডেন্ট অ্যাকাউন্টে সাইন ইন করুন অথবা নতুন ফ্রি অ্যাকাউন্ট খুলুন। কোনো প্রশ্ন দেখতে বা সমাধান করতে লগইন বাধ্যতামূলক।`);
+      setIsAuthModalOpen(true);
+      return false;
+    }
+    return true;
+  };
 
   // Student Lead Registration State
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
@@ -181,6 +211,10 @@ export function App() {
   const [currentRoundId, setCurrentRoundId] = useState<number | null>(null);
 
   const handleStartRound = (roundId: number) => {
+    // Strict authentication gate: nobody can access questions without login
+    if (!requireLogin('রাউন্ড শুরু করতে')) {
+      return;
+    }
     // If round is not free (round > 20) and user is not VIP, show paywall!
     if (roundId > 20 && !isVip) {
       setIsPaywallOpen(true);
@@ -191,6 +225,18 @@ export function App() {
     setActiveTab('exam');
   };
 
+  const handleSelectTab = (tab: NavTab) => {
+    if (['exam', 'hotshot', 'topics', 'mistakes'].includes(tab)) {
+      if (!requireLogin('কুইজ ও পরীক্ষা শুরু করতে')) {
+        return;
+      }
+    }
+    if (tab === 'exam') {
+      setCurrentRoundId(null);
+    }
+    setActiveTab(tab);
+  };
+
   const handleUnlockVip = () => {
     setIsVip(true);
     setIsPaywallOpen(false);
@@ -198,21 +244,37 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 selection:bg-[#FB6C00] selection:text-white font-sans relative overflow-x-hidden">
-      {/* Subtle school ambient gradient top accents */}
-      <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-100/40 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-100/30 rounded-full blur-3xl pointer-events-none -z-10" />
-
+    <div
+      className={`min-h-screen flex flex-col transition-colors duration-300 font-sans relative overflow-x-hidden ${
+        currentTheme === 'sepia'
+          ? 'theme-sepia bg-[#F5EEDB] text-[#331E0D] selection:bg-[#B45309] selection:text-white'
+          : currentTheme === 'dark'
+          ? 'dark bg-[#090D16] text-[#F1F5F9] selection:bg-[#FB6C00] selection:text-white'
+          : 'bg-[#F8FAFC] text-slate-800 selection:bg-[#FB6C00] selection:text-white'
+      }`}
+    >
+      {/* Subtle theme-specific ambient accents */}
+      {currentTheme === 'sepia' ? (
+        <>
+          <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
+        </>
+      ) : currentTheme === 'dark' ? (
+        <>
+          <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-indigo-900/20 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-900/15 rounded-full blur-3xl pointer-events-none -z-10" />
+        </>
+      ) : (
+        <>
+          <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-100/40 rounded-full blur-3xl pointer-events-none -z-10" />
+        </>
+      )}
 
       {/* Navigation Header */}
       <Header
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          if (tab === 'exam') {
-            setCurrentRoundId(null);
-          }
-          setActiveTab(tab);
-        }}
+        setActiveTab={handleSelectTab}
         mistakesCount={mistakeIds.length}
         totalQuestionsAnswered={totalQuestionsAnswered}
         isVip={isVip}
@@ -220,10 +282,43 @@ export function App() {
         onOpenAbout={() => setIsAboutOpen(true)}
         currentTheme={currentTheme}
         onThemeChange={setCurrentTheme}
+        currentUser={currentUser}
+        onOpenAuth={() => {
+          setAuthForcedMessage('');
+          setIsAuthModalOpen(true);
+        }}
+        onLogout={handleLogout}
       />
 
       {/* Main Content */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Unauthenticated Student Welcome Banner */}
+        {!currentUser && (
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border border-orange-200 dark:border-orange-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-sm">
+            <div className="space-y-1">
+              <span className="inline-block text-[10px] font-black uppercase tracking-wider text-[#FB6C00] bg-orange-100 dark:bg-orange-950/60 px-2 py-0.5 rounded-md">
+                🔒 Student Sign-In Required
+              </span>
+              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                কুইজ ও রাউন্ড শুরু করতে লগইন করুন • ২০টি রাউন্ড (৬০০ প্রশ্ন) সম্পূর্ণ ফ্রি
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                আপনার নাম ও ইমেইল দিয়ে একটি ফ্রি স্টুডেন্ট অ্যাকাউন্ট তৈরি করে নিন অথবা ডেমো লগইন দিয়ে এখনই পড়া শুরু করুন।
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthForcedMessage('২০টি ফ্রি রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।');
+                setIsAuthModalOpen(true);
+              }}
+              className="px-5 py-2.5 rounded-xl bg-[#FB6C00] hover:bg-orange-600 text-white font-bold text-xs shrink-0 cursor-pointer shadow-md transition"
+            >
+              Log In / Register (ফ্রি)
+            </button>
+          </div>
+        )}
+
         {activeTab === 'rounds' && (
           <RoundsMap
             unlockedRound={unlockedRound}
@@ -283,6 +378,16 @@ export function App() {
         )}
       </main>
 
+      {/* Mandatory Student Auth Modal */}
+      <StudentAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+        }}
+        forcedMessage={authForcedMessage}
+      />
+
       {/* Pro Student Pass Modal */}
       <VipPaywallModal
         isOpen={isPaywallOpen}
@@ -311,7 +416,7 @@ export function App() {
 
       {/* Footer */}
       <Footer
-        setActiveTab={setActiveTab}
+        setActiveTab={handleSelectTab}
         onOpenAbout={() => setIsAboutOpen(true)}
       />
     </div>

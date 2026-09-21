@@ -33,57 +33,80 @@
   border-color: #CBD5E1;
 }
 
-/* Sepia Reader Theme Mode */
+/* Sepia Reader Theme Mode - Warm Parchment / Book Reading Vibe */
 html.theme-sepia,
 body.theme-sepia,
 .theme-sepia {
-  background-color: #FBF0D9 !important;
-  color: #432818 !important;
+  background-color: #F5EEDB !important;
+  color: #331E0D !important;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(180, 83, 9, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(217, 119, 6, 0.05) 0px, transparent 50%) !important;
+  background-attachment: fixed !important;
 }
 
-.theme-sepia .bg-white {
-  background-color: #FDF6E9 !important;
+.theme-sepia .bg-white,
+.theme-sepia .school-card,
+.theme-sepia .glass-box {
+  background-color: #FCF8ED !important;
+  border-color: #DFCEAC !important;
+  box-shadow: 0 4px 20px -2px rgba(92, 61, 38, 0.06), 0 2px 6px -1px rgba(92, 61, 38, 0.04) !important;
 }
 
 .theme-sepia .bg-slate-50,
 .theme-sepia .bg-slate-100 {
-  background-color: #F6EAD0 !important;
+  background-color: #EFE4CC !important;
 }
 
 .theme-sepia .border-slate-200,
 .theme-sepia .border-slate-100 {
-  border-color: #E6D4B7 !important;
+  border-color: #DFCEAC !important;
 }
 
 .theme-sepia .text-slate-900,
 .theme-sepia .text-slate-800 {
-  color: #38200F !important;
+  color: #2F1B0B !important;
 }
 
+.theme-sepia .text-slate-700,
 .theme-sepia .text-slate-600,
 .theme-sepia .text-slate-500 {
-  color: #6C584C !important;
+  color: #634C37 !important;
 }
 
-/* Dark Theme Overrides */
+.theme-sepia .bg-orange-50 {
+  background-color: #FAECD4 !important;
+}
+
+/* Dark Theme Mode - Deep Midnight Slate Vibe */
 html.dark,
 body.dark,
 .dark {
-  background-color: #0B1120 !important;
-  color: #E2E8F0 !important;
+  background-color: #090D16 !important;
+  color: #F1F5F9 !important;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(251, 108, 0, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 50%) !important;
+  background-attachment: fixed !important;
 }
 
-.dark .bg-white {
-  background-color: #1E293B !important;
+.dark .bg-white,
+.dark .school-card,
+.dark .glass-box {
+  background-color: #131B2E !important;
+  border-color: #1E293B !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.25) !important;
 }
 
-.dark .bg-slate-50 {
-  background-color: #0F172A !important;
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  background-color: #0C1322 !important;
 }
 
 .dark .border-slate-200,
 .dark .border-slate-100 {
-  border-color: #334155 !important;
+  border-color: #243049 !important;
 }
 
 .dark .text-slate-900,
@@ -91,8 +114,14 @@ body.dark,
   color: #F8FAFC !important;
 }
 
+.dark .text-slate-700,
 .dark .text-slate-600,
 .dark .text-slate-500 {
   color: #94A3B8 !important;
 }
+
+.dark .bg-orange-50 {
+  background-color: rgba(251, 108, 0, 0.12) !important;
+}
+
 

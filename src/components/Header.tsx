@@ -1,8 +1,9 @@
 import React from 'react';
-import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, ShieldCheck, Info, Flame, GraduationCap } from 'lucide-react';
+import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, ShieldCheck, Info, Flame, GraduationCap, User, LogOut, LogIn } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import type { ThemeMode } from './ThemeSwitcher';
 import { StudyMusicPlayer } from './StudyMusicPlayer';
+import type { StudentUser } from './StudentAuthModal';
 
 export type NavTab = 'rounds' | 'exam' | 'hotshot' | 'topics' | 'vocab' | 'mistakes' | 'admin';
 
@@ -16,6 +17,9 @@ interface HeaderProps {
   onOpenAbout: () => void;
   currentTheme: ThemeMode;
   onThemeChange: (theme: ThemeMode) => void;
+  currentUser: StudentUser | null;
+  onOpenAuth: () => void;
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,6 +32,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAbout,
   currentTheme,
   onThemeChange,
+  currentUser,
+  onOpenAuth,
+  onLogout,
 }) => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
@@ -62,6 +69,30 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Study Ambient Concentration Music */}
             <StudyMusicPlayer />
+
+            {/* Student Auth / Login Button */}
+            {currentUser ? (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 text-slate-700 hover:text-rose-700 dark:text-slate-300 dark:hover:text-rose-300 border border-slate-200 hover:border-rose-300 dark:border-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                title="Click to Log Out"
+              >
+                <User className="w-3.5 h-3.5 text-[#FB6C00]" />
+                <span className="max-w-[90px] truncate">{currentUser.name.split(' ')[0]}</span>
+                <LogOut className="w-3 h-3 opacity-60" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenAuth}
+                className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 text-[#FB6C00] border border-orange-200 dark:border-orange-800 text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                title="Student Login / Register"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Log In</span>
+              </button>
+            )}
 
             {/* About Us */}
             <button
