@@ -13,6 +13,7 @@ import { AdminQuestionExplorer } from './components/AdminQuestionExplorer';
 import { StudentLeadModal } from './components/StudentLeadModal';
 import { StudentAuthModal } from './components/StudentAuthModal';
 import type { StudentUser } from './components/StudentAuthModal';
+import { PatenteChatbot } from './components/PatenteChatbot';
 import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
 
@@ -412,6 +413,13 @@ export function App() {
       <AboutModal
         isOpen={isAboutOpen}
         onClose={() => setIsAboutOpen(false)}
+      />
+
+      {/* Floating 24/7 AI Maestro Tutor Chatbot */}
+      <PatenteChatbot
+        currentTheme={currentTheme}
+        currentUser={currentUser}
+        onOpenPaywall={() => setIsPaywallOpen(true)}
       />
 
       {/* Footer */}

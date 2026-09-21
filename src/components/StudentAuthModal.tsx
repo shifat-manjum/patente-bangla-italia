@@ -355,3 +355,4 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     </div>
   );
 };
+
