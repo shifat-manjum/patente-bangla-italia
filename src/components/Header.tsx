@@ -1,7 +1,7 @@
 import React from 'react';
 import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, Sparkles, ShieldCheck, Info } from 'lucide-react';
 
-export type NavTab = 'rounds' | 'exam' | 'topics' | 'vocab' | 'mistakes';
+export type NavTab = 'rounds' | 'exam' | 'topics' | 'vocab' | 'mistakes' | 'admin';
 
 interface HeaderProps {
   activeTab: NavTab;

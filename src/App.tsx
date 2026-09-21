@@ -8,12 +8,25 @@ import { VocabularyBank } from './components/VocabularyBank';
 import { MistakeReview } from './components/MistakeReview';
 import { VipPaywallModal } from './components/VipPaywallModal';
 import { AboutModal } from './components/AboutModal';
+import { AdminQuestionExplorer } from './components/AdminQuestionExplorer';
 import { Footer } from './components/Footer';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('rounds');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+
+  // Auto-detect #admin or ?admin=true
+  useEffect(() => {
+    const checkAdmin = () => {
+      if (window.location.hash === '#admin' || window.location.search.includes('admin=true')) {
+        setActiveTab('admin');
+      }
+    };
+    checkAdmin();
+    window.addEventListener('hashchange', checkAdmin);
+    return () => window.removeEventListener('hashchange', checkAdmin);
+  }, []);
 
   // VIP State
   const [isVip, setIsVip] = useState<boolean>(() => {
@@ -208,6 +221,10 @@ export function App() {
             onRemoveMistake={(id) => setMistakeIds((prev) => prev.filter((item) => item !== id))}
             onGoToTopics={() => setActiveTab('topics')}
           />
+        )}
+
+        {activeTab === 'admin' && (
+          <AdminQuestionExplorer onBackToApp={() => setActiveTab('rounds')} />
         )}
       </main>
 

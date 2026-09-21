@@ -75,6 +75,15 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout }) => 
                   ❌ ভুল প্রশ্ন রিভিশন (I Miei Errori)
                 </button>
               </li>
+              <li className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('admin')}
+                  className="hover:text-amber-400 text-amber-400/80 font-bold transition cursor-pointer flex items-center gap-1.5"
+                >
+                  🔒 অ্যাডমিন প্রশ্ন ব্যাংক (Master DB)
+                </button>
+              </li>
             </ul>
           </div>
         </div>
