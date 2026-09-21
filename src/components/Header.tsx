@@ -20,6 +20,7 @@ interface HeaderProps {
   currentUser: StudentUser | null;
   onOpenAuth: () => void;
   onLogout: () => void;
+  onOpenAdmin: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   onOpenAuth,
   onLogout,
+  onOpenAdmin,
 }) => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
@@ -103,6 +105,17 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Info className="w-3.5 h-3.5 text-[#FB6C00]" />
               <span className="hidden lg:inline">About</span>
+            </button>
+
+            {/* Admin Portal Button */}
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              className="py-1.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-700 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+              title="Admin CRM Portal (khshifat@gmail.com)"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden xl:inline text-[11px]">Admin</span>
             </button>
 
             {/* Pro Student Pass CTA */}

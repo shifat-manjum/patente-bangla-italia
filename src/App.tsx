@@ -9,7 +9,8 @@ import { MistakeReview } from './components/MistakeReview';
 import { HotshotExam } from './components/HotshotExam';
 import { VipPaywallModal } from './components/VipPaywallModal';
 import { AboutModal } from './components/AboutModal';
-import { AdminQuestionExplorer } from './components/AdminQuestionExplorer';
+import { AdminLoginModal } from './components/AdminLoginModal';
+import { AdminCrmDashboard } from './components/AdminCrmDashboard';
 import { StudentLeadModal } from './components/StudentLeadModal';
 import { StudentAuthModal } from './components/StudentAuthModal';
 import type { StudentUser } from './components/StudentAuthModal';
@@ -115,17 +116,31 @@ export function App() {
     }
   });
 
+  // Admin Authentication State (khshifat@gmail.com / khshifatmanjum@gmail.com)
+  const [adminEmail, setAdminEmail] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem('patente_admin_auth');
+    } catch {
+      return null;
+    }
+  });
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+
   // Auto-detect #admin or ?admin=true
   useEffect(() => {
     const checkAdmin = () => {
       if (window.location.hash === '#admin' || window.location.search.includes('admin=true')) {
-        setActiveTab('admin');
+        if (adminEmail) {
+          setActiveTab('admin');
+        } else {
+          setIsAdminLoginOpen(true);
+        }
       }
     };
     checkAdmin();
     window.addEventListener('hashchange', checkAdmin);
     return () => window.removeEventListener('hashchange', checkAdmin);
-  }, []);
+  }, [adminEmail]);
 
   // VIP State
   const [isVip, setIsVip] = useState<boolean>(() => {
@@ -331,6 +346,13 @@ export function App() {
           setIsAuthModalOpen(true);
         }}
         onLogout={handleLogout}
+        onOpenAdmin={() => {
+          if (adminEmail) {
+            setActiveTab('admin');
+          } else {
+            setIsAdminLoginOpen(true);
+          }
+        }}
       />
 
       {/* Main Content */}
@@ -417,7 +439,37 @@ export function App() {
         )}
 
         {activeTab === 'admin' && (
-          <AdminQuestionExplorer onBackToApp={() => setActiveTab('rounds')} />
+          adminEmail ? (
+            <AdminCrmDashboard
+              adminEmail={adminEmail}
+              onExitAdmin={() => {
+                try {
+                  sessionStorage.removeItem('patente_admin_auth');
+                } catch {}
+                setAdminEmail(null);
+                setActiveTab('rounds');
+              }}
+            />
+          ) : (
+            <div className="max-w-md mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl text-center space-y-5">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[#FB6C00] flex items-center justify-center mx-auto text-3xl">
+                🔒
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">Admin CRM & Control Panel</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Access restricted to authorized owners (khshifat@gmail.com / khshifatmanjum@gmail.com).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAdminLoginOpen(true)}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-lg shadow-orange-500/25 transition cursor-pointer"
+              >
+                Log In as Admin (অ্যাডমিন লগইন)
+              </button>
+            </div>
+          )
         )}
       </main>
 
@@ -464,10 +516,31 @@ export function App() {
         onOpenPaywall={() => setIsPaywallOpen(true)}
       />
 
+      {/* Admin Login Gate Modal */}
+      <AdminLoginModal
+        isOpen={isAdminLoginOpen}
+        onClose={() => setIsAdminLoginOpen(false)}
+        onAdminLoginSuccess={(email) => {
+          setAdminEmail(email);
+          try {
+            sessionStorage.setItem('patente_admin_auth', email);
+          } catch {}
+          setIsAdminLoginOpen(false);
+          setActiveTab('admin');
+        }}
+      />
+
       {/* Footer */}
       <Footer
         setActiveTab={handleSelectTab}
         onOpenAbout={() => setIsAboutOpen(true)}
+        onOpenAdmin={() => {
+          if (adminEmail) {
+            setActiveTab('admin');
+          } else {
+            setIsAdminLoginOpen(true);
+          }
+        }}
       />
     </div>
   );

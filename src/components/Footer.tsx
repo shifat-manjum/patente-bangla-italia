@@ -4,9 +4,10 @@ import type { NavTab } from './Header';
 interface FooterProps {
   setActiveTab: (tab: NavTab) => void;
   onOpenAbout: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout }) => {
+export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpenAdmin }) => {
   return (
     <footer className="mt-20 border-t border-slate-200 bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
@@ -87,10 +88,16 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout }) => 
               <li className="pt-1">
                 <button
                   type="button"
-                  onClick={() => setActiveTab('admin')}
+                  onClick={() => {
+                    if (onOpenAdmin) {
+                      onOpenAdmin();
+                    } else {
+                      setActiveTab('admin');
+                    }
+                  }}
                   className="hover:text-[#FB6C00] text-slate-500 font-bold transition cursor-pointer flex items-center gap-1.5"
                 >
-                  🔒 অ্যাডমিন প্রশ্ন ব্যাংক (Master DB)
+                  🔒 অ্যাডমিন CRM ও কন্ট্রোল প্যানেল (Admin CRM)
                 </button>
               </li>
             </ul>
