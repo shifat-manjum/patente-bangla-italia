@@ -6,6 +6,7 @@ import { ExamSimulator } from './components/ExamSimulator';
 import { TopicPractice } from './components/TopicPractice';
 import { VocabularyBank } from './components/VocabularyBank';
 import { MistakeReview } from './components/MistakeReview';
+import { HotshotExam } from './components/HotshotExam';
 import { VipPaywallModal } from './components/VipPaywallModal';
 import { AboutModal } from './components/AboutModal';
 import { AdminQuestionExplorer } from './components/AdminQuestionExplorer';
@@ -198,6 +199,15 @@ export function App() {
             }}
             onSaveMistakes={handleSaveExamMistakes}
             onGoToTopics={() => setActiveTab('topics')}
+          />
+        )}
+
+        {activeTab === 'hotshot' && (
+          <HotshotExam
+            onRecordMistake={(id) => {
+              incrementAnsweredCount(1);
+              setMistakeIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+            }}
           />
         )}
 

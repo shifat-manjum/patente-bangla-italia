@@ -1,7 +1,7 @@
 import React from 'react';
-import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, Sparkles, ShieldCheck, Info } from 'lucide-react';
+import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, Sparkles, ShieldCheck, Info, Flame } from 'lucide-react';
 
-export type NavTab = 'rounds' | 'exam' | 'topics' | 'vocab' | 'mistakes' | 'admin';
+export type NavTab = 'rounds' | 'exam' | 'hotshot' | 'topics' | 'vocab' | 'mistakes' | 'admin';
 
 interface HeaderProps {
   activeTab: NavTab;
@@ -85,8 +85,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* 5-Card Action Navigation */}
-        <nav className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+        {/* 6-Card Action Navigation */}
+        <nav className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
           {/* 1. Rounds Map (240 Rounds) */}
           <button
             onClick={() => setActiveTab('rounds')}
@@ -119,7 +119,23 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </button>
 
-          {/* 3. Topics */}
+          {/* 3. Hotshot Exam Booster */}
+          <button
+            onClick={() => setActiveTab('hotshot')}
+            className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
+              activeTab === 'hotshot'
+                ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-amber-500/25 ring-2 ring-amber-400 scale-[1.02]'
+                : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+            }`}
+          >
+            <Flame className="w-4 h-4 shrink-0 text-amber-400" />
+            <div className="text-left">
+              <span className="block leading-tight text-amber-300">🔥 হটশট ফাঁদ</span>
+              <span className="text-[10px] font-normal opacity-80 block">সবচেয়ে কঠিন প্রশ্ন</span>
+            </div>
+          </button>
+
+          {/* 4. Topics */}
           <button
             onClick={() => setActiveTab('topics')}
             className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
@@ -135,7 +151,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </button>
 
-          {/* 4. Vocabulary */}
+          {/* 5. Vocabulary */}
           <button
             onClick={() => setActiveTab('vocab')}
             className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
@@ -147,14 +163,14 @@ export const Header: React.FC<HeaderProps> = ({
             <BookmarkCheck className="w-4 h-4 shrink-0" />
             <div className="text-left">
               <span className="block leading-tight">শব্দার্থ ও অডিও</span>
-              <span className="text-[10px] font-normal opacity-80 block">কঠিন শব্দকোষ</span>
+              <span className="text-[10px] font-normal opacity-80 block">১২০+ শব্দকোষ</span>
             </div>
           </button>
 
-          {/* 5. Mistakes */}
+          {/* 6. Mistakes */}
           <button
             onClick={() => setActiveTab('mistakes')}
-            className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md relative col-span-2 sm:col-span-1 ${
+            className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md relative ${
               activeTab === 'mistakes'
                 ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-rose-500/25 ring-2 ring-rose-400 scale-[1.02]'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
@@ -163,7 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
             <AlertCircle className="w-4 h-4 shrink-0" />
             <div className="text-left">
               <div className="flex items-center gap-1">
-                <span className="leading-tight">ভুল প্রশ্ন ব্যাংক</span>
+                <span className="leading-tight">ভুল প্রশ্ন</span>
                 {mistakesCount > 0 && (
                   <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white leading-tight">
                     {mistakesCount}
