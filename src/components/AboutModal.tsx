@@ -23,8 +23,8 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
 
         {/* Modal Header */}
         <div className="space-y-2 text-left">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400">
-            <Compass className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E73F1E]/15 border border-[#FB6C00]/30 text-xs font-bold text-[#FFDD9C]">
+            <Compass className="w-3.5 h-3.5 text-[#F9B637]" />
             <span>আমাদের পরিচিতি ও মিশন</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -36,16 +36,16 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Founder Story Card */}
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 border border-emerald-500/30 space-y-4 text-left shadow-lg">
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-[#181316] to-[#120f11] border border-[#FB6C00]/40 space-y-4 text-left shadow-xl">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-md shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-xl font-black text-emerald-400">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#E73F1E] via-[#FB6C00] to-[#F9B637] p-0.5 shadow-md shrink-0">
+              <div className="w-full h-full bg-[#120f11] rounded-[14px] flex items-center justify-center text-xl font-black text-[#F9B637]">
                 SM
               </div>
             </div>
             <div>
               <h3 className="text-lg font-black text-white">Shifat Manjum</h3>
-              <p className="text-xs text-emerald-400 font-bold">
+              <p className="text-xs text-[#F9B637] font-bold">
                 Product Architect &amp; Founder, Zentixx
               </p>
               <p className="text-[11px] text-slate-400">
@@ -61,7 +61,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
             <p>
               «কিন্তু বহু বছর ধরে আমি দেখেছি, কঠিন ইতালিয়ান ব্যাকরণ ও হাজার হাজার অপরিচিত শব্দের কারণে আমাদের বহু প্রবাসী ভাই-বোন বারবার পরীক্ষায় ফেল করেন। অনেকেই কাজের ব্যস্ততার কারণে নির্দিষ্ট সময়ে কোচিং বা জুম ক্লাসে বসতে পারেন না, আবার অনেকে অতিরিক্ত অর্থ খরচ করেও সঠিক গাইডলাইন পান না।»
             </p>
-            <p className="text-emerald-300 font-semibold">
+            <p className="text-[#FFDD9C] font-semibold">
               «সেই সমস্যাকে স্থায়ীভাবে সমাধান করতেই আমি এবং Zentixx টিম তৈরি করেছি Patente Bangla। আমাদের লক্ষ্য একটাই: উন্নত প্রযুক্তি ও কৃত্রিম বুদ্ধিমত্তার সাহায্যে প্রতিটি সরকারি প্রশ্নকে সহজ বাংলায় বুঝিয়ে দেওয়া, সঠিক উচ্চারণ শোনানো এবং পরীক্ষার ফাঁদ শব্দগুলো ধরিয়ে দেওয়া—যাতে যে কেউ নিজের সুবিধামতো সময়ে অনুশীলন করে প্রথম সুযোগেই সফল হতে পারেন।»
             </p>
           </div>
@@ -70,7 +70,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-4 text-xs">
             <a
               href="mailto:khshifat@gmail.com"
-              className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-white font-bold transition"
+              className="inline-flex items-center gap-1.5 text-[#F9B637] hover:text-white font-bold transition"
             >
               <Mail className="w-3.5 h-3.5" />
               <span>khshifat@gmail.com</span>
@@ -88,7 +88,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
             </a>
             <span className="text-slate-500">|</span>
             <span className="text-slate-400 text-xs">
-              ইকোসিস্টেম: <strong className="text-white">Zentixx Store • MyPdfTools</strong>
+              ইকোসিস্টেম: <strong className="text-[#FFDD9C]">Zentixx Store • MyPdfTools</strong>
             </span>
           </div>
         </div>
@@ -96,7 +96,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
         {/* 3 Core Pillars */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#FB6C00]/20 text-[#FB6C00] flex items-center justify-center">
               <Globe className="w-4 h-4" />
             </div>
             <h4 className="text-xs font-black text-white">২৪/৭ যে কোনো সময়</h4>
@@ -106,7 +106,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#F9B637]/20 text-[#F9B637] flex items-center justify-center">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <h4 className="text-xs font-black text-white">১০০% স্বচ্ছ ও বিশ্বস্ত</h4>
@@ -116,7 +116,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1.5">
-            <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#E73F1E]/20 text-[#E73F1E] flex items-center justify-center">
               <HeartHandshake className="w-4 h-4" />
             </div>
             <h4 className="text-xs font-black text-white">কমিউনিটি ফার্স্ট</h4>

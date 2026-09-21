@@ -23,26 +23,26 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAbout,
 }) => {
   return (
-    <header className="sticky top-0 z-50 w-full glass-box bg-slate-950/90 backdrop-blur-2xl border-b border-white/10 shadow-2xl">
+    <header className="sticky top-0 z-50 w-full glass-box bg-[#110e10]/95 backdrop-blur-2xl border-b border-[#FFDD9C]/15 shadow-2xl">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-3">
         {/* Top Line: Brand & VIP Upgrade Action */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-rose-600 p-0.5 shadow-lg shadow-emerald-500/25 shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-sm font-black text-white">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E73F1E] via-[#FB6C00] to-[#F9B637] p-0.5 shadow-lg shadow-[#FB6C00]/30 shrink-0">
+              <div className="w-full h-full bg-[#120f11] rounded-[14px] flex items-center justify-center text-sm font-black text-white">
                 🇮🇹🇧🇩
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-black text-lg sm:text-xl tracking-tight text-white">
-                  Patente<span className="text-emerald-400">Bangla</span>
+                  Patente<span className="text-[#FB6C00]">Bangla</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#E73F1E]/20 text-[#FFDD9C] border border-[#FB6C00]/30">
                   PATENTE B 2026
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
+              <p className="text-[11px] text-slate-300 font-medium hidden sm:block">
                 ইতালিয়ান ড্রাইভিং লাইসেন্স কুইজ বাংলা ব্যাখ্যা সহ
               </p>
             </div>
@@ -53,32 +53,32 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenAbout}
-              className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white border border-white/10 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
               title="আমাদের সম্পর্কে ও প্রতিষ্ঠাতা"
             >
-              <Info className="w-3.5 h-3.5 text-emerald-400" />
+              <Info className="w-3.5 h-3.5 text-[#F9B637]" />
               <span className="hidden sm:inline">পরিচিতি</span>
             </button>
             {!isVip ? (
               <div className="flex items-center gap-2">
                 <div className="text-right hidden sm:block">
                   <span className="text-[10px] text-slate-400 block font-bold">ফ্রি ট্রায়াল কোটা</span>
-                  <span className="text-xs font-black text-emerald-400">
+                  <span className="text-xs font-black text-[#F9B637]">
                     {Math.min(200, totalQuestionsAnswered)} / 200 প্রশ্ন
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={onOpenPaywall}
-                  className="py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 font-black text-xs shadow-md shadow-amber-400/20 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5"
+                  className="py-1.5 px-3 rounded-xl bg-gradient-to-r from-[#E73F1E] via-[#FB6C00] to-[#F9B637] text-slate-950 font-black text-xs shadow-lg shadow-[#FB6C00]/25 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5"
                 >
                   <Sparkles className="w-3.5 h-3.5 fill-current" />
                   <span>VIP আনলক (€49)</span>
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-black">
-                <ShieldCheck className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FB6C00]/20 border border-[#FB6C00]/30 text-[#FFDD9C] text-xs font-black">
+                <ShieldCheck className="w-4 h-4 text-[#F9B637]" />
                 <span>VIP আনলকড (৭,১০০+ প্রশ্ন)</span>
               </div>
             )}
@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('rounds')}
             className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
               activeTab === 'rounds'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-emerald-500/25 ring-2 ring-emerald-400 scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 shadow-[#FB6C00]/30 ring-2 ring-[#FFDD9C] scale-[1.02]'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
             }`}
           >
@@ -108,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('exam')}
             className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
               activeTab === 'exam'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-emerald-500/25 ring-2 ring-emerald-400 scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 shadow-[#FB6C00]/30 ring-2 ring-[#FFDD9C] scale-[1.02]'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
             }`}
           >
@@ -124,13 +124,13 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('hotshot')}
             className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
               activeTab === 'hotshot'
-                ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-amber-500/25 ring-2 ring-amber-400 scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#E73F1E] to-[#FB6C00] text-white shadow-[#E73F1E]/30 ring-2 ring-[#F9B637] scale-[1.02]'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
             }`}
           >
-            <Flame className="w-4 h-4 shrink-0 text-amber-400" />
+            <Flame className="w-4 h-4 shrink-0 text-[#F9B637]" />
             <div className="text-left">
-              <span className="block leading-tight text-amber-300">🔥 হটশট ফাঁদ</span>
+              <span className="block leading-tight text-[#FFDD9C]">🔥 হটশট ফাঁদ</span>
               <span className="text-[10px] font-normal opacity-80 block">সবচেয়ে কঠিন প্রশ্ন</span>
             </div>
           </button>
@@ -140,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('topics')}
             className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
               activeTab === 'topics'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-emerald-500/25 ring-2 ring-emerald-400 scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 shadow-[#FB6C00]/30 ring-2 ring-[#FFDD9C] scale-[1.02]'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
             }`}
           >
@@ -156,7 +156,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('vocab')}
             className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
               activeTab === 'vocab'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-emerald-500/25 ring-2 ring-emerald-400 scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 shadow-[#FB6C00]/30 ring-2 ring-[#FFDD9C] scale-[1.02]'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
             }`}
           >
@@ -172,7 +172,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('mistakes')}
             className={`p-2 sm:p-2.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md relative ${
               activeTab === 'mistakes'
-                ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-rose-500/25 ring-2 ring-rose-400 scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#E73F1E] to-[#FB6C00] text-white shadow-[#E73F1E]/30 ring-2 ring-[#FFDD9C] scale-[1.02]'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
             }`}
           >
@@ -181,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-1">
                 <span className="leading-tight">ভুল প্রশ্ন</span>
                 {mistakesCount > 0 && (
-                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white leading-tight">
+                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-[#E73F1E] text-white leading-tight">
                     {mistakesCount}
                   </span>
                 )}

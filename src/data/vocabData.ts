@@ -147,3 +147,4 @@ export const COMPREHENSIVE_VOCABULARY: VocabWord[] = [
   { id: 'p24', wordIt: 'Carta di circolazione (Libretto)', meaningBn: 'গাড়ির ব্লু-বুক বা রেজিস্ট্রেশন সনদপত্র', category: 'sicurezza', phoneticBn: 'লিব্রেত্তো' },
   { id: 'p25', wordIt: 'Certificato di proprietà', meaningBn: 'গাড়ির মালিকানা সনদপত্র', category: 'sicurezza', phoneticBn: 'চের্তিফিকাতো দি প্রপ্রিয়েতা' },
 ];
+

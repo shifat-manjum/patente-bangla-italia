@@ -53,19 +53,19 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       className={`glass-box rounded-3xl p-5 sm:p-7 space-y-5 transition-all duration-300 relative overflow-hidden ${
         shouldRevealOutcome
           ? isCorrect
-            ? 'border-emerald-500/50 bg-emerald-950/20 shadow-emerald-500/10'
-            : 'border-rose-500/50 bg-rose-950/20 shadow-rose-500/10'
-          : 'border-white/10'
+            ? 'border-[#F9B637]/50 bg-[#F9B637]/10 shadow-[#F9B637]/10'
+            : 'border-[#E73F1E]/50 bg-[#E73F1E]/10 shadow-[#E73F1E]/10'
+          : 'border-[#FFDD9C]/15'
       }`}
     >
       {/* Top Header: Question # and Category */}
       <div className="flex items-center justify-between gap-3 text-xs border-b border-white/10 pb-3">
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-black border border-emerald-500/30">
+          <span className="px-3 py-1 rounded-xl bg-[#E73F1E]/20 text-[#FFDD9C] font-black border border-[#FB6C00]/30">
             প্রশ্ন #{index + 1}
           </span>
           <span className="text-slate-300 font-bold hidden sm:inline">
-            {question.chapterTitleBn} <span className="text-slate-500 font-normal">({question.chapterTitleIt})</span>
+            {question.chapterTitleBn} <span className="text-slate-400 font-normal">({question.chapterTitleIt})</span>
           </span>
         </div>
 
@@ -77,11 +77,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             title="ইতালিয়ান উচ্চারণ শুনুন"
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
               isSpeaking
-                ? 'bg-emerald-500 text-slate-950 border-emerald-400 animate-pulse'
+                ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 border-[#FFDD9C] animate-pulse'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/10'
             }`}
           >
-            <Volume2 className="w-3.5 h-3.5" />
+            <Volume2 className="w-3.5 h-3.5 text-[#F9B637]" />
             <span className="hidden sm:inline">উচ্চারণ শুনুন</span>
           </button>
 
@@ -92,11 +92,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             title="বাংলা অনুবাদ দেখুন বা লুকান"
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
               showBanglaTranslation
-                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                ? 'bg-[#FB6C00]/20 text-[#FFDD9C] border-[#FB6C00]/30'
                 : 'bg-white/5 text-slate-400 border-white/10'
             }`}
           >
-            <Languages className="w-3.5 h-3.5" />
+            <Languages className="w-3.5 h-3.5 text-[#FB6C00]" />
             <span>{showBanglaTranslation ? 'বাংলা চালু' : 'বাংলা বন্ধ'}</span>
           </button>
         </div>
@@ -104,7 +104,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 
       {/* Road Sign Banner (Centered Graphic if present) */}
       {(question.signCode || question.image) && (
-        <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-900/90 border border-white/10 shadow-inner">
+        <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#141012]/95 border border-[#FFDD9C]/15 shadow-inner">
           <RoadSign code={question.signCode || String(question.image)} size={110} />
           {question.signSymbol && (
             <span className="mt-2 text-[11px] font-bold text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/10">
@@ -115,10 +115,10 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       )}
 
       {/* Official Italian Question Box */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 shadow-inner space-y-2">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#141012]/95 border border-[#FB6C00]/30 shadow-inner space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+            <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-[#E73F1E]/20 text-[#FFDD9C] border border-[#FB6C00]/30 flex items-center gap-1.5">
               <span>🇮🇹</span>
               <span>মূল অফিসিয়াল ইতালিয়ান প্রশ্ন</span>
             </span>
@@ -134,12 +134,12 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 
       {/* Prominent Bangla Translation Box */}
       {showBanglaTranslation && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-blue-950/40 border border-blue-500/40 space-y-2">
-          <div className="flex items-center gap-1.5 text-xs font-black text-blue-300">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#181316]/90 border border-[#FB6C00]/25 space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-black text-[#F9B637]">
             <span>🇧🇩</span>
             <span>সহজ বাংলা অনুবাদ ও অর্থ:</span>
           </div>
-          <p className="text-base sm:text-lg font-bold text-blue-100 leading-relaxed">
+          <p className="text-base sm:text-lg font-bold text-slate-200 leading-relaxed">
             {question.questionBn}
           </p>
         </div>
@@ -156,18 +156,18 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             userAnswer === true
               ? shouldRevealOutcome
                 ? question.isCorrect
-                  ? 'bg-emerald-500 text-slate-950 ring-4 ring-emerald-500/40 font-black'
-                  : 'bg-rose-500 text-white ring-4 ring-rose-500/40'
-                : 'bg-emerald-500 text-slate-950 ring-4 ring-emerald-500/40'
+                  ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 ring-4 ring-[#FFDD9C]/40 font-black'
+                  : 'bg-[#E73F1E] text-white ring-4 ring-[#E73F1E]/40'
+                : 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 ring-4 ring-[#FFDD9C]/40'
               : shouldRevealOutcome && question.isCorrect
-              ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-500'
-              : 'bg-white/5 hover:bg-emerald-500/20 text-white border border-white/10 hover:border-emerald-500/40'
+              ? 'bg-[#FB6C00]/20 text-[#FFDD9C] border-2 border-[#FB6C00]'
+              : 'bg-white/5 hover:bg-[#FB6C00]/20 text-white border border-white/10 hover:border-[#FB6C00]/40'
           }`}
         >
           <span className="tracking-wide">VERO</span>
           <span className="text-xs font-bold opacity-80">(সত্য)</span>
           {shouldRevealOutcome && question.isCorrect && (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 sm:ml-1" />
+            <CheckCircle2 className="w-5 h-5 text-[#F9B637] sm:ml-1" />
           )}
           {shouldRevealOutcome && userAnswer === true && !question.isCorrect && (
             <XCircle className="w-5 h-5 text-white sm:ml-1" />
@@ -183,18 +183,18 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             userAnswer === false
               ? shouldRevealOutcome
                 ? !question.isCorrect
-                  ? 'bg-emerald-500 text-slate-950 ring-4 ring-emerald-500/40 font-black'
-                  : 'bg-rose-500 text-white ring-4 ring-rose-500/40'
-                : 'bg-rose-500 text-white ring-4 ring-rose-500/40'
+                  ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 ring-4 ring-[#FFDD9C]/40 font-black'
+                  : 'bg-[#E73F1E] text-white ring-4 ring-[#E73F1E]/40'
+                : 'bg-[#E73F1E] text-white ring-4 ring-[#E73F1E]/40'
               : shouldRevealOutcome && !question.isCorrect
-              ? 'bg-emerald-500/20 text-emerald-300 border-2 border-emerald-500'
-              : 'bg-white/5 hover:bg-rose-500/20 text-white border border-white/10 hover:border-rose-500/40'
+              ? 'bg-[#FB6C00]/20 text-[#FFDD9C] border-2 border-[#FB6C00]'
+              : 'bg-white/5 hover:bg-[#E73F1E]/20 text-white border border-white/10 hover:border-[#E73F1E]/40'
           }`}
         >
           <span className="tracking-wide">FALSO</span>
           <span className="text-xs font-bold opacity-80">(মিথ্যা)</span>
           {shouldRevealOutcome && !question.isCorrect && (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 sm:ml-1" />
+            <CheckCircle2 className="w-5 h-5 text-[#F9B637] sm:ml-1" />
           )}
           {shouldRevealOutcome && userAnswer === false && question.isCorrect && (
             <XCircle className="w-5 h-5 text-white sm:ml-1" />
@@ -209,12 +209,12 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           <div
             className={`p-3.5 rounded-2xl flex items-center justify-between text-xs sm:text-sm font-black ${
               isCorrect
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                ? 'bg-[#F9B637]/20 text-[#FFDD9C] border border-[#F9B637]/40'
+                : 'bg-[#E73F1E]/20 text-rose-200 border border-[#E73F1E]/40'
             }`}
           >
             <div className="flex items-center gap-2">
-              {isCorrect ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+              {isCorrect ? <CheckCircle2 className="w-5 h-5 text-[#F9B637]" /> : <XCircle className="w-5 h-5 text-[#E73F1E]" />}
               <span>
                 {isCorrect
                   ? '✅ চমৎকার! আপনার উত্তর সঠিক হয়েছে।'
@@ -224,9 +224,9 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           </div>
 
           {/* Explanation in Bengali */}
-          <div className="p-4 rounded-2xl bg-slate-900 border border-emerald-500/20 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-black text-amber-400">
-              <Lightbulb className="w-4 h-4" />
+          <div className="p-4 rounded-2xl bg-[#141012]/95 border border-[#FFDD9C]/20 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-black text-[#F9B637]">
+              <Lightbulb className="w-4 h-4 text-[#F9B637]" />
               <span>কেন {question.isCorrect ? 'VERO (সত্য)' : 'FALSO (মিথ্যা)'}? (সহজ যুক্তি):</span>
             </div>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
@@ -234,11 +234,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             </p>
 
             {question.trapTipBn && (
-              <div className="mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2 text-xs text-amber-300">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="mt-2 p-3 rounded-xl bg-[#E73F1E]/15 border border-[#FB6C00]/30 flex items-start gap-2 text-xs text-[#FFDD9C]">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-[#F9B637]" />
                 <div>
-                  <strong className="font-black block">পরীক্ষার ট্রিক ও পাস করার টেকনিক:</strong>
-                  <span>{question.trapTipBn}</span>
+                  <strong className="font-black block text-[#FFDD9C]">পরীক্ষার ট্রিক ও পাস করার টেকনিক:</strong>
+                  <span className="text-slate-200">{question.trapTipBn}</span>
                 </div>
               </div>
             )}
@@ -254,16 +254,16 @@ export const QuizCard: React.FC<QuizCardProps> = ({
                 {question.vocabulary.map((vocab, vIdx) => (
                   <div
                     key={vIdx}
-                    className="p-2.5 rounded-xl bg-slate-950/80 border border-white/5 flex items-center justify-between gap-2"
+                    className="p-2.5 rounded-xl bg-[#151113]/90 border border-white/5 flex items-center justify-between gap-2"
                   >
                     <div>
                       <span className="text-xs font-black text-white block">{vocab.wordIt}</span>
-                      <span className="text-[11px] text-emerald-400 font-medium">{vocab.meaningBn}</span>
+                      <span className="text-[11px] text-[#F9B637] font-medium">{vocab.meaningBn}</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => speakItalian(vocab.wordIt)}
-                      className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
+                      className="p-1.5 rounded-lg bg-white/5 hover:bg-[#FB6C00]/20 text-slate-400 hover:text-[#FFDD9C] transition cursor-pointer"
                       title="উচ্চারণ"
                     >
                       <Volume2 className="w-3.5 h-3.5" />

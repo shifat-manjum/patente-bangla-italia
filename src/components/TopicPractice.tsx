@@ -49,17 +49,17 @@ export const TopicPractice: React.FC<TopicPracticeProps> = ({ onRecordMistake })
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn">
       {/* Top Banner */}
-      <div className="glass-box rounded-3xl p-6 sm:p-8 space-y-3 relative overflow-hidden">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="glass-box rounded-3xl p-6 sm:p-8 space-y-3 relative overflow-hidden border border-[#FB6C00]/30 shadow-2xl">
+        <div className="absolute -right-16 -top-16 w-80 h-80 bg-[#FB6C00]/15 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400">
-            <BookOpen className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E73F1E]/15 border border-[#FB6C00]/30 text-xs font-black text-[#FFDD9C]">
+            <BookOpen className="w-4 h-4 text-[#F9B637]" />
             <span>অধ্যায়ভিত্তিক অনুশীলন (Studio per Argomento)</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
             টপিকভিত্তিক কুইজ ও বাংলা ব্যাখ্যা
           </h1>
-          <p className="text-slate-400 text-sm max-w-2xl">
+          <p className="text-slate-300 text-sm max-w-2xl leading-relaxed">
             অধ্যায় সিলেক্ট করুন এবং প্রতিটি প্রশ্নের উত্তর দিন। সাথে সাথে সঠিক উত্তর এবং বাংলা ব্যাখ্যা দেখে নিন।
           </p>
         </div>
@@ -76,21 +76,21 @@ export const TopicPractice: React.FC<TopicPracticeProps> = ({ onRecordMistake })
               onClick={() => setSelectedChapterId(chap.id)}
               className={`p-4 rounded-2xl text-left transition-all cursor-pointer border flex flex-col justify-between gap-3 ${
                 isSelected
-                  ? 'glass-box bg-emerald-950/40 border-emerald-500/40 shadow-lg shadow-emerald-500/15'
-                  : 'glass-box hover:bg-white/5 border-white/10'
+                  ? 'glass-box bg-[#FB6C00]/15 border-[#FB6C00]/70 ring-2 ring-[#FFDD9C]/40 shadow-xl shadow-[#FB6C00]/15'
+                  : 'glass-box hover:border-[#FB6C00]/40 hover:bg-[#181316]/80 border-white/10'
               }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
                   {getIcon(chap.icon)}
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-slate-300">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E73F1E]/20 text-[#FFDD9C] border border-[#FB6C00]/30">
                   {chap.questionCount} কুইজ
                 </span>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-400">{chap.titleIt}</h4>
+                <h4 className="text-xs font-bold text-[#F9B637]">{chap.titleIt}</h4>
                 <p className="text-sm font-black text-white mt-0.5">{chap.titleBn}</p>
               </div>
 
@@ -105,11 +105,11 @@ export const TopicPractice: React.FC<TopicPracticeProps> = ({ onRecordMistake })
       {/* Active Chapter Header */}
       <div className="flex items-center justify-between pt-2 border-b border-white/10 pb-4">
         <div>
-          <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider block">
+          <span className="text-xs text-[#F9B637] font-bold uppercase tracking-wider block">
             বর্তমান অধ্যায়:
           </span>
           <h2 className="text-xl font-black text-white">
-            {activeChapter.titleBn} ({activeChapter.titleIt})
+            {activeChapter.titleBn} <span className="text-[#FFDD9C]">({activeChapter.titleIt})</span>
           </h2>
         </div>
         <span className="text-xs text-slate-400">

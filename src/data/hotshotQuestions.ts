@@ -309,3 +309,4 @@ export const HOTSHOT_QUESTIONS: QuizQuestion[] = [
     ]
   }
 ];
+

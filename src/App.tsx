@@ -156,10 +156,11 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950 font-sans relative overflow-x-hidden">
+    <div className="min-h-screen flex flex-col selection:bg-[#fb6c00] selection:text-slate-950 font-sans relative overflow-x-hidden">
       {/* Background ambient lighting */}
-      <div className="fixed top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed bottom-10 right-1/4 w-[500px] h-[500px] bg-rose-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-0 left-1/4 w-96 h-96 bg-[#e73f1e]/15 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed bottom-10 right-1/4 w-[500px] h-[500px] bg-[#fb6c00]/12 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-1/2 left-1/3 w-80 h-80 bg-[#f9b637]/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
       {/* Navigation Header */}
       <Header

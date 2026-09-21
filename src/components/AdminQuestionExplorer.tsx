@@ -88,10 +88,10 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn text-left">
       {/* Top Header & Navigation */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-box p-6 rounded-3xl bg-slate-900/90 border border-emerald-500/30">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-box p-6 rounded-3xl bg-[#141012]/95 border border-[#FB6C00]/30 shadow-2xl">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-black text-emerald-400 mb-2">
-            <Database className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E73F1E]/15 border border-[#FB6C00]/30 text-xs font-black text-[#FFDD9C] mb-2">
+            <Database className="w-3.5 h-3.5 text-[#F9B637]" />
             <span>অ্যাডমিন প্রশ্ন ব্যাংক কন্ট্রোল প্যানেল (Admin Master Explorer)</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
@@ -114,45 +114,45 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
 
       {/* 4 Summary Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
+        <div className="p-4 rounded-2xl bg-[#141012]/90 border border-white/10 space-y-1">
           <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
             <span>সক্রিয় প্রশ্ন (Active)</span>
-            <Layers className="w-4 h-4 text-emerald-400" />
+            <Layers className="w-4 h-4 text-[#FB6C00]" />
           </div>
           <div className="text-2xl font-black text-white">{stats.totalActive}টি</div>
-          <div className="text-[11px] text-emerald-400 font-medium">রাউন্ড ১-৭ ফ্রি কোটা</div>
+          <div className="text-[11px] text-[#F9B637] font-medium">রাউন্ড ১-৭ ফ্রি কোটা</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
+        <div className="p-4 rounded-2xl bg-[#141012]/90 border border-white/10 space-y-1">
           <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
             <span>মোট সরকারি ভাণ্ডার</span>
-            <Database className="w-4 h-4 text-blue-400" />
+            <Database className="w-4 h-4 text-[#FFDD9C]" />
           </div>
-          <div className="text-2xl font-black text-blue-400">৭,১৬৫টি</div>
+          <div className="text-2xl font-black text-[#FFDD9C]">৭,১৬৫টি</div>
           <div className="text-[11px] text-slate-400 font-medium">সম্পূর্ণ অফিশিয়াল ডেটা</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
+        <div className="p-4 rounded-2xl bg-[#141012]/90 border border-white/10 space-y-1">
           <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
             <span>VERO (সত্য) প্রশ্ন</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-[#F9B637]" />
           </div>
-          <div className="text-2xl font-black text-emerald-400">{stats.totalVero}টি</div>
+          <div className="text-2xl font-black text-[#F9B637]">{stats.totalVero}টি</div>
           <div className="text-[11px] text-slate-400 font-medium">{Math.round((stats.totalVero / stats.totalActive) * 100)}% সত্য উত্তর</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-white/10 space-y-1">
+        <div className="p-4 rounded-2xl bg-[#141012]/90 border border-white/10 space-y-1">
           <div className="flex items-center justify-between text-xs text-slate-400 font-bold">
             <span>FALSO (মিথ্যা) প্রশ্ন</span>
-            <XCircle className="w-4 h-4 text-rose-400" />
+            <XCircle className="w-4 h-4 text-[#E73F1E]" />
           </div>
-          <div className="text-2xl font-black text-rose-400">{stats.totalFalso}টি</div>
+          <div className="text-2xl font-black text-[#E73F1E]">{stats.totalFalso}টি</div>
           <div className="text-[11px] text-slate-400 font-medium">{Math.round((stats.totalFalso / stats.totalActive) * 100)}% মিথ্যা উত্তর</div>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="glass-box p-5 rounded-3xl bg-slate-900/90 border border-white/10 space-y-4">
+      <div className="glass-box p-5 rounded-3xl bg-[#141012]/90 border border-[#FFDD9C]/15 space-y-4 shadow-xl">
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {/* Search Input */}
           <div className="relative flex-1 w-full">
@@ -165,7 +165,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                 setCurrentPage(1);
               }}
               placeholder="ইতালিয়ান বা বাংলায় খুঁজুন (যেমন: stop, precedenza, গতিসীমা, পার্কিং, r1_q5)..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-950 border border-white/15 text-white text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#0f0c0e] border border-white/15 text-white text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-[#FB6C00]"
             />
           </div>
 
@@ -177,7 +177,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                 setSelectedRound(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2.5 rounded-2xl bg-slate-950 border border-white/15 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer w-full sm:w-auto"
+              className="px-3 py-2.5 rounded-2xl bg-[#0f0c0e] border border-white/15 text-xs text-white focus:outline-none focus:border-[#FB6C00] cursor-pointer w-full sm:w-auto"
             >
               <option value="all">সব রাউন্ড (২০০টি প্রশ্ন)</option>
               <option value="1">রাউন্ড ১: বিপদ সংকেত (৩০টি)</option>
@@ -196,7 +196,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                 setSelectedAnswerFilter(e.target.value as any);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2.5 rounded-2xl bg-slate-950 border border-white/15 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer w-full sm:w-auto"
+              className="px-3 py-2.5 rounded-2xl bg-[#0f0c0e] border border-white/15 text-xs text-white focus:outline-none focus:border-[#FB6C00] cursor-pointer w-full sm:w-auto"
             >
               <option value="all">সকল উত্তর (Vero + Falso)</option>
               <option value="vero">শুধুমাত্র VERO (সত্য)</option>
@@ -216,7 +216,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                   setOnlyWithImage(e.target.checked);
                   setCurrentPage(1);
                 }}
-                className="w-4 h-4 rounded text-emerald-500 bg-slate-950 border-white/20 focus:ring-0"
+                className="w-4 h-4 rounded text-[#FB6C00] bg-slate-950 border-white/20 focus:ring-0"
               />
               <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
               <span>শুধুমাত্র রোড সাইনযুক্ত প্রশ্ন</span>
@@ -259,8 +259,8 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
               key={q.id}
               className={`p-5 rounded-3xl glass-box border transition-all space-y-4 ${
                 q.isCorrect
-                  ? 'border-emerald-500/20 bg-slate-900/80 hover:border-emerald-500/40'
-                  : 'border-rose-500/20 bg-slate-900/80 hover:border-rose-500/40'
+                  ? 'border-[#F9B637]/30 bg-[#141012]/85 hover:border-[#F9B637]/50'
+                  : 'border-[#E73F1E]/30 bg-[#141012]/85 hover:border-[#E73F1E]/50'
               }`}
             >
               {/* Question Header: ID, Round, Answer badge, Audio */}
@@ -270,11 +270,11 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                     #{globalIndex} ({q.id})
                   </span>
                   {q.roundId && (
-                    <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20">
+                    <span className="px-2.5 py-1 rounded-xl bg-[#E73F1E]/20 text-[#FFDD9C] text-xs font-bold border border-[#FB6C00]/30">
                       রাউন্ড #{q.roundId}
                     </span>
                   )}
-                  <span className="text-xs text-slate-400 font-medium hidden sm:inline">
+                  <span className="text-xs text-slate-300 font-medium hidden sm:inline">
                     {q.chapterTitleBn}
                   </span>
                 </div>
@@ -286,12 +286,12 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                     onClick={() => speakItalian(q.id, q.questionIt)}
                     className={`p-2 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                       isPlaying
-                        ? 'bg-emerald-500 text-slate-950 border-emerald-400 animate-pulse'
+                        ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 border-[#FFDD9C] animate-pulse'
                         : 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/10'
                     }`}
                     title="ইতালিয়ান উচ্চারণ শুনুন"
                   >
-                    <Volume2 className="w-3.5 h-3.5" />
+                    <Volume2 className="w-3.5 h-3.5 text-[#F9B637]" />
                     <span className="hidden sm:inline">উচ্চারণ</span>
                   </button>
 
@@ -299,18 +299,18 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                   <div
                     className={`px-3 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 ${
                       q.isCorrect
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                        ? 'bg-[#F9B637]/20 text-[#FFDD9C] border border-[#F9B637]/40'
+                        : 'bg-[#E73F1E]/20 text-rose-200 border border-[#E73F1E]/40'
                     }`}
                   >
                     {q.isCorrect ? (
                       <>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <CheckCircle2 className="w-4 h-4 text-[#F9B637]" />
                         <span>VERO (সত্য)</span>
                       </>
                     ) : (
                       <>
-                        <XCircle className="w-4 h-4 text-rose-400" />
+                        <XCircle className="w-4 h-4 text-[#E73F1E]" />
                         <span>FALSO (মিথ্যা)</span>
                       </>
                     )}
@@ -322,7 +322,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                 {/* Road Sign Image (if present) */}
                 {(q.image || q.signCode) && (
-                  <div className="md:col-span-3 flex items-center justify-center p-3 rounded-2xl bg-slate-950/80 border border-white/10">
+                  <div className="md:col-span-3 flex items-center justify-center p-3 rounded-2xl bg-[#0f0c0e]/90 border border-white/10">
                     <RoadSign code={q.signCode || String(q.image)} size={95} />
                   </div>
                 )}
@@ -330,8 +330,8 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                 {/* Question Texts */}
                 <div className={`${(q.image || q.signCode) ? 'md:col-span-9' : 'md:col-span-12'} space-y-3`}>
                   {/* Italian Text */}
-                  <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/10 space-y-1">
-                    <div className="text-[10px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                  <div className="p-3.5 rounded-2xl bg-[#0f0c0e]/80 border border-white/10 space-y-1">
+                    <div className="text-[10px] font-black text-[#F9B637] uppercase tracking-wider flex items-center gap-1">
                       <span>🇮🇹</span>
                       <span>অফিসিয়াল ইতালিয়ান প্রশ্ন:</span>
                     </div>
@@ -341,12 +341,12 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                   </div>
 
                   {/* Bengali Translation */}
-                  <div className="p-3.5 rounded-2xl bg-blue-950/30 border border-blue-500/30 space-y-1">
-                    <div className="text-[10px] font-black text-blue-300 uppercase tracking-wider flex items-center gap-1">
+                  <div className="p-3.5 rounded-2xl bg-[#1a1415]/70 border border-[#FB6C00]/25 space-y-1">
+                    <div className="text-[10px] font-black text-[#FFDD9C] uppercase tracking-wider flex items-center gap-1">
                       <span>🇧🇩</span>
                       <span>সহজ বাংলা অনুবাদ:</span>
                     </div>
-                    <p className="text-xs sm:text-sm font-semibold text-blue-100 leading-relaxed">
+                    <p className="text-xs sm:text-sm font-semibold text-slate-200 leading-relaxed">
                       {q.questionBn}
                     </p>
                   </div>
@@ -354,8 +354,8 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
               </div>
 
               {/* Explanation & Trap Tips */}
-              <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-emerald-500/20 space-y-2 text-xs">
-                <div className="flex items-center gap-1.5 text-amber-400 font-black">
+              <div className="p-3.5 rounded-2xl bg-[#0f0c0e]/90 border border-[#FFDD9C]/15 space-y-2 text-xs">
+                <div className="flex items-center gap-1.5 text-[#F9B637] font-black">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>কেন {q.isCorrect ? 'VERO (সত্য)' : 'FALSO (মিথ্যা)'}? (যুক্তি ও ব্যাখ্যা):</span>
                 </div>
@@ -364,7 +364,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                 </p>
 
                 {q.trapTipBn && (
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-medium">
+                  <div className="p-2.5 rounded-xl bg-[#E73F1E]/15 border border-[#FB6C00]/30 text-[#FFDD9C] text-[11px] font-medium">
                     ⚠️ <strong>পরীক্ষার ফাঁদ শব্দ (Trap Tip):</strong> {q.trapTipBn}
                   </div>
                 )}
@@ -378,7 +378,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                         key={vIdx}
                         className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/10 text-[11px] text-slate-300"
                       >
-                        <strong>{v.wordIt}</strong>: {v.meaningBn}
+                        <strong className="text-white">{v.wordIt}</strong>: <span className="text-[#F9B637]">{v.meaningBn}</span>
                       </span>
                     ))}
                   </div>
@@ -389,7 +389,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
         })}
 
         {paginatedQuestions.length === 0 && (
-          <div className="glass-box p-12 rounded-3xl text-center space-y-3">
+          <div className="glass-box p-12 rounded-3xl text-center space-y-3 border border-white/10">
             <Search className="w-10 h-10 text-slate-500 mx-auto" />
             <h3 className="text-base font-bold text-white">কোনো প্রশ্ন পাওয়া যায়নি</h3>
             <p className="text-xs text-slate-400">
@@ -401,7 +401,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="glass-box p-4 rounded-3xl flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="glass-box p-4 rounded-3xl flex flex-wrap items-center justify-between gap-3 text-xs border border-[#FFDD9C]/15">
           <span className="text-slate-400">
             পৃষ্ঠা <strong className="text-white">{currentPage}</strong> / {totalPages} (মোট {filteredQuestions.length}টি প্রশ্ন)
           </span>
@@ -423,7 +423,7 @@ export const AdminQuestionExplorer: React.FC<AdminQuestionExplorerProps> = ({ on
                 onClick={() => setCurrentPage(pageNum)}
                 className={`w-8 h-8 rounded-xl font-black text-xs transition cursor-pointer ${
                   currentPage === pageNum
-                    ? 'bg-emerald-500 text-slate-950 font-black'
+                    ? 'bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-slate-950 font-black'
                     : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
                 }`}
               >
