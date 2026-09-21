@@ -24,151 +24,35 @@ export interface RoundInfo {
 
 // Generate the 240 rounds structure with bilingual badges & balanced titles
 export const ALL_ROUNDS: RoundInfo[] = [
-  {
-    id: 1,
-    titleBn: 'রাউন্ড ১: বিপদজনক ট্রাফিক সংকেত',
-    titleIt: 'Round 1: Segnali di Pericolo Base',
-    topicBadgeBn: '⚠️ সংকেত',
-    topicBadgeIt: 'Segnali di Pericolo',
-    questionsCount: 30,
-    isFree: true,
-  },
-  {
-    id: 2,
-    titleBn: 'রাউন্ড ২: স্টপ ও ডানদিকের অগ্রাধিকার',
-    titleIt: 'Round 2: Precedenze e Regola STOP',
-    topicBadgeBn: '🛑 অগ্রাধিকার',
-    topicBadgeIt: 'Precedenze e Incroci',
-    questionsCount: 30,
-    isFree: true,
-  },
-  {
-    id: 3,
-    titleBn: 'রাউন্ড ৩: গতিসীমা ও ব্রেকিং দূরত্ব',
-    titleIt: 'Round 3: Limiti di Velocità e Frenata',
-    topicBadgeBn: '⭕ গতিসীমা',
-    topicBadgeIt: 'Limiti di Velocità',
-    questionsCount: 30,
-    isFree: true,
-  },
-  {
-    id: 4,
-    titleBn: 'রাউন্ড ৪: পার্কিং ও সাময়িক থামা',
-    titleIt: 'Round 4: Norme di Sosta e Fermata',
-    topicBadgeBn: '🚫 পার্কিং',
-    topicBadgeIt: 'Sosta e Fermata',
-    questionsCount: 30,
-    isFree: true,
-  },
-  {
-    id: 5,
-    titleBn: 'রাউন্ড ৫: ওভারটেকিং ও বাঁকের নিয়ম',
-    titleIt: 'Round 5: Sorpasso in Curva e Dosso',
-    topicBadgeBn: '⛔ ওভারটেক',
-    topicBadgeIt: 'Regole sul Sorpasso',
-    questionsCount: 30,
-    isFree: true,
-  },
-  {
-    id: 6,
-    titleBn: 'রাউন্ড ৬: গোলচত্বর ও ট্রাম অগ্রাধিকার',
-    titleIt: 'Round 6: Rotatorie, Tram e Binari',
-    topicBadgeBn: '🚊 ট্রাম ও মোড়',
-    topicBadgeIt: 'Rotatorie e Tram',
-    questionsCount: 30,
-    isFree: true,
-  },
-  {
-    id: 7,
-    titleBn: 'রাউন্ড ৭: ফ্রি ট্রায়াল ফাইনাল টেস্ট (২০০ প্রশ্ন)',
-    titleIt: 'Round 7: Test di Sbarramento Finale',
-    topicBadgeBn: '🎯 ফাইনাল মক',
-    topicBadgeIt: 'Esame di Prova',
-    questionsCount: 20,
-    isFree: true,
-  },
+  { id: 1, titleBn: 'রাউন্ড ১: বিপদজনক ট্রাফিক সংকেত', titleIt: 'Round 1: Segnali di Pericolo Base', topicBadgeBn: '⚠️ সংকেত', topicBadgeIt: 'Segnali di Pericolo', questionsCount: 30, isFree: true },
+  { id: 2, titleBn: 'রাউন্ড ২: স্টপ ও ডানদিকের অগ্রাধিকার', titleIt: 'Round 2: Precedenze e Regola STOP', topicBadgeBn: '🛑 অগ্রাধিকার', topicBadgeIt: 'Precedenze e Incroci', questionsCount: 30, isFree: true },
+  { id: 3, titleBn: 'রাউন্ড ৩: গতিসীমা ও ব্রেকিং দূরত্ব', titleIt: 'Round 3: Limiti di Velocità e Frenata', topicBadgeBn: '⭕ গতিসীমা', topicBadgeIt: 'Limiti di Velocità', questionsCount: 30, isFree: true },
+  { id: 4, titleBn: 'রাউন্ড ৪: পার্কিং ও সাময়িক থামা', titleIt: 'Round 4: Norme di Sosta e Fermata', topicBadgeBn: '🚫 পার্কিং', topicBadgeIt: 'Sosta e Fermata', questionsCount: 30, isFree: true },
+  { id: 5, titleBn: 'রাউন্ড ৫: ওভারটেকিং ও বাঁকের নিয়ম', titleIt: 'Round 5: Sorpasso in Curva e Dosso', topicBadgeBn: '⛔ ওভারটেক', topicBadgeIt: 'Regole sul Sorpasso', questionsCount: 30, isFree: true },
+  { id: 6, titleBn: 'রাউন্ড ৬: গোলচত্বর ও ট্রাম অগ্রাধিকার', titleIt: 'Round 6: Rotatorie, Tram e Binari', topicBadgeBn: '🚊 ট্রাম ও মোড়', topicBadgeIt: 'Rotatorie e Tram', questionsCount: 30, isFree: true },
+  { id: 7, titleBn: 'রাউন্ড ৭: বাধ্যতামূলক ট্রাফিক সংকেত', titleIt: 'Round 7: Segnali di Obbligo Ministeriali', topicBadgeBn: '🔵 সংকেত', topicBadgeIt: 'Segnali di Obbligo', questionsCount: 30, isFree: true },
+  { id: 8, titleBn: 'রাউন্ড ৮: নিষেধাজ্ঞামূলক ট্রাফিক সংকেত', titleIt: 'Round 8: Segnali di Divieto Ministeriali', topicBadgeBn: '🔴 নিষেধাজ্ঞা', topicBadgeIt: 'Segnali di Divieto', questionsCount: 30, isFree: true },
+  { id: 9, titleBn: 'রাউন্ড ৯: হাইওয়ে (Autostrada) নিয়মাবলি', titleIt: 'Round 9: Circolazione su Autostrade', topicBadgeBn: '🛣️ হাইওয়ে', topicBadgeIt: 'Autostrade e Tangenziali', questionsCount: 30, isFree: true },
+  { id: 10, titleBn: 'রাউন্ড ১০: হেডলাইট ও দৃশ্যমানতার নিয়ম', titleIt: 'Round 10: Uso dei Fari e Visibilità', topicBadgeBn: '💡 বাতি ও লাইট', topicBadgeIt: 'Uso dei Fari e Luci', questionsCount: 30, isFree: true },
+  { id: 11, titleBn: 'রাউন্ড ১১: অ্যালকোহল, ড্রাগস ও ফিটনেস', titleIt: 'Round 11: Guida in Stato di Ebbrezza e Punti', topicBadgeBn: '🍷 অ্যালকোহল ও পয়েন্ট', topicBadgeIt: 'Alcol, Droga e Punti', questionsCount: 30, isFree: true },
+  { id: 12, titleBn: 'রাউন্ড ১২: প্রাথমিক চিকিৎসা ও দুর্ঘটনা', titleIt: 'Round 12: Primo Soccorso Stradale e Urgenze', topicBadgeBn: '🚑 ফার্স্ট এইড', topicBadgeIt: 'Primo Soccorso', questionsCount: 30, isFree: true },
+  { id: 13, titleBn: 'রাউন্ড ১৩: গাড়ির ইঞ্জিন, ব্রেক ও মেকানিক্স', titleIt: 'Round 13: Meccanica, Motore e Freni', topicBadgeBn: '⚙️ যন্ত্রাংশ ও ব্রেক', topicBadgeIt: 'Motore, Freni e Gomme', questionsCount: 30, isFree: true },
+  { id: 14, titleBn: 'রাউন্ড ১৪: ট্রাফিক মোড়ে গাড়ির ক্রসিং ক্রম', titleIt: 'Round 14: Ordine di Precedenza agli Incroci', topicBadgeBn: '🚸 মোড়ের ক্রম', topicBadgeIt: 'Incroci e Precedenze', questionsCount: 30, isFree: true },
+  { id: 15, titleBn: 'রাউন্ড ১৫: পরিবেশবান্ধব ও নিরাপদ ড্রাইভিং', titleIt: 'Round 15: Guida Ecologica e Sicurezza Attiva', topicBadgeBn: '🌿 পরিবেশ ও জ্বালানি', topicBadgeIt: 'Ambiente ed Ecoguida', questionsCount: 30, isFree: true },
+  { id: 16, titleBn: 'রাউন্ড ১৬: রাস্তার দাগ ও ট্রাফিক লাইট', titleIt: 'Round 16: Segnaletica Orizzontale e Semafori', topicBadgeBn: '🚦 ট্রাফিক লাইট ও দাগ', topicBadgeIt: 'Strisce e Semafori', questionsCount: 30, isFree: true },
+  { id: 17, titleBn: 'রাউন্ড ১৭: সম্পূরক সাইনবোর্ড ও ফলক', titleIt: 'Round 17: Pannelli Integrativi dei Segnali', topicBadgeBn: '📋 সম্পূরক ফলক', topicBadgeIt: 'Pannelli Integrativi', questionsCount: 30, isFree: true },
+  { id: 18, titleBn: 'রাউন্ড ১৮: সিটবেল্ট, এয়ারব্যাগ ও হেলমেট', titleIt: 'Round 18: Cinture di Sicurezza, Airbag e Casco', topicBadgeBn: '🛡️ সিটবেল্ট ও হেলমেট', topicBadgeIt: 'Cinture e Casco', questionsCount: 30, isFree: true },
+  { id: 19, titleBn: 'রাউন্ড ১৯: ড্রাইভিং লাইসেন্স ক্যাটাগরি ও বয়স', titleIt: 'Round 19: Patenti di Guida, Categorie ed Età', topicBadgeBn: '🪪 লাইসেন্স ও ক্যাটাগরি', topicBadgeIt: 'Patenti e Documenti', questionsCount: 30, isFree: true },
+  { id: 20, titleBn: 'রাউন্ড ২০: ফ্রি স্টাডি গ্র্যান্ড ফাইনাল মক টেস্ট', titleIt: 'Round 20: Test di Sbarramento Finale (20 Round)', topicBadgeBn: '🎓 গ্র্যান্ড ফাইনাল মক', topicBadgeIt: 'Simulazione Ufficiale 30Q', questionsCount: 30, isFree: true },
 
-  // VIP Rounds (Rounds 8 to 240)
+  // Pro Student Pass Rounds (Rounds 21 to 240)
   {
-    id: 8,
-    titleBn: 'রাউন্ড ৮: বাধ্যতামূলক ট্রাফিক সংকেত',
-    titleIt: 'Round 8: Segnali di Obbligo Ministeriali',
-    topicBadgeBn: '🔵 সংকেত',
-    topicBadgeIt: 'Segnali di Obbligo',
-    questionsCount: 30,
-    isFree: false,
-  },
-  {
-    id: 9,
-    titleBn: 'রাউন্ড ৯: হাইওয়ে (Autostrada) নিয়মাবলি',
-    titleIt: 'Round 9: Circolazione su Autostrade',
-    topicBadgeBn: '🛣️ হাইওয়ে',
-    topicBadgeIt: 'Autostrade e Tangenziali',
-    questionsCount: 30,
-    isFree: false,
-  },
-  {
-    id: 10,
-    titleBn: 'রাউন্ড ১০: হেডলাইট ও কুয়াশার বাতির ব্যবহার',
-    titleIt: 'Round 10: Uso dei Fari e Visibilità',
-    topicBadgeBn: '💡 বাতি ও দৃশ্যমানতা',
-    topicBadgeIt: 'Uso dei Fari e Dispositivi',
-    questionsCount: 30,
-    isFree: false,
-  },
-  {
-    id: 11,
-    titleBn: 'রাউন্ড ১১: অ্যালকোহল, ড্রাগস ও জরিমানা',
-    titleIt: 'Round 11: Guida in Stato di Ebbrezza e Punti',
-    topicBadgeBn: '🍷 জরিমানা ও পয়েন্ট',
-    topicBadgeIt: 'Alcol, Droga e Punti Patente',
-    questionsCount: 30,
-    isFree: false,
-  },
-  {
-    id: 12,
-    titleBn: 'রাউন্ড ১২: প্রাথমিক চিকিৎসা ও দুর্ঘটনা',
-    titleIt: 'Round 12: Primo Soccorso Stradale e Urgenze',
-    topicBadgeBn: '🚑 ফার্স্ট এইড',
-    topicBadgeIt: 'Primo Soccorso e Emergenze',
-    questionsCount: 30,
-    isFree: false,
-  },
-  {
-    id: 13,
-    titleBn: 'রাউন্ড ১৩: গাড়ির ইঞ্জিন ও যান্ত্রিক পার্টস',
-    titleIt: 'Round 13: Meccanica, Motore e Freni',
-    topicBadgeBn: '⚙️ যান্ত্রিক পার্টস',
-    topicBadgeIt: 'Dispositivi del Veicolo',
-    questionsCount: 30,
-    isFree: false,
-  },
-  {
-    id: 14,
-    titleBn: 'রাউন্ড ১৪: ট্রাফিক মোড়ে গাড়ির ক্রসিং ক্রম',
-    titleIt: 'Round 14: Ordine di Precedenza agli Incroci',
-    topicBadgeBn: '🚸 মোড়ের ক্রম',
-    topicBadgeIt: 'Incroci Complessi',
-    questionsCount: 30,
-    isFree: false,
-  },
-  {
-    id: 15,
-    titleBn: 'রাউন্ড ১৫: পরিবেশবান্ধব ও নিরাপদ ড্রাইভিং',
-    titleIt: 'Round 15: Guida Ecologica e Sicurezza Attiva',
-    topicBadgeBn: '🌿 পরিবেশ ও সুরক্ষা',
-    topicBadgeIt: 'Ambiente e Inquinamento',
-    questionsCount: 30,
-    isFree: false,
-  },
-  // Full database simulation for rounds 16 to 240
-  {
-    id: 16,
-    titleBn: 'রাউন্ড ১৬ - ২৪০: সম্পূর্ণ ২৩৫টি ফুল মক টেস্ট',
-    titleIt: 'Round 16 - 240: Tutti i 7.100+ Quiz Ministeriali',
-    topicBadgeBn: '👑 সম্পূর্ণ কুইজ ব্যাংক',
+    id: 21,
+    titleBn: 'রাউন্ড ২১ - ২৪০: সম্পূর্ণ ২২০টি ফুল থিওরি ও কুইজ ব্যাংক',
+    titleIt: 'Round 21 - 240: Tutti i 7.100+ Quiz Ministeriali Ufficiali',
+    topicBadgeBn: '⭐ প্রো স্টুডেন্ট পাস',
     topicBadgeIt: 'Tutti i 240 Round Ufficiali',
-    questionsCount: 6800,
+    questionsCount: 6565,
     isFree: false,
   },
 ];
@@ -213,32 +97,32 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
             <div className="flex items-center justify-between text-xs font-bold">
               <span className="text-slate-500">ফ্রি ট্রায়াল কোটা:</span>
               <span className="text-[#FB6C00] font-mono text-sm font-black">
-                {Math.min(200, totalQuestionsAnswered)} / 200 প্রশ্ন
+                {Math.min(600, totalQuestionsAnswered)} / 600 প্রশ্ন
               </span>
             </div>
             <div className="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#FB6C00] to-[#F9B637] transition-all duration-500 rounded-full"
-                style={{ width: `${Math.min(100, (totalQuestionsAnswered / 200) * 100)}%` }}
+                style={{ width: `${Math.min(100, (totalQuestionsAnswered / 600) * 100)}%` }}
               />
             </div>
-            {!isVip && totalQuestionsAnswered >= 200 ? (
+            {!isVip && totalQuestionsAnswered >= 600 ? (
               <button
                 type="button"
                 onClick={onOpenPaywall}
                 className="w-full py-2.5 px-3 rounded-xl bg-[#FB6C00] text-white font-black text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:bg-orange-600"
               >
                 <Sparkles className="w-4 h-4 fill-current" />
-                <span>VIP আনলক করুন (€49)</span>
+                <span>Pro Student Pass (€49)</span>
               </button>
             ) : isVip ? (
               <div className="text-xs font-black text-emerald-700 flex items-center justify-center gap-1.5 py-1 bg-emerald-50 rounded-xl border border-emerald-200">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>লাইফটাইম VIP মেম্বার আনলকড</span>
+                <span>প্রো স্টুডেন্ট পাস সক্রিয় (Pro Student)</span>
               </div>
             ) : (
               <p className="text-[11px] text-slate-500 text-center">
-                ২০০ প্রশ্ন পর্যন্ত সম্পূর্ণ ফ্রি ট্রায়াল সুযোগ
+                ২০টি রাউন্ড (৬০০ প্রশ্ন) সম্পূর্ণ বিনামূল্যে ট্রায়াল
               </p>
             )}
           </div>
@@ -320,7 +204,7 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                     ) : (
                       <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
                         <Lock className="w-3.5 h-3.5 text-slate-400" />
-                        <span>লক করা (VIP)</span>
+                        <span>লক করা (Pro Student Pass)</span>
                       </span>
                     )}
                   </div>
@@ -354,9 +238,9 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                     {round.isFree ? (
                       <span className="text-emerald-700 font-bold">বিনামূল্যে ট্রায়াল</span>
                     ) : isVip ? (
-                      <span className="text-orange-700 font-bold">VIP সক্রিয়</span>
+                      <span className="text-orange-700 font-bold">Pro Student পাস সক্রিয়</span>
                     ) : (
-                      <span className="text-slate-500">VIP মেম্বারশিপ প্রয়োজন</span>
+                      <span className="text-slate-500">Pro Student Pass প্রয়োজন</span>
                     )}
                   </span>
 

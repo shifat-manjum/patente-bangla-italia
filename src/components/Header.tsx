@@ -1,5 +1,8 @@
 import React from 'react';
-import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, Sparkles, ShieldCheck, Info, Flame } from 'lucide-react';
+import { Award, BookOpen, AlertCircle, BookmarkCheck, MapPin, ShieldCheck, Info, Flame, GraduationCap } from 'lucide-react';
+import { ThemeSwitcher } from './ThemeSwitcher';
+import type { ThemeMode } from './ThemeSwitcher';
+import { StudyMusicPlayer } from './StudyMusicPlayer';
 
 export type NavTab = 'rounds' | 'exam' | 'hotshot' | 'topics' | 'vocab' | 'mistakes' | 'admin';
 
@@ -11,6 +14,8 @@ interface HeaderProps {
   isVip: boolean;
   onOpenPaywall: () => void;
   onOpenAbout: () => void;
+  currentTheme: ThemeMode;
+  onThemeChange: (theme: ThemeMode) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,65 +26,76 @@ export const Header: React.FC<HeaderProps> = ({
   isVip,
   onOpenPaywall,
   onOpenAbout,
+  currentTheme,
+  onThemeChange,
 }) => {
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-3">
         {/* Top Line: Brand & VIP Upgrade Action */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E73F1E] via-[#FB6C00] to-[#F9B637] p-0.5 shadow-md shadow-orange-500/20 shrink-0">
-              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-sm font-black text-slate-900 shadow-inner">
+              <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center text-sm font-black text-slate-900 dark:text-white shadow-inner">
                 🇮🇹🇧🇩
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900">
+                <span className="font-black text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">
                   Patente<span className="text-[#FB6C00]">Bangla</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-orange-50 text-[#FB6C00] border border-orange-200">
+                <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-orange-50 dark:bg-orange-950/50 text-[#FB6C00] border border-orange-200 dark:border-orange-800">
                   AUTOSCUOLA 2026
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium hidden sm:block">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
                 ইতালিয়ান ড্রাইভিং লাইসেন্স স্কুল কুইজ • সহজ বাংলা ব্যাখ্যা ও অডিও
               </p>
             </div>
           </div>
 
-          {/* Right Status / Paywall / About Us Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right Status / Theme / Music / Student Pass Action Buttons */}
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap justify-end">
+            {/* 3-Way Theme Switcher (Light / Reader / Dark) */}
+            <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
+
+            {/* Study Ambient Concentration Music */}
+            <StudyMusicPlayer />
+
+            {/* About Us */}
             <button
               type="button"
               onClick={onOpenAbout}
-              className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
-              title="আমাদের সম্পর্কে ও প্রতিষ্ঠাতা"
+              className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              title="About Us & Founder"
             >
               <Info className="w-3.5 h-3.5 text-[#FB6C00]" />
-              <span className="hidden sm:inline">পরিচিতি</span>
+              <span className="hidden lg:inline">About</span>
             </button>
+
+            {/* Pro Student Pass CTA */}
             {!isVip ? (
               <div className="flex items-center gap-2">
                 <div className="text-right hidden sm:block">
-                  <span className="text-[10px] text-slate-500 block font-bold">ফ্রি ট্রায়াল কোটা</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">Free Round Quota</span>
                   <span className="text-xs font-black text-[#FB6C00]">
-                    {Math.min(200, totalQuestionsAnswered)} / 200 প্রশ্ন
+                    {Math.min(600, totalQuestionsAnswered)} / 600 Qs
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={onOpenPaywall}
-                  className="py-1.5 px-3 rounded-xl bg-gradient-to-r from-[#FB6C00] to-[#F9B637] text-white font-black text-xs shadow-md shadow-orange-500/20 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5"
+                  className="py-1.5 px-3 rounded-xl bg-[#FB6C00] hover:bg-orange-600 text-white font-black text-xs shadow-md shadow-orange-500/20 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5"
                 >
-                  <Sparkles className="w-3.5 h-3.5 fill-current text-white" />
-                  <span>VIP আনলক (€49)</span>
+                  <GraduationCap className="w-3.5 h-3.5 text-white" />
+                  <span>Pro Student Pass (€49)</span>
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-black">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>VIP আনলকড (৭,১০০+ প্রশ্ন)</span>
+                <span>Pro Pass Active (7,165 Qs)</span>
               </div>
             )}
           </div>

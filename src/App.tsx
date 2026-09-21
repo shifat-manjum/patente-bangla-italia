@@ -10,12 +10,50 @@ import { HotshotExam } from './components/HotshotExam';
 import { VipPaywallModal } from './components/VipPaywallModal';
 import { AboutModal } from './components/AboutModal';
 import { AdminQuestionExplorer } from './components/AdminQuestionExplorer';
+import { StudentLeadModal } from './components/StudentLeadModal';
+import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('rounds');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+
+  // Theme State: 'light' | 'sepia' | 'dark'
+  const [currentTheme, setCurrentTheme] = useState<ThemeMode>(() => {
+    try {
+      const saved = localStorage.getItem('patente_bangla_theme') as ThemeMode;
+      if (saved === 'light' || saved === 'sepia' || saved === 'dark') {
+        return saved;
+      }
+    } catch {}
+    return 'light';
+  });
+
+  // Sync theme with HTML document class
+  useEffect(() => {
+    try {
+      localStorage.setItem('patente_bangla_theme', currentTheme);
+    } catch {}
+    const root = document.documentElement;
+    root.classList.remove('dark', 'theme-sepia');
+    if (currentTheme === 'dark') {
+      root.classList.add('dark');
+    } else if (currentTheme === 'sepia') {
+      root.classList.add('theme-sepia');
+    }
+  }, [currentTheme]);
+
+  // Student Lead Registration State
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [studentLead, setStudentLead] = useState<{ name: string; email: string; phone: string } | null>(() => {
+    try {
+      const saved = localStorage.getItem('patente_bangla_student_lead');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // Auto-detect #admin or ?admin=true
   useEffect(() => {
@@ -106,9 +144,13 @@ export function App() {
   const incrementAnsweredCount = (amount: number = 1) => {
     setTotalQuestionsAnswered((prev) => {
       const updated = prev + amount;
-      // If student hits 200 questions and is not VIP, trigger paywall!
-      if (!isVip && prev < 200 && updated >= 200) {
+      // If student hits 600 questions and is not VIP, trigger paywall!
+      if (!isVip && prev < 600 && updated >= 600) {
         setIsPaywallOpen(true);
+      }
+      // Prompt registration after first 60 questions (round 2) if not registered yet
+      if (!studentLead && prev < 60 && updated >= 60) {
+        setIsLeadModalOpen(true);
       }
       return updated;
     });
@@ -139,8 +181,8 @@ export function App() {
   const [currentRoundId, setCurrentRoundId] = useState<number | null>(null);
 
   const handleStartRound = (roundId: number) => {
-    // If round is not free and user is not VIP, show paywall!
-    if (roundId >= 8 && !isVip) {
+    // If round is not free (round > 20) and user is not VIP, show paywall!
+    if (roundId > 20 && !isVip) {
       setIsPaywallOpen(true);
       return;
     }
@@ -152,7 +194,7 @@ export function App() {
   const handleUnlockVip = () => {
     setIsVip(true);
     setIsPaywallOpen(false);
-    alert('🎉 অভিনন্দন! আপনার €49 লাইফটাইম VIP মেম্বারশিপ সক্রিয় হয়েছে। সম্পূর্ণ ২৪০টি রাউন্ড এবং ৭,১০০+ প্রশ্ন আনলক করা হয়েছে!');
+    alert('🎉 অভিনন্দন! আপনার €49 লাইফটাইম Pro Student Pass সক্রিয় হয়েছে। সম্পূর্ণ ২৪০টি রাউন্ড এবং ৭,১০০+ প্রশ্ন আনলক করা হয়েছে!');
   };
 
   return (
@@ -176,6 +218,8 @@ export function App() {
         isVip={isVip}
         onOpenPaywall={() => setIsPaywallOpen(true)}
         onOpenAbout={() => setIsAboutOpen(true)}
+        currentTheme={currentTheme}
+        onThemeChange={setCurrentTheme}
       />
 
       {/* Main Content */}
@@ -239,12 +283,24 @@ export function App() {
         )}
       </main>
 
-      {/* VIP Paywall Modal */}
+      {/* Pro Student Pass Modal */}
       <VipPaywallModal
         isOpen={isPaywallOpen}
         onClose={() => setIsPaywallOpen(false)}
         onUnlockVip={handleUnlockVip}
         questionsAnsweredCount={totalQuestionsAnswered}
+      />
+
+      {/* Student Lead Registration Modal */}
+      <StudentLeadModal
+        isOpen={isLeadModalOpen}
+        onClose={() => setIsLeadModalOpen(false)}
+        onSaveLead={(data) => {
+          try {
+            localStorage.setItem('patente_bangla_student_lead', JSON.stringify(data));
+          } catch {}
+          setStudentLead(data);
+        }}
       />
 
       {/* About Us Modal (Shifat Manjum & Zentixx Story) */}

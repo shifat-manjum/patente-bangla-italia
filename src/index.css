@@ -33,3 +33,66 @@
   border-color: #CBD5E1;
 }
 
+/* Sepia Reader Theme Mode */
+html.theme-sepia,
+body.theme-sepia,
+.theme-sepia {
+  background-color: #FBF0D9 !important;
+  color: #432818 !important;
+}
+
+.theme-sepia .bg-white {
+  background-color: #FDF6E9 !important;
+}
+
+.theme-sepia .bg-slate-50,
+.theme-sepia .bg-slate-100 {
+  background-color: #F6EAD0 !important;
+}
+
+.theme-sepia .border-slate-200,
+.theme-sepia .border-slate-100 {
+  border-color: #E6D4B7 !important;
+}
+
+.theme-sepia .text-slate-900,
+.theme-sepia .text-slate-800 {
+  color: #38200F !important;
+}
+
+.theme-sepia .text-slate-600,
+.theme-sepia .text-slate-500 {
+  color: #6C584C !important;
+}
+
+/* Dark Theme Overrides */
+html.dark,
+body.dark,
+.dark {
+  background-color: #0B1120 !important;
+  color: #E2E8F0 !important;
+}
+
+.dark .bg-white {
+  background-color: #1E293B !important;
+}
+
+.dark .bg-slate-50 {
+  background-color: #0F172A !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-100 {
+  border-color: #334155 !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800 {
+  color: #F8FAFC !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
