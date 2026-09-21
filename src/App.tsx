@@ -13,6 +13,11 @@ import { AdminQuestionExplorer } from './components/AdminQuestionExplorer';
 import { StudentLeadModal } from './components/StudentLeadModal';
 import { StudentAuthModal } from './components/StudentAuthModal';
 import type { StudentUser } from './components/StudentAuthModal';
+import {
+  subscribeToAuthChanges,
+  logoutStudent,
+  syncStudentProgressToCloud,
+} from './services/studentService';
 import { PatenteChatbot } from './components/PatenteChatbot';
 import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
@@ -47,7 +52,7 @@ export function App() {
     }
   }, [currentTheme]);
 
-  // Current Student User State (Mandatory login system)
+  // Current Student User State (Mandatory login system + Firebase Backend)
   const [currentUser, setCurrentUser] = useState<StudentUser | null>(() => {
     try {
       const saved = localStorage.getItem('patente_student_user');
@@ -59,10 +64,34 @@ export function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authForcedMessage, setAuthForcedMessage] = useState('');
 
-  const handleLogout = () => {
-    try {
-      localStorage.removeItem('patente_student_user');
-    } catch {}
+  // Subscribe to real-time Firebase Authentication & Firestore Profile
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((profile) => {
+      if (profile) {
+        setCurrentUser(profile);
+        if (profile.unlockedRound) {
+          setUnlockedRound((prev) => Math.max(prev, profile.unlockedRound));
+        }
+        if (profile.totalQuestionsAnswered) {
+          setTotalQuestionsAnswered((prev) => Math.max(prev, profile.totalQuestionsAnswered));
+        }
+        if (profile.completedRounds && Object.keys(profile.completedRounds).length > 0) {
+          setCompletedRounds((prev) => ({ ...prev, ...profile.completedRounds }));
+        }
+        if (profile.mistakeIds && profile.mistakeIds.length > 0) {
+          setMistakeIds((prev) => Array.from(new Set([...prev, ...profile.mistakeIds])));
+        }
+        if (profile.isVip) {
+          setIsVip(true);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await logoutStudent();
     setCurrentUser(null);
   };
 
@@ -171,6 +200,19 @@ export function App() {
   useEffect(() => {
     localStorage.setItem('patente_bangla_mistakes', JSON.stringify(mistakeIds));
   }, [mistakeIds]);
+
+  // Sync student progress to Cloud Firestore whenever progress changes
+  useEffect(() => {
+    if (currentUser?.uid) {
+      syncStudentProgressToCloud(currentUser.uid, {
+        unlockedRound,
+        totalQuestionsAnswered,
+        completedRounds,
+        mistakeIds,
+        isVip,
+      });
+    }
+  }, [unlockedRound, totalQuestionsAnswered, completedRounds, mistakeIds, isVip, currentUser?.uid]);
 
   const incrementAnsweredCount = (amount: number = 1) => {
     setTotalQuestionsAnswered((prev) => {
