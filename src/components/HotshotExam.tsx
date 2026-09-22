@@ -191,10 +191,7 @@ export const HotshotExam: React.FC<HotshotExamProps> = ({ onRecordMistake }) => 
           </div>
 
           {/* Bengali Question */}
-          <div className="p-4 sm:p-5 rounded-xl bg-amber-50/50 border border-amber-200/70 space-y-1">
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-800">
-              বাংলা ভাবার্থ:
-            </span>
+          <div className="p-4 sm:p-5 rounded-xl bg-amber-50/50 border border-amber-200/70">
             <p className="text-base sm:text-lg font-bold text-slate-800 leading-relaxed">
               {getBanglaTranslation(currentQ.questionIt, currentQ.questionBn)}
             </p>

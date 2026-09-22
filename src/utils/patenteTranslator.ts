@@ -1,7 +1,7 @@
 // Intelligent Italian-to-Bangla translator for Patente B Ministerial Questions
 
 // Dictionary of Italian Patente terms and phrases to Bengali
-const PHRASE_DICTIONARY: Array<[RegExp, string]> = [
+export const PHRASE_DICTIONARY: Array<[RegExp, string]> = [
   // Signal starters
   [/^Il segnale raffigurato preannuncia una fermata di autobus/i, 'ছবিতে প্রদর্শিত সংকেতটি একটি বাস স্টপের পূর্বাভাস দেয়'],
   [/^Il segnale raffigurato indica la fermata di un autobus/i, 'ছবিতে প্রদর্শিত সংকেতটি একটি বাস স্টপ নির্দেশ করে'],
@@ -53,7 +53,7 @@ const PHRASE_DICTIONARY: Array<[RegExp, string]> = [
 ];
 
 // Term replacements
-const TERM_REPLACEMENTS: Array<[RegExp, string]> = [
+export const TERM_REPLACEMENTS: Array<[RegExp, string]> = [
   [/\bfermata di un autobus\b/gi, 'বাসের স্টপ (Fermata autobus)'],
   [/\bfermata dell'autobus\b/gi, 'বাসের স্টপ (Fermata autobus)'],
   [/\bpista ciclabile\b/gi, 'সাইকেল ট্র্যাক (Pista ciclabile)'],
@@ -105,6 +105,8 @@ const TERM_REPLACEMENTS: Array<[RegExp, string]> = [
   [/\besclusivamente\b/gi, 'শুধুমাত্র ও বিশেষভাবে'],
 ];
 
+import { PATENTE_TRANSLATIONS_BN } from '../data/patenteTranslationsBn';
+
 /**
  * Checks whether text contains Bengali characters
  */
@@ -117,33 +119,36 @@ export const containsBengali = (text?: string): boolean => {
  * Returns clean, guaranteed Bangla translation for any Patente Italian question
  */
 export const getBanglaTranslation = (questionIt: string, rawQuestionBn?: string): string => {
-  // 1. If rawQuestionBn has authentic Bengali, return it
-  if (rawQuestionBn && containsBengali(rawQuestionBn) && rawQuestionBn.trim() !== questionIt.trim()) {
-    return rawQuestionBn.trim();
+  const cleanIt = (questionIt || '').trim();
+
+  // 1. Check exact match in pre-compiled dictionary of all 588 official questions
+  if (PATENTE_TRANSLATIONS_BN[cleanIt]) {
+    return PATENTE_TRANSLATIONS_BN[cleanIt];
   }
 
-  const cleanIt = questionIt.trim();
-
-  // 2. Pattern Match
-  for (const [pattern, banglaPrefix] of PHRASE_DICTIONARY) {
-    if (pattern.test(cleanIt)) {
-      // Extract remainder
-      const remainder = cleanIt.replace(pattern, '').trim();
-      if (!remainder) return banglaPrefix;
-
-      let translatedRemainder = remainder;
-      for (const [termRegex, termBn] of TERM_REPLACEMENTS) {
-        translatedRemainder = translatedRemainder.replace(termRegex, termBn);
-      }
-      return `${banglaPrefix}: ${translatedRemainder}`;
+  // 2. Normalize punctuation / quotes and check dictionary again
+  const normalizedIt = cleanIt.replace(/['']/g, "'").replace(/[ÀÁ]/g, 'A').replace(/[ÈÉ]/g, 'E');
+  for (const [dictIt, dictBn] of Object.entries(PATENTE_TRANSLATIONS_BN)) {
+    if (dictIt.trim() === normalizedIt || dictIt.trim().toLowerCase() === cleanIt.toLowerCase()) {
+      return dictBn;
     }
   }
 
-  // 3. Keyword based contextual translation
-  let translated = cleanIt;
-  for (const [termRegex, termBn] of TERM_REPLACEMENTS) {
-    translated = translated.replace(termRegex, termBn);
+  // 3. If rawQuestionBn has authentic Bengali and is not raw Italian, return it
+  if (rawQuestionBn && containsBengali(rawQuestionBn) && rawQuestionBn.trim() !== cleanIt) {
+    return rawQuestionBn.trim();
   }
 
-  return `ইতালিয়ান কুইজ ভাবার্থ: ${translated}`;
+  // 4. Pattern Match fallback for new dynamic questions
+  for (const [pattern, banglaPrefix] of PHRASE_DICTIONARY) {
+    if (pattern.test(cleanIt)) {
+      return banglaPrefix;
+    }
+  }
+
+  // 5. Clean default fallback
+  return rawQuestionBn && containsBengali(rawQuestionBn) 
+    ? rawQuestionBn.trim() 
+    : 'প্রশ্নটির বাংলা ভাবার্থ শীঘ্রই হালনাগাদ করা হবে।';
 };
+

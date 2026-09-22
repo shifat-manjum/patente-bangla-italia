@@ -135,11 +135,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 
       {/* Prominent Bangla Translation Box */}
       {showBanglaTranslation && (
-        <div className="p-4 sm:p-5 rounded-xl bg-amber-50/50 border border-amber-200/80 space-y-2">
-          <div className="flex items-center gap-1.5 text-xs font-black text-amber-800">
-            <span>🇧🇩</span>
-            <span>সহজ বাংলা অনুবাদ ও অর্থ:</span>
-          </div>
+        <div className="p-4 sm:p-5 rounded-xl bg-amber-50/50 border border-amber-200/80">
           <p className="text-base sm:text-xl font-bold text-slate-800 leading-relaxed">
             {getBanglaTranslation(question.questionIt, question.questionBn)}
           </p>
