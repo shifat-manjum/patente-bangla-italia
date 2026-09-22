@@ -118,13 +118,13 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search round number or topic (e.g. Round 5, Precedenze, Speed)..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-2xs"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-2xs"
           />
         </div>
 
@@ -142,7 +142,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
               className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition cursor-pointer ${
                 filterTab === tab.id
                   ? 'bg-blue-600 text-white shadow-2xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
               }`}
             >
               {tab.label}
@@ -162,12 +162,12 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
               key={round.id}
               className={`rounded-2xl border p-4 transition-all relative flex flex-col justify-between ${
                 isCurrent
-                  ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-200 shadow-sm'
+                  ? 'bg-blue-50/90 dark:bg-blue-950/50 border-blue-400 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900 shadow-sm'
                   : isPassed
-                  ? 'bg-emerald-50/40 border-emerald-200 hover:border-emerald-300'
+                  ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 hover:border-emerald-400'
                   : round.isFree
-                  ? 'bg-white border-slate-200/90 hover:border-blue-300 hover:shadow-xs'
-                  : 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
+                  ? 'bg-white dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs'
+                  : 'bg-slate-50/90 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600'
               }`}
             >
               <div className="space-y-2.5">
@@ -176,20 +176,20 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                   <span
                     className={`text-xs font-black px-2.5 py-1 rounded-lg ${
                       round.isFree
-                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                        : 'bg-blue-100 text-blue-800 border border-blue-200'
+                        ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                        : 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                     }`}
                   >
                     {round.isFree ? '🟢 Foundation Assessment' : '🎓 Complete Syllabus'}
                   </span>
 
                   {isPassed ? (
-                    <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 px-2 py-0.5 rounded-md">
                       <CheckCircle2 className="w-3 h-3" />
                       <span>{30 - (round.result?.errors ?? 0)}/30 Passed</span>
                     </span>
                   ) : !round.isFree ? (
-                    <span className="flex items-center gap-1 text-[11px] font-bold text-slate-500 bg-slate-200/80 px-2 py-0.5 rounded-md">
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-200/80 dark:bg-slate-700/80 px-2 py-0.5 rounded-md">
                       <Lock className="w-3 h-3" />
                       <span>Enrolled</span>
                     </span>
@@ -198,20 +198,20 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
 
                 {/* Round Title & Topic */}
                 <div>
-                  <h3 className="text-base font-black text-slate-900 leading-snug">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white leading-snug">
                     Round #{round.id}
                   </h3>
-                  <p className="text-xs font-bold text-slate-700 pt-0.5">
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-200 pt-0.5">
                     {round.topicEn}
                   </p>
-                  <p className="text-[11px] text-slate-500 font-medium">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     {round.topicIt}
                   </p>
                 </div>
               </div>
 
               {/* Action Button */}
-              <div className="pt-4 border-t border-slate-100/80 mt-3">
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-700/60 mt-3">
                 {round.isFree ? (
                   <button
                     type="button"
@@ -221,7 +221,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : isPassed
                         ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                        : 'bg-slate-900 text-white hover:bg-blue-600'
+                        : 'bg-slate-900 hover:bg-blue-600 text-white'
                     }`}
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />

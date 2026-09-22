@@ -123,33 +123,33 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
       {/* 4 Quick Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Solved Questions */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">Solved Questions</span>
-            <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Solved Questions</span>
+            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-900">
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {totalQuestionsSolved}
           </p>
-          <span className="text-[11px] text-slate-500 font-medium">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
             Official 30-Question Sets
           </span>
         </div>
 
         {/* Foundation Rounds Completed */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">Completed Rounds</span>
-            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Completed Rounds</span>
+            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
               <Award className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-900">
-            {completedRoundsCount} <span className="text-sm font-bold text-slate-400">/ 20</span>
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+            {completedRoundsCount} <span className="text-sm font-bold text-slate-400 dark:text-slate-500">/ 20</span>
           </p>
-          <span className="text-[11px] text-emerald-600 font-bold">
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
             Foundation Assessment
           </span>
         </div>
@@ -157,34 +157,34 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* Errors to Review */}
         <div 
           onClick={onGoToErrors}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1 cursor-pointer hover:border-rose-300 transition"
+          className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1 cursor-pointer hover:border-rose-300 dark:hover:border-rose-500 transition"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">Error Review</span>
-            <div className="p-2 rounded-lg bg-rose-50 text-rose-600">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Error Review</span>
+            <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
               <AlertCircle className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-900">
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {errorCount}
           </p>
-          <span className="text-[11px] text-rose-600 font-bold hover:underline">
+          <span className="text-[11px] text-rose-600 dark:text-rose-400 font-bold hover:underline">
             Review Mistakes ➔
           </span>
         </div>
 
         {/* Daily Streak */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-1">
+        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">Study Streak</span>
-            <div className="p-2 rounded-lg bg-amber-50 text-amber-600">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Study Streak</span>
+            <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
               <Flame className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-900">
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             3 Days 🔥
           </p>
-          <span className="text-[11px] text-amber-700 font-medium">
+          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
             Consistent Daily Practice
           </span>
         </div>
@@ -195,20 +195,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* Card 1: 240 Rounds */}
         <div 
           onClick={onGoToCurriculum}
-          className="bg-white rounded-2xl p-5 border border-slate-200/90 hover:border-blue-400 hover:shadow-sm transition cursor-pointer flex flex-col justify-between group"
+          className="bg-white dark:bg-slate-800/90 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm transition cursor-pointer flex flex-col justify-between group"
         >
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 flex items-center justify-center">
               <BookOpen className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-black text-slate-900 group-hover:text-blue-700 transition">
+            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
               240 Rounds Course Syllabus
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               Foundation Assessment (Rounds 1–20) and complete chapter-by-chapter curriculum according to the Italian Highway Code.
             </p>
           </div>
-          <div className="pt-4 flex items-center text-xs font-black text-blue-700 gap-1">
+          <div className="pt-4 flex items-center text-xs font-black text-blue-700 dark:text-blue-400 gap-1">
             <span>Explore Syllabus</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -217,20 +217,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* Card 2: Theory Summaries */}
         <div 
           onClick={onGoToTheory}
-          className="bg-white rounded-2xl p-5 border border-slate-200/90 hover:border-blue-400 hover:shadow-sm transition cursor-pointer flex flex-col justify-between group"
+          className="bg-white dark:bg-slate-800/90 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm transition cursor-pointer flex flex-col justify-between group"
         >
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
               <GraduationCap className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-black text-slate-900 group-hover:text-emerald-700 transition">
+            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
               Theory Summaries (25 Chapters)
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               3 Golden Rules per chapter in Italian and Bengali + common exam trap keywords. Master rules in 90 seconds.
             </p>
           </div>
-          <div className="pt-4 flex items-center text-xs font-black text-emerald-700 gap-1">
+          <div className="pt-4 flex items-center text-xs font-black text-emerald-700 dark:text-emerald-400 gap-1">
             <span>Read Cheat Sheets</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -239,20 +239,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* Card 3: Oral Audio Exam Mode */}
         <div 
           onClick={onGoToExam}
-          className="bg-white rounded-2xl p-5 border border-slate-200/90 hover:border-blue-400 hover:shadow-sm transition cursor-pointer flex flex-col justify-between group"
+          className="bg-white dark:bg-slate-800/90 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm transition cursor-pointer flex flex-col justify-between group"
         >
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 flex items-center justify-center">
               <Headphones className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-black text-slate-900 group-hover:text-purple-700 transition">
+            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition">
               Official Oral Exam Simulation
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               Exact replica of the Motorizzazione Civile test with headphone audio pronunciation (30 questions, 20 mins, max 3 errors).
             </p>
           </div>
-          <div className="pt-4 flex items-center text-xs font-black text-purple-700 gap-1">
+          <div className="pt-4 flex items-center text-xs font-black text-purple-700 dark:text-purple-400 gap-1">
             <span>Launch Simulation</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
