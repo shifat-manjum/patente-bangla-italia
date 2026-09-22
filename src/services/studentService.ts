@@ -79,8 +79,22 @@ export const registerStudent = async (
 
       await setDoc(doc(db, 'students', firebaseUser.uid), newProfile);
 
-      // Cache locally
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newProfile));
+      // Cache locally and permanently log to registered students directory
+      const clientProfile = {
+        ...newProfile,
+        createdAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+      };
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clientProfile));
+        const all = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
+        const filtered = all.filter((s: any) => s.email?.toLowerCase() !== cleanEmail);
+        filtered.unshift(clientProfile);
+        localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(filtered));
+      } catch (storageErr) {
+        console.warn('Local student list update error:', storageErr);
+      }
+
       return newProfile;
     } catch (err: any) {
       console.error('Firebase registration error:', err);

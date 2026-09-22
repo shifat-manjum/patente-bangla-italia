@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Send,
-  Bot,
   Volume2,
   Copy,
   Check,
   Minimize2,
-  Maximize2
+  Maximize2,
+  MessageCircle,
+  ShieldCheck,
+  GripVertical
 } from 'lucide-react';
 import { HOTSHOT_QUESTIONS } from '../data/hotshotQuestions';
 import { ROUND_QUESTIONS } from '../data/roundQuestions';
@@ -46,14 +48,20 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Draggable FAB State for mobile and desktop screens
+  const [fabPosition, setFabPosition] = useState<{ x: number; y: number } | null>(null);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
+  const fabRef = useRef<HTMLDivElement>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initial welcome message
+  // Initial welcome message (Human teacher vibe)
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       sender: 'ai',
-      text: `Ciao ${currentUser ? currentUser.name.split(' ')[0] : 'Student'}! 👋 আমি আপনার **Maestro Patente AI** সহকারী।\n\nআপনি যে কোনো ইতালিয়ান কুইজের প্রশ্ন এখানে কপি করে পেস্ট করতে পারেন। আমি সাথে সাথে বলে দেব এটি **VERO (সত্য)** নাকি **FALSO (মিথ্যা)** এবং সহজ বাংলায় এর পেছনের ট্রাফিক নিয়ম ও ফাঁদ বুঝিয়ে দেব।\n\nনিচের বিষয়গুলো দিয়েও এখনই জানতে পারেন:`,
+      text: `Ciao ${currentUser ? currentUser.name.split(' ')[0] : 'Student'}! Sono Marco e il team di Patente Bangla. 👋\n\nআমরা সার্বক্ষণিক WhatsApp টিউটর সাপোর্টে লাইভ আছি। কুইজ অনুশীলনের সময় যে কোনো ইতালিয়ান প্রশ্ন না বুঝলে এখানে কপি করে পেস্ট করুন।\n\n১ মিনিটের মধ্যে আমি বলে দেব এটি **VERO (সত্য)** নাকি **FALSO (মিথ্যা)** এবং এর পেছনের ট্রাফিক আইন ও কঠিন শব্দের অর্থ সহজ বাংলায় বুঝিয়ে দেব! 🚗🇮🇹`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -82,6 +90,49 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  // Drag handlers for FAB on mobile and desktop
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    const currentX = fabPosition?.x ?? (window.innerWidth - 180);
+    const currentY = fabPosition?.y ?? (window.innerHeight - 80);
+
+    dragStartRef.current = {
+      startX: clientX,
+      startY: clientY,
+      initialX: currentX,
+      initialY: currentY,
+    };
+    isDraggingRef.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!dragStartRef.current) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+    const deltaX = clientX - dragStartRef.current.startX;
+    const deltaY = clientY - dragStartRef.current.startY;
+
+    if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+      isDraggingRef.current = true;
+    }
+
+    const newX = Math.max(10, Math.min(window.innerWidth - 180, dragStartRef.current.initialX + deltaX));
+    const newY = Math.max(10, Math.min(window.innerHeight - 80, dragStartRef.current.initialY + deltaY));
+
+    setFabPosition({ x: newX, y: newY });
+  };
+
+  const handleTouchEnd = () => {
+    dragStartRef.current = null;
+    // Drag finished; small timeout resets isDragging so click handler knows
+    setTimeout(() => {
+      isDraggingRef.current = false;
+    }, 50);
+  };
+
   // Intelligent Response Generator & Knowledge Matcher
   const analyzeQuery = (query: string): { reply: string; quiz?: any } => {
     const cleanQuery = query.toLowerCase().trim();
@@ -95,9 +146,9 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
     if (matchedHotshot) {
       return {
-        reply: `🔍 **অফিশিয়াল প্রশ্ন শনাক্ত করা হয়েছে!**\n\nএই বক্তব্যটি পরীক্ষা অনুযায়ী **${
+        reply: `🔍 **লাইভ টিউটর বিশ্লেষণ সম্পন্ন!**\n\nঅফিশিয়াল পরীক্ষা অনুযায়ী এই বক্তব্যটি **${
           matchedHotshot.isCorrect ? '✅ VERO (সত্য)' : '❌ FALSO (মিথ্যা)'
-        }**।\n\nনিচে বিস্তারিত বাংলা ব্যাখ্যা ও ফাঁদ বিশ্লেষণ দেওয়া হলো:`,
+        }**।\n\nনিচে শিক্ষক দলের বিস্তারিত বিশ্লেষণ দেওয়া হলো:`,
         quiz: {
           isCorrect: matchedHotshot.isCorrect,
           questionIt: matchedHotshot.questionIt,
@@ -121,7 +172,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
       if (match) {
         return {
-          reply: `🎯 **রাউন্ডের অফিশিয়াল কুইজ পাওয়া গেছে!**\n\nমিনিস্টেরিয়াল পরীক্ষা অনুযায়ী এই প্রশ্নের উত্তর **${
+          reply: `🎯 **অফিশিয়াল প্রশ্ন শনাক্ত হয়েছে!**\n\nপরীক্ষা অনুযায়ী এর উত্তর **${
             match.isCorrect ? '✅ VERO (সত্য)' : '❌ FALSO (মিথ্যা)'
           }**।`,
           quiz: {
@@ -138,92 +189,55 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     // 3. Keyword / Trap Word Check (Trabocchetti)
     const trapWords = [
       'esclusivamente',
-      'soltanto',
-      'solo',
-      'in ogni caso',
-      'mai',
       'sempre',
-      'tassativamente',
+      'mai',
+      'solo',
       'obbligatoriamente',
+      'in ogni caso',
       'qualsiasi',
+      'tutti i veicoli',
     ];
 
-    const detectedTrap = trapWords.find((w) => cleanQuery.includes(w));
-    if (detectedTrap) {
+    const foundTrap = trapWords.find((w) => cleanQuery.includes(w));
+    if (foundTrap) {
       return {
-        reply: `⚠️ **সতর্কতা: ফাঁদ শব্দ (Trabocchetto) শনাক্ত হয়েছে!**\n\nআপনার প্রশ্নে **"${detectedTrap.toUpperCase()}"** শব্দটি রয়েছে।\n\n📌 **মিনিস্টেরিয়াল কুইজ রুল:**\nইতালিয়ান ড্রাইভিং লাইসেন্স কুইজে প্রায় ৯০% ক্ষেত্রে যখন **${detectedTrap}** (শুধুমাত্র / কখনোই না / সবসময়) শব্দটি ব্যবহার করা হয়, তখন উত্তরটি **❌ FALSO (ভুল)** হয়। কারণ ট্রাফিক বিধানে প্রায় প্রতিটি নিয়মেরই কিছু না কিছু ব্যতিক্রম বা জরুরি ছাড় থাকে।\n\nসরাসরি অন্ধভাবে উত্তর না দিয়ে পুরো বাক্যটির অর্থ মিলিয়ে দেখুন।`,
+        reply: `⚠️ **ট্র্যাপ শব্দ শনাক্ত হয়েছে: "${foundTrap.toUpperCase()}"**\n\nইতালিয়ান ড্রাইভিং লাইসেন্স কুইজে **${foundTrap}** (শুধুমাত্র / সবসময় / কোনো অবস্থাতেই না) শব্দগুলো থাকলে **৯৫% ক্ষেত্রে প্রশ্নটি FALSO (মিথ্যা)** হয়। কারণ ট্রাফিক বিধিতে প্রায় সবসময়ই কিছু ব্যতিক্রম বা বিশেষ পরিস্থিতি অনুমোদিত থাকে।\n\nপ্রশ্নটি ভালো করে পড়ুন এবং নিঃশর্ত বক্তব্যের ফাঁদে পা দেবেন না!`,
       };
     }
 
-    // 4. Common Autoscuola FAQ Queries
-    if (
-      cleanQuery.includes('পরীক্ষা') ||
-      cleanQuery.includes('exam') ||
-      cleanQuery.includes('ভুল') ||
-      cleanQuery.includes('error') ||
-      cleanQuery.includes('কত') ||
-      cleanQuery.includes('কয়টি')
-    ) {
-      return {
-        reply: `📋 **অফিশিয়াল মিনিস্টেরিয়াল পরীক্ষার নিয়ম (Esame Patente B 2026):**\n\n1. **মোট প্রশ্ন:** ৩০টি কুইজ (Vero/Falso)।\n2. **সময়:** ২০ মিনিট।\n3. **পাস মার্ক:** সর্বোচ্চ **৩টি ভুল** পর্যন্ত পাস। ৪টি বা তার বেশি ভুল হলে অনুত্তীর্ণ (Bocciato)।\n4. **পরীক্ষার মাধ্যম:** মটোরাইজেশনের ডিজিটাল টাচস্ক্রিন কম্পিউটারে এককভাবে পরীক্ষা হয়।\n\n💡 **পরামর্শ:** আমাদের ২০টি ফ্রি রাউন্ডে নিয়মিত প্র্যাকটিস করুন। প্রতিটি রাউন্ডে পাস করলেই আসল পরীক্ষায় পাস করা সহজ হবে!`,
-      };
-    }
-
-    if (
-      cleanQuery.includes('foglio rosa') ||
-      cleanQuery.includes('ফলিও') ||
-      cleanQuery.includes('ড্রাইভ') ||
-      cleanQuery.includes('গাড়ি চালানো')
-    ) {
-      return {
-        reply: `🪪 **ফলিও রোজা ও প্র্যাকটিক্যাল ড্রাইভ গাইড:**\n\n1. **মেয়াদ:** থিওরি পাস করার পর ফলিও রোজার মেয়াদ **১ বছর** থাকে। এই ১ বছরে সর্বোচ্চ ৩ বার প্র্যাকটিক্যাল ড্রাইভিং পরীক্ষা দেওয়া যায়।\n2. **বাধ্যতামূলক ক্লাস:** অটোস্কুল থেকে অন্তত **৬ ঘণ্টা সার্টিফাইড ড্রাইভ** (২ ঘণ্টা হাইওয়ে, ২ ঘণ্টা রাতে, ২ ঘণ্টা শহরের বাইরে) নেওয়া বাধ্যতামূলক।\n3. **পাশে কে থাকবে:** যার অন্তত ১০ বছরের বৈধ ইতালিয়ান লাইসেন্স আছে এবং বয়স ৬৫ বছরের কম।`,
-      };
-    }
-
-    if (
-      cleanQuery.includes('pro') ||
-      cleanQuery.includes('পাস') ||
-      cleanQuery.includes('vip') ||
-      cleanQuery.includes('টাকা') ||
-      cleanQuery.includes('49') ||
-      cleanQuery.includes('কোর্স')
-    ) {
-      return {
-        reply: `⭐ **প্রো স্টুডেন্ট পাস (Pro Student Pass - €49):**\n\n- আপনি প্রথম ২০টি রাউন্ড (৬০০ প্রশ্ন) সম্পূর্ণ **বিনামূল্যে** পড়ছেন।\n- বাকি ২২০টি রাউন্ড, সম্পূর্ণ ৭,১৬৫টি মিনিস্টেরিয়াল কুইজ, অফিশিয়াল মক টেস্ট ও WhatsApp স্টাডি গ্রুপের জন্য প্রো স্টুডেন্ট পাস প্রয়োজন।\n- এটি এককালীন লাইফটাইম অ্যাক্সেস (কোনো মাসিক ফি নেই)।\n\nউপরে ড্যাশবোর্ডে **"Pro Student Pass (€49)"** বাটনে ক্লিক করে এখনই আনলক করতে পারেন।`,
-      };
-    }
-
-    // 5. Check vocabulary match
-    const vocabMatch = COMPREHENSIVE_VOCABULARY.find(
+    // 4. Vocabulary Matcher
+    const matchedVocab = COMPREHENSIVE_VOCABULARY.filter(
       (v) =>
         cleanQuery.includes(v.wordIt.toLowerCase()) ||
         cleanQuery.includes(v.meaningBn.toLowerCase())
-    );
+    ).slice(0, 3);
 
-    if (vocabMatch) {
+    if (matchedVocab.length > 0) {
+      const vocabText = matchedVocab
+        .map(
+          (v) =>
+            `• **${v.wordIt}**: ${v.meaningBn} *(ক্যাটাগরি: ${v.category})*`
+        )
+        .join('\n');
       return {
-        reply: `📖 **শব্দার্থ সন্ধান (Vocabolario):**\n\n🇮🇹 **${vocabMatch.wordIt}** ${
-          vocabMatch.phoneticBn ? `[${vocabMatch.phoneticBn}]` : ''
-        }\n🇧🇩 বাংলা অর্থ: **${vocabMatch.meaningBn}**\n\n${
-          vocabMatch.trapAlert ? `⚠️ পরীক্ষার ফাঁদ টিপস: ${vocabMatch.trapAlert}` : ''
-        }`,
+        reply: `📖 **গুরুত্বপূর্ণ শব্দার্থ:**\n\n${vocabText}\n\nআপনার কুইজের পুরো বাক্যটি এখানে পেস্ট করুন, আমি সাথে সাথে VERO/FALSO এবং নিয়ম ব্যাখ্যা করে দেব।`,
       };
     }
 
-    // 6. Generic intelligent coaching fallback
+    // 5. Default Teacher Support Guidance
     return {
-      reply: `💡 **ইতালিয়ান ট্রাফিক কোড বিশ্লেষণ:**\n\nআপনি লিখেছেন: *"י${query}"*\n\n১. ইতালির ট্রাফিক কোডে (Codice della Strada) সর্বদা পথচারী (Pedoni), সাইকেল এবং জরুরি গাড়িকে (Soccorso) প্রাধান্য দেওয়া হয়।\n২. প্রশ্নে যদি **"Di norma" (সাধারণত)** থাকে তবে এটি প্রায়ই **VERO** হয়।\n৩. যদি **"In ogni caso" (যেকোনো পরিস্থিতিতে)** বা **"Sempre" (সবসময়)** থাকে তবে অধিকাংশ ক্ষেত্রে **FALSO** হয়।\n\nআপনি কি নির্দিষ্ট কোনো কুইজ বা শব্দের অর্থ জানতে চান? সম্পূর্ণ কুইজটি পেস্ট করে দেখুন!`,
+      reply: `👨‍🏫 **লাইভ শিক্ষক দলের উত্তর:**\n\nআপনার প্রশ্নটি পেয়েছি। ইতালিয়ান লাইসেন্স পরীক্ষায় সঠিক উত্তর নিশ্চিত করতে যে কোনো কুইজ প্রশ্ন সরাসরি ইতালিয়ান ভাষায় হুবহু পেস্ট করুন।\n\nউদাহরণ:\n• *"La carreggiata è destinata alla sosta di emergenza..."*\n• *"In presenza del segnale di STOP..."*\n\n১ মিনিটের মধ্যে আমাদের সিস্টেম ও শিক্ষক দল আপনার জন্য সম্পূর্ণ বাংলা ভাবার্থ ও ফাঁদ বের করে দেবে! 🇮🇹🇧🇩`,
     };
   };
 
   const handleSendMessage = (textToSend?: string) => {
-    const query = textToSend || inputText;
-    if (!query.trim()) return;
+    const text = (textToSend || inputText).trim();
+    if (!text) return;
 
     const userMsg: Message = {
-      id: 'msg_' + Date.now(),
+      id: 'usr_' + Date.now(),
       sender: 'user',
-      text: query.trim(),
+      text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
@@ -231,85 +245,119 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     if (!textToSend) setInputText('');
     setIsTyping(true);
 
+    // Guaranteed fast human-like response under 600ms
     setTimeout(() => {
-      const { reply, quiz } = analyzeQuery(query);
+      const analysis = analyzeQuery(text);
       const aiMsg: Message = {
-        id: 'msg_ai_' + Date.now(),
+        id: 'ai_' + Date.now(),
         sender: 'ai',
-        text: reply,
+        text: analysis.reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        quizResult: quiz,
+        quizResult: analysis.quiz,
       };
+
       setMessages((prev) => [...prev, aiMsg]);
       setIsTyping(false);
-    }, 600);
+    }, 450);
   };
 
-  // Quick Action Chips
   const quickActions = [
-    { label: '⚠️ ফাঁদ শব্দসমূহ', query: 'কুইজের ফাঁদ শব্দগুলো কী কী এবং কীভাবে বুঝব?' },
-    { label: '📋 পরীক্ষার নিয়ম', query: 'ইতালিয়ান ড্রাইভিং লাইসেন্স পরীক্ষার নিয়ম কী এবং কয়টি ভুল পাস?' },
-    { label: '🚗 ফলিও রোজা', query: 'Foglio Rosa নিয়ে গাড়ি চালানোর নিয়ম কী?' },
-    { label: '⭐ Pro Student Pass', query: 'Pro Student Pass এর সুবিধা ও ফি কত?' },
+    { label: '🛑 STOP বনাম Precedenza', query: 'STOP এবং Dare Precedenza এর পার্থক্য কি?' },
+    { label: '⚠️ ফাঁদ শব্দ (Trabocchetti)', query: 'কুইজে কোন কোন ফাঁদ শব্দ থাকলে FALSO হয়?' },
+    { label: '🚗 Neopatentati গতিসীমা', query: 'নতুন লাইসেন্সধারীদের হাইওয়েতে সর্বোচ্চ গতি কত?' },
+    { label: '🍷 অ্যালকোহল লিমিট 0.0', query: 'নেওপাতেন্তাতোদের জন্য অ্যালকোহল রক্তের মাত্রা কত?' },
   ];
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
-      {/* Floating Toggle Button */}
+    <div
+      ref={fabRef}
+      style={
+        fabPosition && !isOpen
+          ? { position: 'fixed', left: `${fabPosition.x}px`, top: `${fabPosition.y}px`, zIndex: 50 }
+          : undefined
+      }
+      className={!fabPosition || isOpen ? 'fixed bottom-5 right-4 sm:right-6 z-50 flex flex-col items-end' : ''}
+    >
+      {/* Moveable WhatsApp Floating Action Button */}
       {!isOpen && (
-        <button
-          type="button"
-          onClick={() => {
-            setIsOpen(true);
-            setIsMinimized(false);
-          }}
-          className="group relative py-3 px-4 sm:px-5 rounded-full bg-gradient-to-r from-[#E73F1E] via-[#FB6C00] to-[#F9B637] text-white font-black text-xs sm:text-sm shadow-xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-2.5 border-2 border-white/40"
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleTouchStart}
+          onMouseMove={handleTouchMove}
+          onMouseUp={handleTouchEnd}
+          className="flex items-center select-none touch-none"
         >
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400" />
-          </span>
-          <Bot className="w-5 h-5 text-white" />
-          <span className="tracking-tight">AI Maestro Tutor • কুইজ সহকারী</span>
-          <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-full bg-white/20 text-[10px] uppercase font-bold">
-            24/7 AI
-          </span>
-        </button>
+          {/* Drag Handle indicator */}
+          <div
+            title="Drag to move this button"
+            className="p-1 rounded-l-2xl bg-emerald-800/80 text-emerald-200 cursor-grab active:cursor-grabbing hover:bg-emerald-900 shadow-md flex items-center justify-center -mr-1 z-10 hidden sm:flex"
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!isDraggingRef.current) {
+                setIsOpen(true);
+                setIsMinimized(false);
+              }
+            }}
+            className="group relative py-2.5 px-4 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm shadow-xl shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-2 border-2 border-white/40"
+          >
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
+            </span>
+            <MessageCircle className="w-5 h-5 fill-current text-white" />
+            <div className="text-left">
+              <span className="block leading-tight text-xs font-black">24/7 Live Support</span>
+              <span className="text-[10px] opacity-90 block font-bold">Typically replies &lt; 1 min</span>
+            </div>
+          </button>
+        </div>
       )}
 
-      {/* Chat Window */}
+      {/* Authentic WhatsApp Chat Window */}
       {isOpen && (
         <div
-          className={`flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 ${
+          className={`flex flex-col bg-[#EFEAE2] dark:bg-[#0B141A] border border-emerald-800/40 rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 ${
             currentTheme === 'sepia' ? 'theme-sepia' : currentTheme === 'dark' ? 'dark' : ''
           } ${
             isMinimized
               ? 'w-80 h-16'
-              : 'w-[94vw] sm:w-[420px] md:w-[460px] h-[580px] max-h-[85vh]'
+              : 'w-[94vw] sm:w-[420px] md:w-[460px] h-[590px] max-h-[85vh]'
           }`}
         >
-          {/* Header */}
-          <div className="bg-gradient-to-r from-orange-600 via-[#FB6C00] to-amber-500 p-3.5 sm:p-4 text-white flex items-center justify-between shadow-md shrink-0">
+          {/* WhatsApp Header: Deep Emerald Green (#075E54) */}
+          <div className="bg-[#075E54] dark:bg-[#1F2C34] p-3 sm:p-3.5 text-white flex items-center justify-between shadow-md shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white font-bold text-sm shadow-inner">
-                🇮🇹
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h4 className="font-black text-sm tracking-tight">Maestro Patente AI</h4>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="relative">
+                <div className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center text-white font-bold text-sm shadow-inner border border-white/30">
+                  👨‍🏫
                 </div>
-                <p className="text-[10px] text-white/90 font-medium">
-                  ইতালিয়ান কুইজ ও নিয়মের সার্বক্ষণিক শিক্ষক
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#25D366] border-2 border-[#075E54]" />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-1.5">
+                  <h4 className="font-bold text-sm tracking-tight">Patente Live Support</h4>
+                  <span className="text-[10px] bg-emerald-600/80 px-1.5 py-0.2 rounded font-mono font-bold">
+                    Official
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-200 font-medium flex items-center gap-1">
+                  <span>🟢 Online • Replies in &lt; 1 minute</span>
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 text-white/80">
+            <div className="flex items-center gap-1 text-white/90">
               <button
                 type="button"
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="p-1.5 rounded-lg hover:bg-white/20 transition cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-white/10 transition cursor-pointer"
                 title={isMinimized ? 'Expand' : 'Minimize'}
               >
                 {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
@@ -317,7 +365,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-white/20 transition cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-white/10 transition cursor-pointer"
                 title="Close Chat"
               >
                 <X className="w-4 h-4" />
@@ -327,38 +375,45 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
           {!isMinimized && (
             <>
-              {/* Quick Action Chips Bar */}
-              <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 flex items-center gap-1.5 overflow-x-auto shrink-0 scrollbar-none">
+              {/* Guaranteed 1-Minute Support Leaflet Banner */}
+              <div className="p-2.5 bg-[#DCF8C6] dark:bg-emerald-950/60 border-b border-emerald-200/80 dark:border-emerald-900/60 flex items-start gap-2 text-xs text-emerald-950 dark:text-emerald-200">
+                <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                <div className="text-left leading-tight">
+                  <span className="font-bold block text-[11px]">
+                    ⚡ 24/7 Guaranteed Fast Support (১ মিনিটের মধ্যে নিশ্চিত উত্তর):
+                  </span>
+                  <span className="text-[10px] text-emerald-900/80 dark:text-emerald-300">
+                    দিন হোক বা রাত, যেকোনো কঠিন কুইজ কপি করে পেস্ট করুন। আমাদের শিক্ষক দল ১ মিনিটের মধ্যে সহজ ব্যাখ্যা দেবে।
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick Prompt Chips */}
+              <div className="p-2 border-b border-slate-200/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 flex items-center gap-1.5 overflow-x-auto shrink-0 scrollbar-none">
                 {quickActions.map((action, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => handleSendMessage(action.query)}
-                    className="px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-[#FB6C00] hover:border-orange-300 shrink-0 transition cursor-pointer shadow-2xs"
+                    className="px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-[#075E54] hover:border-emerald-400 shrink-0 transition cursor-pointer shadow-2xs"
                   >
                     {action.label}
                   </button>
                 ))}
               </div>
 
-              {/* Messages Body */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-4 text-xs">
+              {/* Messages Body (WhatsApp Chat Canvas) */}
+              <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3 text-xs">
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex gap-2.5 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    {msg.sender === 'ai' && (
-                      <div className="w-7 h-7 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-800 text-[#FB6C00] flex items-center justify-center shrink-0 mt-0.5">
-                        <Bot className="w-4 h-4" />
-                      </div>
-                    )}
-
                     <div
-                      className={`max-w-[85%] rounded-2xl p-3.5 space-y-2 shadow-xs ${
+                      className={`max-w-[86%] rounded-2xl p-3 space-y-1.5 shadow-xs relative text-left ${
                         msg.sender === 'user'
-                          ? 'bg-[#FB6C00] text-white rounded-br-xs font-medium'
-                          : 'bg-slate-100 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 rounded-bl-xs border border-slate-200/80 dark:border-slate-700/80'
+                          ? 'bg-[#E7FFDB] dark:bg-[#005C4B] text-slate-900 dark:text-white rounded-tr-none'
+                          : 'bg-white dark:bg-[#202C33] text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/60 dark:border-slate-700/60'
                       }`}
                     >
                       {/* Message Text */}
@@ -368,8 +423,8 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
                       {/* Quiz Breakdown Card if matched */}
                       {msg.quizResult && (
-                        <div className="mt-2.5 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-2">
-                          <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <div className="mt-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-2">
+                          <div className="flex items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-1.5">
                             <span
                               className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
                                 msg.quizResult.isCorrect
@@ -382,7 +437,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                             <button
                               type="button"
                               onClick={() => speakItalian(msg.quizResult!.questionIt)}
-                              className="text-slate-500 hover:text-orange-500 flex items-center gap-1 font-bold text-[10px] cursor-pointer"
+                              className="text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-bold text-[10px] cursor-pointer"
                               title="Listen in Italian"
                             >
                               <Volume2 className="w-3.5 h-3.5" />
@@ -392,7 +447,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
                           <div>
                             <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                              Official Question:
+                              Domanda Ufficiale:
                             </span>
                             <p className="font-bold text-slate-900 dark:text-slate-100 text-xs italic">
                               "{msg.quizResult.questionIt}"
@@ -400,7 +455,9 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                           </div>
 
                           <div className="pt-1 text-[11px] text-slate-700 dark:text-slate-300">
-                            <span className="font-bold text-[#FB6C00] block mb-0.5">কেন এটি সঠিক বা ভুল:</span>
+                            <span className="font-bold text-[#075E54] dark:text-emerald-400 block mb-0.5">
+                              কেন এটি সঠিক বা ভুল (Spiegazione):
+                            </span>
                             <p className="leading-relaxed">{msg.quizResult.explanationBn}</p>
                           </div>
 
@@ -411,11 +468,11 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                           )}
 
                           {msg.quizResult.vocab && msg.quizResult.vocab.length > 0 && (
-                            <div className="pt-1 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1 text-[10px]">
+                            <div className="pt-1 border-t border-slate-200/60 dark:border-slate-800 flex flex-wrap gap-1 text-[10px]">
                               {msg.quizResult.vocab.map((v, idx) => (
                                 <span
                                   key={idx}
-                                  className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                  className="px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                                 >
                                   <strong>{v.wordIt}</strong>: {v.meaningBn}
                                 </span>
@@ -425,26 +482,23 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                         </div>
                       )}
 
-                      {/* Footer Actions (Copy / Timestamp) */}
-                      <div className="flex items-center justify-between text-[10px] opacity-70 pt-1">
+                      {/* WhatsApp Style Footer (Timestamp & Blue Checkmarks) */}
+                      <div className="flex items-center justify-end gap-1 text-[10px] opacity-60 pt-0.5">
                         <span>{msg.timestamp}</span>
+                        {msg.sender === 'user' && (
+                          <span className="text-sky-500 font-bold">✓✓</span>
+                        )}
                         {msg.sender === 'ai' && (
                           <button
                             type="button"
                             onClick={() => copyToClipboard(msg.id, msg.text)}
-                            className="hover:opacity-100 flex items-center gap-0.5 cursor-pointer"
+                            className="hover:opacity-100 flex items-center gap-0.5 cursor-pointer ml-1"
                             title="Copy reply"
                           >
                             {copiedId === msg.id ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-500" />
-                                <span>কপি হয়েছে</span>
-                              </>
+                              <Check className="w-3 h-3 text-emerald-600" />
                             ) : (
-                              <>
-                                <Copy className="w-3 h-3" />
-                                <span>কপি</span>
-                              </>
+                              <Copy className="w-3 h-3" />
                             )}
                           </button>
                         )}
@@ -454,16 +508,16 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                 ))}
 
                 {isTyping && (
-                  <div className="flex gap-2 items-center text-slate-400 text-xs italic">
-                    <Bot className="w-4 h-4 text-orange-500 animate-spin" />
-                    <span>Maestro উত্তর তৈরি করছেন...</span>
+                  <div className="flex gap-2 items-center text-slate-500 text-xs italic bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full w-fit shadow-xs">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Marco sta scrivendo la risposta...</span>
                   </div>
                 )}
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Chat Input Bar */}
-              <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+              {/* WhatsApp Input Bar */}
+              <div className="p-2.5 sm:p-3 border-t border-slate-200 dark:border-slate-800 bg-[#F0F2F5] dark:bg-[#1F2C34] shrink-0">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -475,24 +529,24 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                     type="text"
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    placeholder="কুইজ প্রশ্ন বা শব্দ এখানে পেস্ট করুন..."
-                    className="flex-1 py-2.5 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="Scrivi un messaggio o incolla il quiz..."
+                    className="flex-1 py-2 px-3.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#2A3942] text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                   <button
                     type="submit"
                     disabled={!inputText.trim()}
-                    className="p-2.5 rounded-xl bg-[#FB6C00] hover:bg-orange-600 disabled:opacity-50 text-white font-bold transition cursor-pointer shadow-sm shrink-0"
-                    title="Send question"
+                    className="p-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] disabled:opacity-40 text-white font-bold transition cursor-pointer shadow-sm shrink-0"
+                    title="Send message"
                   >
                     <Send className="w-4 h-4" />
                   </button>
                 </form>
-                <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1 px-1">
-                  <span>যেকোনো প্রশ্ন কপি-পেস্ট করুন</span>
+                <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1 px-2">
+                  <span>Guaranteed response &lt; 1 min</span>
                   <button
                     type="button"
                     onClick={onOpenPaywall}
-                    className="text-[#FB6C00] font-bold hover:underline"
+                    className="text-[#075E54] dark:text-emerald-400 font-bold hover:underline"
                   >
                     Pro Student Pass
                   </button>

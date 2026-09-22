@@ -176,46 +176,46 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                 }`}
               >
                 <div className="space-y-3 relative z-10">
-                  {/* Top Bar: Bilingual Badge + Unlock/Pass Status */}
+                  {/* Top Bar: Topic Badge (Italian first) + Status */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    {/* Bilingual Topic Badge: Bangla + Italian */}
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-800 border border-orange-200">
-                      <span>{round.topicBadgeBn}</span>
-                      <span className="text-orange-400 font-normal">|</span>
-                      <span className="italic font-semibold text-orange-900">{round.topicBadgeIt}</span>
+                    {/* Topic Badge: Italian First, then Bangla */}
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-950/40 text-orange-900 dark:text-orange-200 border border-orange-200 dark:border-orange-800">
+                      <span className="font-bold text-[#FB6C00]">{round.topicBadgeIt}</span>
+                      <span className="text-slate-300 dark:text-slate-600 font-normal">|</span>
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">{round.topicBadgeBn}</span>
                     </div>
 
                     {/* Status Badge */}
                     {isPassed ? (
-                      <span className="flex items-center gap-1.5 text-xs font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      <span className="flex items-center gap-1.5 text-xs font-black text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>পাস ({roundResult.errors} ভুল)</span>
+                        <span>Promosso / Passed ({roundResult.errors} Errors)</span>
                       </span>
                     ) : roundResult ? (
-                      <span className="flex items-center gap-1.5 text-xs font-black text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
+                      <span className="flex items-center gap-1.5 text-xs font-black text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-3 py-1 rounded-full border border-rose-200 dark:border-rose-800">
                         <XCircle className="w-4 h-4 text-rose-600" />
-                        <span>অনুত্তীর্ণ ({roundResult.errors} ভুল)</span>
+                        <span>Bocciato / Not Passed ({roundResult.errors} Errors)</span>
                       </span>
                     ) : isUnlocked ? (
-                      <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                         <Unlock className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>আনলক করা</span>
+                        <span>Ready (আনলক করা)</span>
                       </span>
                     ) : (
-                      <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                         <Lock className="w-3.5 h-3.5 text-slate-400" />
-                        <span>লক করা (Pro Student Pass)</span>
+                        <span>Pro Student Pass (€49)</span>
                       </span>
                     )}
                   </div>
 
-                  {/* Balanced Titles (Bangla & Italian equal prominence) */}
+                  {/* Italian First, Bangla Second — Equal Font Size & Weight */}
                   <div className="space-y-1 pt-1">
-                    <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug tracking-tight">
-                      {round.titleBn}
-                    </h3>
-                    <p className="text-sm sm:text-base font-bold text-[#FB6C00] tracking-tight leading-snug">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug tracking-tight">
                       {round.titleIt}
+                    </h3>
+                    <p className="text-base sm:text-lg font-bold text-[#FB6C00] leading-snug tracking-tight">
+                      {round.titleBn}
                     </p>
                   </div>
 
@@ -223,24 +223,24 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                   <div className="flex items-center gap-4 text-xs text-slate-500 font-medium pt-1">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-[#FB6C00]" />
-                      {round.questionsCount}টি কুইজ (30 Quiz)
+                      {round.questionsCount} Quiz (৩০টি কুইজ)
                     </span>
                     <span>•</span>
                     <span className="text-slate-500">
-                      সর্বোচ্চ ৩টি ভুল পাস
+                      Max 3 errors to pass (সর্বোচ্চ ৩টি ভুল)
                     </span>
                   </div>
                 </div>
 
                 {/* Bottom Action Button */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 relative z-10">
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 relative z-10">
                   <span className="text-xs font-bold text-slate-500">
                     {round.isFree ? (
-                      <span className="text-emerald-700 font-bold">বিনামূল্যে ট্রায়াল</span>
+                      <span className="text-emerald-700 font-bold">Free Trial (বিনামূল্যে)</span>
                     ) : isVip ? (
-                      <span className="text-orange-700 font-bold">Pro Student পাস সক্রিয়</span>
+                      <span className="text-orange-700 font-bold">Pro Student Pass Active</span>
                     ) : (
-                      <span className="text-slate-500">Pro Student Pass প্রয়োজন</span>
+                      <span className="text-slate-500">Requires Pro Pass (€49)</span>
                     )}
                   </span>
 
@@ -252,19 +252,19 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                         isCurrentActive
                           ? 'bg-[#FB6C00] text-white hover:bg-orange-600'
                           : isPassed
-                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
-                          : 'bg-slate-900 hover:bg-black text-white'
+                          ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+                          : 'bg-slate-900 dark:bg-slate-100 hover:bg-black dark:hover:bg-white text-white dark:text-slate-900'
                       }`}
                     >
                       {isPassed ? (
                         <>
                           <RotateCcw className="w-3.5 h-3.5" />
-                          <span>আবার দিন</span>
+                          <span>Retake (আবার দিন)</span>
                         </>
                       ) : (
                         <>
                           <Play className="w-3.5 h-3.5 fill-current" />
-                          <span>রাউন্ড শুরু</span>
+                          <span>Start Round (শুরু করুন)</span>
                         </>
                       )}
                     </button>
@@ -272,10 +272,10 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                     <button
                       type="button"
                       onClick={onOpenPaywall}
-                      className="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200"
+                      className="py-2 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200 dark:border-slate-700"
                     >
                       <Lock className="w-3.5 h-3.5 text-slate-400" />
-                      <span>আনলক করুন</span>
+                      <span>Unlock with Pro Pass</span>
                     </button>
                   )}
                 </div>

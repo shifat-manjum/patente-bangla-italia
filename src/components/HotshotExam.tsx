@@ -77,9 +77,9 @@ export const HotshotExam: React.FC<HotshotExamProps> = ({ onRecordMistake }) => 
         </div>
 
         <div className="space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900">হটশট অনুশীলন সমাপ্ত!</h2>
-          <p className="text-sm text-slate-600">
-            আপনি অফিশিয়াল কুইজের সবচেয়ে কঠিন ২০টি ফাঁদ প্রশ্ন অনুশীলন করলেন।
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Hotshot Questions Completed!</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            আপনি অফিশিয়াল কুইজের সর্বাধিক কঠিন ও বিভ্রান্তিকর ৭৫টি ফাঁদ প্রশ্ন সফলভাবে অনুশীলন করেছেন।
           </p>
         </div>
 
@@ -112,15 +112,15 @@ export const HotshotExam: React.FC<HotshotExamProps> = ({ onRecordMistake }) => 
       <div className="bg-white rounded-3xl p-6 sm:p-8 space-y-4 border border-slate-200 shadow-sm relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-xs font-black text-orange-800">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 text-xs font-black text-orange-800 dark:text-orange-200">
               <Flame className="w-4 h-4 text-[#FB6C00] fill-current" />
-              <span>টপ ২০ ট্রিক প্রশ্ন (Top 20 Trabocchetti)</span>
+              <span>Hotshot Questions • Top 75 Trabocchetti Ministeriali</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              হটশট ফাঁদ কুইজ পরীক্ষা
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Hotshot Questions (৭৫টি শীর্ষ ট্রিক প্রশ্ন)
             </h1>
-            <p className="text-slate-600 text-xs sm:text-sm max-w-xl leading-relaxed">
-              ইতালিয়ান ড্রাইভিং লাইসেন্স পরীক্ষায় সবচেয়ে বেশি শিক্ষার্থী যে ২০টি প্রশ্নে ভুল করে। প্রতিটি প্রশ্নের ট্রিক বুঝে নিন।
+            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm max-w-xl leading-relaxed">
+              ৭,১০০+ অফিসিয়াল কুইজের মধ্য থেকে সংগৃহীত সর্বাধিক ভুল হওয়া ৭৫টি শীর্ষ ট্র্যাপ প্রশ্ন। প্রতিটি প্রশ্নের পেছনের গোপন ফাঁদ ও নিয়ম আয়ত্ত করুন।
             </p>
           </div>
 
