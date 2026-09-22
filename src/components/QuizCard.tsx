@@ -5,7 +5,8 @@ import {
   XCircle,
   Lightbulb,
   AlertTriangle,
-  Languages
+  Languages,
+  Headphones
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
 import { RoadSign } from './RoadSign';
@@ -30,14 +31,20 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 }) => {
   const [showBanglaTranslation, setShowBanglaTranslation] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechRate, setSpeechRate] = useState<number>(0.9);
 
-  // Audio pronunciation of the Italian question
+  // Audio pronunciation of the Italian question (Oral Exam Simulation)
   const speakItalian = (text: string) => {
     if ('speechSynthesis' in window) {
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+        return;
+      }
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'it-IT';
-      utterance.rate = 0.88;
+      utterance.rate = speechRate;
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
@@ -62,43 +69,53 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       {/* Top Header: Question # and Category */}
       <div className="flex items-center justify-between gap-3 text-xs border-b border-slate-100 pb-3">
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-md bg-orange-50 text-[#FB6C00] font-black border border-orange-200">
-            প্রশ্ন #{index + 1}
+          <span className="px-3 py-1 rounded-md bg-blue-50 text-blue-700 font-black border border-blue-200">
+            Question #{index + 1}
           </span>
           <span className="text-slate-600 font-bold hidden sm:inline">
-            {question.chapterTitleBn} <span className="text-slate-400 font-normal">({question.chapterTitleIt})</span>
+            {question.chapterTitleIt}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Audio Pronunciation */}
+          {/* Audio Speed Toggle */}
+          <button
+            type="button"
+            onClick={() => setSpeechRate(speechRate === 0.9 ? 0.75 : 0.9)}
+            className="px-2.5 py-1 rounded-lg border border-slate-200 text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+            title="Speech Speed"
+          >
+            {speechRate === 0.9 ? 'Speed: 1.0x' : 'Speed: 0.8x (Slow)'}
+          </button>
+
+          {/* Oral Exam Headphone Audio Button */}
           <button
             type="button"
             onClick={() => speakItalian(question.questionIt)}
-            title="ইতালিয়ান উচ্চারণ শুনুন"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
+            title="Listen official Italian pronunciation (Oral Exam Mode)"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold shadow-2xs ${
               isSpeaking
-                ? 'bg-[#FB6C00] text-white border-[#FB6C00] animate-pulse'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                ? 'bg-blue-600 text-white border-blue-600 animate-pulse'
+                : 'bg-blue-50 hover:bg-blue-100 text-blue-800 border-blue-200'
             }`}
           >
-            <Volume2 className="w-3.5 h-3.5 text-[#FB6C00]" />
-            <span className="hidden sm:inline">উচ্চারণ শুনুন</span>
+            <Headphones className="w-3.5 h-3.5 text-blue-600" />
+            <span>{isSpeaking ? 'Playing... (Stop)' : 'Oral Exam Audio'}</span>
           </button>
 
           {/* Bangla Translation Toggle */}
           <button
             type="button"
             onClick={() => setShowBanglaTranslation(!showBanglaTranslation)}
-            title="বাংলা অনুবাদ দেখুন বা লুকান"
+            title="Toggle Bengali Meaning"
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
               showBanglaTranslation
-                ? 'bg-orange-50 text-orange-800 border-orange-200'
-                : 'bg-slate-50 text-slate-500 border-slate-200'
+                ? 'bg-slate-100 text-slate-800 border-slate-300'
+                : 'bg-slate-50 text-slate-400 border-slate-200'
             }`}
           >
-            <Languages className="w-3.5 h-3.5 text-[#FB6C00]" />
-            <span>{showBanglaTranslation ? 'বাংলা চালু' : 'বাংলা বন্ধ'}</span>
+            <Languages className="w-3.5 h-3.5 text-slate-600" />
+            <span>{showBanglaTranslation ? 'Bangla: ON' : 'Bangla: OFF'}</span>
           </button>
         </div>
       </div>
@@ -118,15 +135,22 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       {/* Official Italian Question Box */}
       <div className="p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 pb-2">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-black px-2.5 py-1 rounded-md bg-white text-slate-800 border border-slate-200 shadow-sm flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black px-2.5 py-1 rounded-md bg-white text-slate-800 border border-slate-200 shadow-xs flex items-center gap-1.5">
               <span>🇮🇹</span>
-              <span>মূল অফিসিয়াল ইতালিয়ান প্রশ্ন</span>
+              <span>Official Ministerial Question</span>
             </span>
           </div>
-          <span className="text-[11px] text-slate-500 font-medium">
-            (ইতালির আসল পরীক্ষার স্ক্রিনে এই লেখাটি আসবে)
-          </span>
+
+          {/* Quick Audio trigger */}
+          <button
+            type="button"
+            onClick={() => speakItalian(question.questionIt)}
+            className="flex items-center gap-1 text-xs font-bold text-blue-700 hover:text-blue-900 cursor-pointer"
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+            <span>{isSpeaking ? 'Stop Audio' : 'Listen with Headphones'}</span>
+          </button>
         </div>
         <p className="text-base sm:text-xl font-black text-slate-900 leading-relaxed tracking-wide pt-1">
           "{question.questionIt}"

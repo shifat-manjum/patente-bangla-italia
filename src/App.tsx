@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import type { NavTab } from './components/Header';
-import { RoundsMap } from './components/RoundsMap';
+import { AppNavigation } from './components/AppNavigation';
+import type { AppTab } from './components/AppNavigation';
+import { StudentDashboardView } from './components/StudentDashboardView';
+import { RoundsCurriculumView } from './components/RoundsCurriculumView';
+import { TheorySummaryView } from './components/TheorySummaryView';
+import { EnrollmentModal } from './components/EnrollmentModal';
 import { ExamSimulator } from './components/ExamSimulator';
-import { TopicPractice } from './components/TopicPractice';
-import { VocabularyBank } from './components/VocabularyBank';
 import { MistakeReview } from './components/MistakeReview';
-import { HotshotExam } from './components/HotshotExam';
-import { VipPaywallModal } from './components/VipPaywallModal';
 import { AboutModal } from './components/AboutModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { AdminCrmDashboard } from './components/AdminCrmDashboard';
@@ -24,7 +25,7 @@ import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<NavTab>('rounds');
+  const [appTab, setAppTab] = useState<AppTab | 'admin'>('dashboard');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
@@ -131,7 +132,7 @@ export function App() {
     const checkAdmin = () => {
       if (window.location.hash === '#admin' || window.location.search.includes('admin=true')) {
         if (adminEmail) {
-          setActiveTab('admin');
+          setAppTab('admin');
         } else {
           setIsAdminLoginOpen(true);
         }
@@ -280,7 +281,7 @@ export function App() {
     }
     // Switch to exam simulator to take the round
     setCurrentRoundId(roundId);
-    setActiveTab('exam');
+    setAppTab('exam');
   };
 
   const handleSelectTab = (tab: NavTab) => {
@@ -291,14 +292,14 @@ export function App() {
     }
     if (tab === 'exam') {
       setCurrentRoundId(null);
+      setAppTab('exam');
+    } else if (tab === 'rounds') {
+      setAppTab('curriculum');
+    } else if (tab === 'mistakes') {
+      setAppTab('errors');
+    } else if (tab === 'admin') {
+      setAppTab('admin');
     }
-    setActiveTab(tab);
-  };
-
-  const handleUnlockVip = () => {
-    setIsVip(true);
-    setIsPaywallOpen(false);
-    alert('🎉 অভিনন্দন! আপনার €49 লাইফটাইম Pro Student Pass সক্রিয় হয়েছে। সম্পূর্ণ ২৪০টি রাউন্ড এবং ৭,১০০+ প্রশ্ন আনলক করা হয়েছে!');
   };
 
   return (
@@ -331,9 +332,6 @@ export function App() {
 
       {/* Navigation Header */}
       <Header
-        activeTab={activeTab}
-        setActiveTab={handleSelectTab}
-        mistakesCount={mistakeIds.length}
         totalQuestionsAnswered={totalQuestionsAnswered}
         isVip={isVip}
         onOpenPaywall={() => setIsPaywallOpen(true)}
@@ -348,27 +346,43 @@ export function App() {
         onLogout={handleLogout}
         onOpenAdmin={() => {
           if (adminEmail) {
-            setActiveTab('admin');
+            setAppTab('admin');
           } else {
             setIsAdminLoginOpen(true);
           }
         }}
       />
 
+      {/* 5-Tab Educational Navigation */}
+      <AppNavigation
+        currentTab={appTab === 'admin' ? 'dashboard' : appTab}
+        onTabChange={(tab) => {
+          if (['exam', 'errors'].includes(tab)) {
+            if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
+          }
+          if (tab === 'exam') {
+            setCurrentRoundId(null);
+          }
+          setAppTab(tab);
+        }}
+        errorCount={mistakeIds.length}
+        activeRound={unlockedRound}
+      />
+
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         {/* Unauthenticated Student Welcome Banner */}
         {!currentUser && (
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border border-orange-200 dark:border-orange-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-sm">
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/10 border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-xs">
             <div className="space-y-1">
-              <span className="inline-block text-[10px] font-black uppercase tracking-wider text-[#FB6C00] bg-orange-100 dark:bg-orange-950/60 px-2 py-0.5 rounded-md">
-                🔒 Student Sign-In Required
+              <span className="inline-block text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 rounded-md">
+                🔒 Free Student Sign-In
               </span>
               <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                কুইজ ও রাউন্ড শুরু করতে লগইন করুন • ২০টি রাউন্ড (৬০০ প্রশ্ন) সম্পূর্ণ ফ্রি
+                Foundation Assessment (Rounds 1–20) • 600 Questions Free
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                আপনার নাম ও ইমেইল দিয়ে একটি ফ্রি স্টুডেন্ট অ্যাকাউন্ট তৈরি করে নিন অথবা ডেমো লগইন দিয়ে এখনই পড়া শুরু করুন।
+                Sign in to track your progress, practice with oral exam audio, and unlock your free rounds.
               </p>
             </div>
             <button
@@ -377,68 +391,78 @@ export function App() {
                 setAuthForcedMessage('২০টি ফ্রি রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।');
                 setIsAuthModalOpen(true);
               }}
-              className="px-5 py-2.5 rounded-xl bg-[#FB6C00] hover:bg-orange-600 text-white font-bold text-xs shrink-0 cursor-pointer shadow-md transition"
+              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-md transition"
             >
-              Log In / Register (ফ্রি)
+              Sign In / Register Free
             </button>
           </div>
         )}
 
-        {activeTab === 'rounds' && (
-          <RoundsMap
-            unlockedRound={unlockedRound}
-            completedRounds={completedRounds}
-            onStartRound={handleStartRound}
-            onOpenPaywall={() => setIsPaywallOpen(true)}
-            isVip={isVip}
-            totalQuestionsAnswered={totalQuestionsAnswered}
+        {appTab === 'dashboard' && (
+          <StudentDashboardView
+            student={currentUser}
+            activeRound={unlockedRound}
+            completedRoundsCount={Object.values(completedRounds).filter(r => r.passed).length}
+            totalQuestionsSolved={totalQuestionsAnswered}
+            errorCount={mistakeIds.length}
+            onContinueRound={(r) => handleStartRound(r)}
+            onGoToCurriculum={() => setAppTab('curriculum')}
+            onGoToTheory={() => setAppTab('theory')}
+            onGoToExam={() => {
+              if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
+              setCurrentRoundId(null);
+              setAppTab('exam');
+            }}
+            onGoToErrors={() => {
+              if (!requireLogin('ভুলের খাতা দেখতে')) return;
+              setAppTab('errors');
+            }}
+            onOpenEnrollment={() => setIsPaywallOpen(true)}
           />
         )}
 
-        {activeTab === 'exam' && (
+        {appTab === 'curriculum' && (
+          <RoundsCurriculumView
+            currentRoundId={unlockedRound}
+            onSelectRound={handleStartRound}
+            onTriggerEnrollment={(_r) => setIsPaywallOpen(true)}
+            completedRounds={completedRounds}
+          />
+        )}
+
+        {appTab === 'theory' && (
+          <TheorySummaryView
+            onStartRound={handleStartRound}
+            onOpenExamSim={() => {
+              if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
+              setCurrentRoundId(null);
+              setAppTab('exam');
+            }}
+          />
+        )}
+
+        {appTab === 'exam' && (
           <ExamSimulator
             roundId={currentRoundId}
             onBackToRounds={() => {
               setCurrentRoundId(null);
-              setActiveTab('rounds');
+              setAppTab('curriculum');
             }}
             onSaveMistakes={handleSaveExamMistakes}
-            onGoToTopics={() => setActiveTab('topics')}
+            onGoToTopics={() => setAppTab('theory')}
           />
         )}
 
-        {activeTab === 'hotshot' && (
-          <HotshotExam
-            onRecordMistake={(id) => {
-              incrementAnsweredCount(1);
-              setMistakeIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
-            }}
-          />
-        )}
-
-        {activeTab === 'topics' && (
-          <TopicPractice
-            onRecordMistake={(id) => {
-              incrementAnsweredCount(1);
-              setMistakeIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
-            }}
-          />
-        )}
-
-        {activeTab === 'vocab' && (
-          <VocabularyBank />
-        )}
-
-        {activeTab === 'mistakes' && (
+        {appTab === 'errors' && (
           <MistakeReview
             mistakeIds={mistakeIds}
             onClearMistakes={() => setMistakeIds([])}
             onRemoveMistake={(id) => setMistakeIds((prev) => prev.filter((item) => item !== id))}
-            onGoToTopics={() => setActiveTab('topics')}
+            onGoToTopics={() => setAppTab('theory')}
           />
         )}
 
-        {activeTab === 'admin' && (
+        {appTab === 'admin' && (
           adminEmail ? (
             <AdminCrmDashboard
               adminEmail={adminEmail}
@@ -447,12 +471,12 @@ export function App() {
                   sessionStorage.removeItem('patente_admin_auth');
                 } catch {}
                 setAdminEmail(null);
-                setActiveTab('rounds');
+                setAppTab('dashboard');
               }}
             />
           ) : (
             <div className="max-w-md mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl text-center space-y-5">
-              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[#FB6C00] flex items-center justify-center mx-auto text-3xl">
+              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-600 flex items-center justify-center mx-auto text-3xl">
                 🔒
               </div>
               <div className="space-y-1">
@@ -464,9 +488,9 @@ export function App() {
               <button
                 type="button"
                 onClick={() => setIsAdminLoginOpen(true)}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm shadow-lg shadow-orange-500/25 transition cursor-pointer"
+                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm shadow-lg shadow-blue-500/25 transition cursor-pointer"
               >
-                Log In as Admin (অ্যাডমিন লগইন)
+                Log In as Admin
               </button>
             </div>
           )
@@ -483,12 +507,12 @@ export function App() {
         forcedMessage={authForcedMessage}
       />
 
-      {/* Pro Student Pass Modal */}
-      <VipPaywallModal
+      {/* Official Driving Academy Enrollment Modal */}
+      <EnrollmentModal
         isOpen={isPaywallOpen}
         onClose={() => setIsPaywallOpen(false)}
-        onUnlockVip={handleUnlockVip}
-        questionsAnsweredCount={totalQuestionsAnswered}
+        onContinueFree={() => setIsPaywallOpen(false)}
+        attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
       />
 
       {/* Student Lead Registration Modal */}
@@ -526,7 +550,7 @@ export function App() {
             sessionStorage.setItem('patente_admin_auth', email);
           } catch {}
           setIsAdminLoginOpen(false);
-          setActiveTab('admin');
+          setAppTab('admin');
         }}
       />
 
@@ -536,7 +560,7 @@ export function App() {
         onOpenAbout={() => setIsAboutOpen(true)}
         onOpenAdmin={() => {
           if (adminEmail) {
-            setActiveTab('admin');
+            setAppTab('admin');
           } else {
             setIsAdminLoginOpen(true);
           }

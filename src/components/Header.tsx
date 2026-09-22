@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import {
-  Award,
-  BookOpen,
-  AlertCircle,
-  BookmarkCheck,
-  MapPin,
   ShieldCheck,
   Info,
-  Flame,
   GraduationCap,
   LogOut,
   LogIn,
@@ -22,9 +16,6 @@ import type { StudentUser } from './StudentAuthModal';
 export type NavTab = 'rounds' | 'exam' | 'hotshot' | 'topics' | 'vocab' | 'mistakes' | 'admin';
 
 interface HeaderProps {
-  activeTab: NavTab;
-  setActiveTab: (tab: NavTab) => void;
-  mistakesCount: number;
   totalQuestionsAnswered: number;
   isVip: boolean;
   onOpenPaywall: () => void;
@@ -38,9 +29,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  activeTab,
-  setActiveTab,
-  mistakesCount,
   totalQuestionsAnswered,
   isVip,
   onOpenPaywall,
@@ -199,137 +187,34 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden xl:inline text-[11px]">Admin</span>
             </button>
 
-            {/* Pro Student Pass CTA */}
+            {/* Academy Enrollment CTA */}
             {!isVip ? (
               <div className="flex items-center gap-2">
                 <div className="text-right hidden sm:block">
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">Free Round Quota</span>
-                  <span className="text-xs font-black text-[#FB6C00]">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">Foundation Access</span>
+                  <span className="text-xs font-black text-blue-600 dark:text-blue-400">
                     {Math.min(600, totalQuestionsAnswered)} / 600 Qs
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={onOpenPaywall}
-                  className="py-1.5 px-3 rounded-xl bg-[#FB6C00] hover:bg-orange-600 text-white font-black text-xs shadow-md shadow-orange-500/20 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5"
+                  className="py-1.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-md shadow-blue-500/20 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5"
                 >
                   <GraduationCap className="w-3.5 h-3.5 text-white" />
-                  <span>Pro Student Pass (€49)</span>
+                  <span>Academy Enrollment</span>
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-black">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Pro Pass Active (7,165 Qs)</span>
+                <span>Enrolled Student (240 Rounds)</span>
               </div>
             )}
           </div>
         </div>
-
-        {/* 6-Card Action Navigation */}
-        <nav className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
-          {/* 1. Rounds Map (240 Rounds) */}
-          <button
-            onClick={() => setActiveTab('rounds')}
-            className={`p-2 sm:p-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
-              activeTab === 'rounds'
-                ? 'bg-[#FB6C00] text-white shadow-orange-500/20 ring-2 ring-orange-200 scale-[1.02]'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            <MapPin className="w-4 h-4 shrink-0" />
-            <div className="text-left">
-              <span className="block leading-none text-[11px] sm:text-xs">২৪০ রাউন্ড</span>
-              <span className="text-[9px] opacity-80 block leading-tight font-normal">240 Round</span>
-            </div>
-          </button>
-
-          {/* 2. Official Exam Simulator */}
-          <button
-            onClick={() => setActiveTab('exam')}
-            className={`p-2 sm:p-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
-              activeTab === 'exam'
-                ? 'bg-[#FB6C00] text-white shadow-orange-500/20 ring-2 ring-orange-200 scale-[1.02]'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            <Award className="w-4 h-4 shrink-0" />
-            <div className="text-left">
-              <span className="block leading-none text-[11px] sm:text-xs">সিমুলেশন টেস্ট</span>
-              <span className="text-[9px] opacity-80 block leading-tight font-normal">Esame Ufficiale</span>
-            </div>
-          </button>
-
-          {/* 3. Hotshot Questions (Top Traps) */}
-          <button
-            onClick={() => setActiveTab('hotshot')}
-            className={`p-2 sm:p-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
-              activeTab === 'hotshot'
-                ? 'bg-[#FB6C00] text-white shadow-orange-500/20 ring-2 ring-orange-200 scale-[1.02]'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            <Flame className="w-4 h-4 shrink-0 text-[#E73F1E]" />
-            <div className="text-left">
-              <span className="block leading-none text-[11px] sm:text-xs">Hotshot Questions</span>
-              <span className="text-[9px] opacity-80 block leading-tight font-normal">75 Top Exam Traps</span>
-            </div>
-          </button>
-
-          {/* 4. Topic Practice (By Chapter) */}
-          <button
-            onClick={() => setActiveTab('topics')}
-            className={`p-2 sm:p-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
-              activeTab === 'topics'
-                ? 'bg-[#FB6C00] text-white shadow-orange-500/20 ring-2 ring-orange-200 scale-[1.02]'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            <BookOpen className="w-4 h-4 shrink-0" />
-            <div className="text-left">
-              <span className="block leading-none text-[11px] sm:text-xs">টপিক কুইজ</span>
-              <span className="text-[9px] opacity-80 block leading-tight font-normal">Per Argomento</span>
-            </div>
-          </button>
-
-          {/* 5. Vocabulary & Pronunciation */}
-          <button
-            onClick={() => setActiveTab('vocab')}
-            className={`p-2 sm:p-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
-              activeTab === 'vocab'
-                ? 'bg-[#FB6C00] text-white shadow-orange-500/20 ring-2 ring-orange-200 scale-[1.02]'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            <BookmarkCheck className="w-4 h-4 shrink-0" />
-            <div className="text-left">
-              <span className="block leading-none text-[11px] sm:text-xs">শব্দকোষ ও অডিও</span>
-              <span className="text-[9px] opacity-80 block leading-tight font-normal">Dizionario Audio</span>
-            </div>
-          </button>
-
-          {/* 6. Mistakes Bank */}
-          <button
-            onClick={() => setActiveTab('mistakes')}
-            className={`p-2 sm:p-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer relative shadow-sm ${
-              activeTab === 'mistakes'
-                ? 'bg-[#FB6C00] text-white shadow-orange-500/20 ring-2 ring-orange-200 scale-[1.02]'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <div className="text-left">
-              <span className="block leading-none text-[11px] sm:text-xs">ভুল প্রশ্ন ব্যাংক</span>
-              <span className="text-[9px] opacity-80 block leading-tight font-normal">I Miei Errori</span>
-            </div>
-            {mistakesCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-black bg-[#E73F1E] text-white shadow-sm">
-                {mistakesCount}
-              </span>
-            )}
-          </button>
-        </nav>
       </div>
     </header>
   );
 };
+
