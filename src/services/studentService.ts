@@ -60,10 +60,14 @@ export const registerStudent = async (
       const firebaseUser = userCredential.user;
 
       // Update display name
-      await updateProfile(firebaseUser, { displayName: cleanName });
+      try {
+        await updateProfile(firebaseUser, { displayName: cleanName });
+      } catch (profErr) {
+        console.warn('updateProfile notice:', profErr);
+      }
 
-      // Save initial student progress in Cloud Firestore
-      const newProfile: StudentProfile = {
+      // Serializable profile for client UI
+      const clientProfile: StudentProfile = {
         uid: firebaseUser.uid,
         name: cleanName,
         email: cleanEmail,
@@ -73,18 +77,25 @@ export const registerStudent = async (
         completedRounds: {},
         mistakeIds: [],
         isVip: false,
-        createdAt: serverTimestamp(),
-        lastLoginAt: serverTimestamp(),
-      };
-
-      await setDoc(doc(db, 'students', firebaseUser.uid), newProfile);
-
-      // Cache locally and permanently log to registered students directory
-      const clientProfile = {
-        ...newProfile,
         createdAt: new Date().toISOString(),
         lastLoginAt: new Date().toISOString(),
       };
+
+      // Save initial student progress in Cloud Firestore (with 3.5s timeout to guarantee UI never freezes)
+      try {
+        await Promise.race([
+          setDoc(doc(db, 'students', firebaseUser.uid), {
+            ...clientProfile,
+            createdAt: serverTimestamp(),
+            lastLoginAt: serverTimestamp(),
+          }),
+          new Promise((resolve) => setTimeout(resolve, 3500)),
+        ]);
+      } catch (dbErr) {
+        console.warn('Firestore setDoc notice:', dbErr);
+      }
+
+      // Cache locally and permanently log to registered students directory
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clientProfile));
         const all = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
@@ -95,7 +106,7 @@ export const registerStudent = async (
         console.warn('Local student list update error:', storageErr);
       }
 
-      return newProfile;
+      return clientProfile;
     } catch (err: any) {
       console.error('Firebase registration error:', err);
       throw err;

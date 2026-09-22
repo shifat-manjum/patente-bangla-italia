@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { HOTSHOT_QUESTIONS } from '../data/hotshotQuestions';
 import { RoadSign } from './RoadSign';
+import { getBanglaTranslation } from '../utils/patenteTranslator';
 
 interface HotshotExamProps {
   onRecordMistake?: (id: string) => void;
@@ -194,8 +195,8 @@ export const HotshotExam: React.FC<HotshotExamProps> = ({ onRecordMistake }) => 
             <span className="text-[10px] font-black uppercase tracking-wider text-amber-800">
               বাংলা ভাবার্থ:
             </span>
-            <p className="text-base sm:text-lg font-semibold text-slate-800 leading-relaxed">
-              {currentQ.questionBn}
+            <p className="text-base sm:text-lg font-bold text-slate-800 leading-relaxed">
+              {getBanglaTranslation(currentQ.questionIt, currentQ.questionBn)}
             </p>
           </div>
         </div>

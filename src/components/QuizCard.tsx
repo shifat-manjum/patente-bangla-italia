@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
 import { RoadSign } from './RoadSign';
+import { getBanglaTranslation } from '../utils/patenteTranslator';
 
 interface QuizCardProps {
   question: QuizQuestion;
@@ -139,8 +140,8 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             <span>🇧🇩</span>
             <span>সহজ বাংলা অনুবাদ ও অর্থ:</span>
           </div>
-          <p className="text-base sm:text-lg font-bold text-slate-800 leading-relaxed">
-            {question.questionBn}
+          <p className="text-base sm:text-xl font-bold text-slate-800 leading-relaxed">
+            {getBanglaTranslation(question.questionIt, question.questionBn)}
           </p>
         </div>
       )}

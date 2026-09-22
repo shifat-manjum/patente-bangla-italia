@@ -155,12 +155,11 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     try {
       setIsLoading(true);
       const student = await registerStudent(name.trim(), email.trim(), cleanPhone, password);
-      // Show celebratory Welcome screen
+      setIsLoading(false);
       setRegisteredStudent(student);
     } catch (err: any) {
-      setError(getFirebaseErrorMessage(err));
-    } finally {
       setIsLoading(false);
+      setError(getFirebaseErrorMessage(err));
     }
   };
 
