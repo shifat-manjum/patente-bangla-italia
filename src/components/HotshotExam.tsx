@@ -12,6 +12,7 @@ import {
 import { HOTSHOT_QUESTIONS } from '../data/hotshotQuestions';
 import { RoadSign } from './RoadSign';
 import { getBanglaTranslation } from '../utils/patenteTranslator';
+import { speakItalian as playItalianFemaleVoice } from '../utils/italianSpeech';
 
 interface HotshotExamProps {
   onRecordMistake?: (id: string) => void;
@@ -55,13 +56,7 @@ export const HotshotExam: React.FC<HotshotExamProps> = ({ onRecordMistake }) => 
   };
 
   const speakItalian = (text: string) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'it-IT';
-      utterance.rate = 0.88;
-      window.speechSynthesis.speak(utterance);
-    }
+    playItalianFemaleVoice(text, { rate: 1.0 });
   };
 
   const totalAnswered = Object.keys(userAnswers).length;

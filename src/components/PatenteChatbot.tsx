@@ -15,6 +15,7 @@ import { HOTSHOT_QUESTIONS } from '../data/hotshotQuestions';
 import { ROUND_QUESTIONS } from '../data/roundQuestions';
 import { COMPREHENSIVE_VOCABULARY } from '../data/vocabData';
 import type { StudentUser } from './StudentAuthModal';
+import { speakItalian as playItalianFemaleVoice } from '../utils/italianSpeech';
 
 interface Message {
   id: string;
@@ -66,15 +67,9 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     }
   }, [messages, isOpen, isMinimized, isTyping]);
 
-  // Speech pronunciation for Italian text
+  // Speech pronunciation for Italian text using natural female voice
   const speakItalian = (text: string) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'it-IT';
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
-    }
+    playItalianFemaleVoice(text, { rate: 1.0 });
   };
 
   const copyToClipboard = (id: string, text: string) => {

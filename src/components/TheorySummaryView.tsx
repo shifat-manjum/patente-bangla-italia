@@ -9,6 +9,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { THEORY_CHAPTERS, type TheoryChapter } from '../data/theoryData';
+import { speakItalian as playItalianFemaleVoice, stopSpeech } from '../utils/italianSpeech';
 
 interface TheorySummaryViewProps {
   onStartRound: (roundId: number) => void;
@@ -23,15 +24,17 @@ export const TheorySummaryView: React.FC<TheorySummaryViewProps> = ({
   const [playingRule, setPlayingRule] = useState<string | null>(null);
 
   const speakItalian = (text: string) => {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'it-IT';
-    utterance.rate = 0.9;
+    if (playingRule === text) {
+      stopSpeech();
+      setPlayingRule(null);
+      return;
+    }
     setPlayingRule(text);
-    utterance.onend = () => setPlayingRule(null);
-    utterance.onerror = () => setPlayingRule(null);
-    window.speechSynthesis.speak(utterance);
+    playItalianFemaleVoice(text, {
+      rate: 1.0,
+      onStart: () => setPlayingRule(text),
+      onEnd: () => setPlayingRule(null)
+    });
   };
 
   const filteredChapters = THEORY_CHAPTERS.filter((ch) => {

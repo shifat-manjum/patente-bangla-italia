@@ -11,6 +11,7 @@ import {
 import type { QuizQuestion } from '../data/quizData';
 import { RoadSign } from './RoadSign';
 import { getBanglaTranslation } from '../utils/patenteTranslator';
+import { speakItalian as playItalianFemaleVoice, stopSpeech } from '../utils/italianSpeech';
 
 interface QuizCardProps {
   question: QuizQuestion;
@@ -31,25 +32,20 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 }) => {
   const [showBanglaTranslation, setShowBanglaTranslation] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speechRate, setSpeechRate] = useState<number>(0.9);
+  const [speechRate, setSpeechRate] = useState<number>(1.0); // Regular human reading speed
 
-  // Audio pronunciation of the Italian question (Oral Exam Simulation)
+  // Audio pronunciation using natural Italian female voice at regular speed
   const speakItalian = (text: string) => {
-    if ('speechSynthesis' in window) {
-      if (isSpeaking) {
-        window.speechSynthesis.cancel();
-        setIsSpeaking(false);
-        return;
-      }
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'it-IT';
-      utterance.rate = speechRate;
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      window.speechSynthesis.speak(utterance);
+    if (isSpeaking) {
+      stopSpeech();
+      setIsSpeaking(false);
+      return;
     }
+    playItalianFemaleVoice(text, {
+      rate: speechRate,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => setIsSpeaking(false)
+    });
   };
 
   const isAnswered = userAnswer !== null && userAnswer !== undefined;
@@ -82,11 +78,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             {/* Audio Speed Toggle */}
             <button
               type="button"
-              onClick={() => setSpeechRate(speechRate === 0.9 ? 0.75 : 0.9)}
+              onClick={() => setSpeechRate(speechRate === 1.0 ? 0.85 : 1.0)}
               className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
               title="Speech Speed"
             >
-              {speechRate === 0.9 ? 'Speed: 1.0x' : 'Speed: 0.8x (Slow)'}
+              {speechRate === 1.0 ? 'Speed: 1.0x (Regular)' : 'Speed: 0.85x (Slow)'}
             </button>
 
             {/* Oral Exam Headphone Audio Button */}

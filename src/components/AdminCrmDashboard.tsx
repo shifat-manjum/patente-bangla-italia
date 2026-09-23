@@ -22,54 +22,80 @@ interface AdminCrmDashboardProps {
   onExitAdmin: () => void;
 }
 
+// Helper for instantaneous local cache retrieval (0ms initial render)
+const getInitialCachedStudents = (): StudentProfile[] => {
+  try {
+    const localStudents: StudentProfile[] = JSON.parse(
+      localStorage.getItem('patente_registered_students') || '[]'
+    );
+    const current = localStorage.getItem('patente_student_user');
+    if (current) {
+      const curObj = JSON.parse(current);
+      if (curObj?.email && !localStudents.some((s) => s.email?.toLowerCase() === curObj.email.toLowerCase())) {
+        localStudents.unshift(curObj);
+      }
+    }
+    return localStudents;
+  } catch {
+    return [];
+  }
+};
+
 export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   adminEmail,
   onExitAdmin,
 }) => {
   const [activeTab, setActiveTab] = useState<'crm' | 'questions'>('crm');
-  const [students, setStudents] = useState<StudentProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Immediately initialize state with cached students so admin sees data in 0ms!
+  const [students, setStudents] = useState<StudentProfile[]>(() => getInitialCachedStudents());
+  const [isLoading, setIsLoading] = useState<boolean>(() => getInitialCachedStudents().length === 0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'free' | 'pro'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch students from Firebase Cloud Firestore & local cache
+  // Fetch students with instant local fallback and 2.5s fast Cloud Firestore timeout
   const fetchStudents = async () => {
     setIsRefreshing(true);
     let firestoreStudents: StudentProfile[] = [];
 
-    // 1. Try fetching from Cloud Firestore
+    // 1. Read immediate local data first
+    const localStudents = getInitialCachedStudents();
+    if (localStudents.length > 0) {
+      setStudents(localStudents);
+      setIsLoading(false);
+    }
+
+    // 2. Query Cloud Firestore with a 2.5-second race timeout (guarantees UI never freezes)
     if (isFirebaseConfigured && db) {
       try {
-        const querySnapshot = await getDocs(collection(db, 'students'));
+        const firestorePromise = getDocs(collection(db, 'students'));
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Firestore timeout')), 2500)
+        );
+        const querySnapshot = await Promise.race([firestorePromise, timeoutPromise]);
         querySnapshot.forEach((docSnap) => {
           firestoreStudents.push(docSnap.data() as StudentProfile);
         });
       } catch (err) {
-        console.warn('Error fetching Firestore students in CRM:', err);
+        console.warn('Firestore fetch notice (using instantaneous cached records):', err);
       }
     }
 
-    // 2. Fetch local storage cached students
-    let localStudents: StudentProfile[] = [];
-    try {
-      localStudents = JSON.parse(localStorage.getItem('patente_registered_students') || '[]');
-      const current = localStorage.getItem('patente_student_user');
-      if (current) {
-        localStudents.push(JSON.parse(current));
-      }
-    } catch {}
-
     // 3. Merge without duplicates (keyed by email or uid)
     const map = new Map<string, StudentProfile>();
-    firestoreStudents.forEach((s) => map.set(s.email.toLowerCase(), s));
     localStudents.forEach((s) => {
-      if (!map.has(s.email.toLowerCase())) {
-        map.set(s.email.toLowerCase(), s);
-      }
+      if (s.email) map.set(s.email.toLowerCase(), s);
+    });
+    firestoreStudents.forEach((s) => {
+      if (s.email) map.set(s.email.toLowerCase(), s);
     });
 
-    setStudents(Array.from(map.values()));
+    const merged = Array.from(map.values());
+    setStudents(merged);
+    try {
+      localStorage.setItem('patente_registered_students', JSON.stringify(merged));
+    } catch {}
+
     setIsLoading(false);
     setIsRefreshing(false);
   };
@@ -77,20 +103,30 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   useEffect(() => {
     fetchStudents();
 
-    // Listen to real-time updates if Firestore is active
+    // Listen to real-time updates if Firestore is active with error tolerance
     if (isFirebaseConfigured && db) {
-      const unsubscribe = onSnapshot(collection(db, 'students'), (snapshot) => {
-        const updatedList: StudentProfile[] = [];
-        snapshot.forEach((d) => updatedList.push(d.data() as StudentProfile));
-        if (updatedList.length > 0) {
-          setStudents((prev) => {
-            const map = new Map<string, StudentProfile>();
-            prev.forEach((s) => map.set(s.email.toLowerCase(), s));
-            updatedList.forEach((s) => map.set(s.email.toLowerCase(), s));
-            return Array.from(map.values());
-          });
+      const unsubscribe = onSnapshot(
+        collection(db, 'students'),
+        (snapshot) => {
+          const updatedList: StudentProfile[] = [];
+          snapshot.forEach((d) => updatedList.push(d.data() as StudentProfile));
+          if (updatedList.length > 0) {
+            setStudents((prev) => {
+              const map = new Map<string, StudentProfile>();
+              prev.forEach((s) => { if (s.email) map.set(s.email.toLowerCase(), s); });
+              updatedList.forEach((s) => { if (s.email) map.set(s.email.toLowerCase(), s); });
+              const result = Array.from(map.values());
+              try {
+                localStorage.setItem('patente_registered_students', JSON.stringify(result));
+              } catch {}
+              return result;
+            });
+          }
+        },
+        (err) => {
+          console.warn('Real-time listener notice (continuing with offline-first data):', err.message);
         }
-      });
+      );
       return () => unsubscribe();
     }
   }, []);

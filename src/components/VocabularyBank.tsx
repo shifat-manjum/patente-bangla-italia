@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BookmarkCheck, Search, Volume2, AlertTriangle, Sparkles } from 'lucide-react';
 import { COMPREHENSIVE_VOCABULARY, CATEGORIES } from '../data/vocabData';
+import { speakItalian as playItalianFemaleVoice, stopSpeech } from '../utils/italianSpeech';
 
 export const VocabularyBank: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -8,16 +9,17 @@ export const VocabularyBank: React.FC = () => {
   const [speakingWord, setSpeakingWord] = useState<string | null>(null);
 
   const speakItalian = (word: string) => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = 'it-IT';
-      utterance.rate = 0.85;
-      utterance.onstart = () => setSpeakingWord(word);
-      utterance.onend = () => setSpeakingWord(null);
-      utterance.onerror = () => setSpeakingWord(null);
-      window.speechSynthesis.speak(utterance);
+    if (speakingWord === word) {
+      stopSpeech();
+      setSpeakingWord(null);
+      return;
     }
+    setSpeakingWord(word);
+    playItalianFemaleVoice(word, {
+      rate: 1.0,
+      onStart: () => setSpeakingWord(word),
+      onEnd: () => setSpeakingWord(null)
+    });
   };
 
   const filteredVocab = COMPREHENSIVE_VOCABULARY.filter((item) => {
