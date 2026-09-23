@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   X, 
   GraduationCap, 
@@ -6,13 +6,15 @@ import {
   BookOpen, 
   MessageCircle, 
   Sparkles, 
-  ShieldCheck 
+  ShieldCheck,
+  ExternalLink
 } from 'lucide-react';
 
 interface EnrollmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onContinueFree: () => void;
+  onViewFullPage?: () => void;
   attemptedRound?: number;
 }
 
@@ -20,8 +22,20 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   isOpen,
   onClose,
   onContinueFree,
+  onViewFullPage,
   attemptedRound = 21,
 }) => {
+  // Listen for Escape key to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const whatsappMessage = encodeURIComponent(
@@ -30,38 +44,51 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   const whatsappUrl = `https://wa.me/393510000000?text=${whatsappMessage}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 transform transition-all">
-        {/* Top Academic Banner */}
-        <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 p-6 sm:p-8 text-white relative">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-fadeIn overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+    >
+      {/* Modal Container: Max 90vh with flex column so header & footer stay fixed, and body scrolls smoothly */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full my-auto overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all max-h-[90vh] flex flex-col">
+        
+        {/* Fixed Header Banner with Always-Visible Close Button */}
+        <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 p-5 sm:p-6 text-white relative shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
-            aria-label="Close"
+            className="absolute top-4 right-4 p-2 rounded-xl bg-white/20 hover:bg-white/30 text-white transition cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
+            aria-label="Close modal"
+            title="বাতিল করুন (Close)"
           >
             <X className="w-5 h-5" />
+            <span className="text-xs font-bold hidden sm:inline">বাতিল</span>
           </button>
 
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-700/60 border border-blue-500/40 text-xs font-bold text-blue-200">
-              <GraduationCap className="w-4 h-4 text-emerald-400" />
+          <div className="space-y-2 pr-16 sm:pr-20">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-700/70 border border-blue-400/40 text-[11px] font-black text-blue-200">
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
               <span>Official Driving Academy Enrollment</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
+            <h2 className="text-lg sm:text-xl font-black tracking-tight leading-snug">
               Complete Syllabus & Full Academy Access
             </h2>
-            <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
-              You are currently evaluating the Foundation Assessment (Rounds 1–20). Enroll to unlock the full 240 rounds syllabus and official exam simulation tools.
+            <p className="text-xs sm:text-[13px] text-blue-100/90 leading-relaxed">
+              ফাউন্ডেশন রাউন্ড (১–২০) সফলভাবে মূল্যায়নের পর সম্পূর্ণ কোর্স অ্যাক্টিভ করুন (€৪৯ এককালীন লাইফটাইম ফি)।
             </p>
           </div>
         </div>
 
-        {/* Course Inclusions */}
-        <div className="p-6 sm:p-8 space-y-5">
+        {/* Scrollable Course Inclusions Body */}
+        <div className="p-5 sm:p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-left">
           <div className="space-y-3">
-            <span className="text-xs font-black uppercase tracking-wider text-slate-500">
-              What is included with Official Enrollment:
+            <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              এনরোলমেন্টের সাথে যা যা পাচ্ছেন:
             </span>
 
             <div className="space-y-2.5">
@@ -69,40 +96,40 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 {
                   icon: BookOpen,
                   title: 'Complete 240 Rounds (7,200+ Ministerial Questions)',
-                  desc: 'Every official question from the Italian Highway Code with accurate Bengali explanations.',
+                  desc: 'ইতালির পরিবহন মন্ত্রণালয়ের অফিশিয়াল ডাটাবেজের প্রতিটি প্রশ্নের সহজ বাংলা অনুবাদ ও সঠিক ব্যাখ্যা।',
                 },
                 {
                   icon: Headphones,
                   title: 'Official Oral Exam Headphone Audio Simulation',
-                  desc: 'Listen to native Italian audio pronunciation for every question, exactly like in the exam hall.',
+                  desc: 'ইতালির মোটরিসাসিয়নের আসল পরীক্ষার মতো প্রতিটি প্রশ্ন নেটিভ ইতালিয়ান নারী কণ্ঠে শোনার সুবিধা।',
                 },
                 {
                   icon: Sparkles,
                   title: '25 Chapters Theory Cheat Sheets & Trap Keywords',
-                  desc: 'Key rules and exam tricks explained in 90 seconds per chapter.',
+                  desc: 'প্রতিটি চ্যাপ্টারের মূল ফাঁদ শব্দ (Trabocchetti) এবং দ্রুত মুখস্থ করার গোল্ডেন রুলস।',
                 },
                 {
                   icon: MessageCircle,
                   title: 'Direct WhatsApp Instructor Mentorship',
-                  desc: 'Got stuck on a tricky question? Get immediate guidance from our experienced team in Italy.',
+                  desc: 'কুইজ সমাধান করতে গিয়ে কোনো প্রশ্ন বুঝতে না পারলে সরাসরি অভিজ্ঞ টিমের সাথে হোয়াটসঅ্যাপে সমাধান।',
                 },
                 {
                   icon: ShieldCheck,
                   title: 'Lifetime 2026 Ministerial Updates Included',
-                  desc: 'Continuous access and new ministerial question updates until you pass your exam.',
+                  desc: 'কোনো মাসিক ফি নেই। একবার এনরোল করলে পাস করার আগ পর্যন্ত আনলিমিটেড লাইফটাইম এক্সেস।',
                 },
               ].map((item, idx) => {
                 const Icon = item.icon;
                 return (
-                  <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
-                    <div className="p-2 rounded-lg bg-blue-100/80 text-blue-700 shrink-0 mt-0.5">
+                  <div key={idx} className="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80">
+                    <div className="p-2 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 shrink-0 mt-0.5">
                       <Icon className="w-4 h-4" />
                     </div>
-                    <div className="space-y-0.5">
-                      <p className="text-xs sm:text-sm font-bold text-slate-900">
+                    <div className="space-y-0.5 min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                         {item.title}
                       </p>
-                      <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
+                      <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                         {item.desc}
                       </p>
                     </div>
@@ -112,27 +139,55 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-2.5 pt-2">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-98"
-            >
-              <MessageCircle className="w-5 h-5" />
-              <span>Confirm Enrollment via WhatsApp</span>
-            </a>
+          {/* View as Full Page Option */}
+          {onViewFullPage && (
+            <div className="pt-1 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onViewFullPage();
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              >
+                <span>পূর্ণাঙ্গ আলাদা পেজে বিস্তারিত দেখুন (View as Full Page)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
 
+        {/* Fixed Bottom Action Buttons */}
+        <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 shrink-0 space-y-2">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-98"
+          >
+            <MessageCircle className="w-4.5 h-4.5" />
+            <span>Confirm Enrollment via WhatsApp (€৪৯)</span>
+          </a>
+
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onContinueFree}
-              className="w-full py-2.5 px-4 rounded-xl text-slate-600 hover:text-slate-900 font-bold text-xs sm:text-sm text-center transition cursor-pointer hover:bg-slate-100"
+              className="flex-1 py-2 px-3 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-bold text-xs text-center transition cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
             >
-              Continue Foundation Assessment (Rounds 1–20 Free)
+              Continue Free (১–২০ রাউন্ড)
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="py-2 px-4 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs text-center transition cursor-pointer"
+            >
+              বন্ধ করুন (Close)
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );

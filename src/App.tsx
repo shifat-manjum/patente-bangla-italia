@@ -23,9 +23,10 @@ import {
 import { PatenteChatbot } from './components/PatenteChatbot';
 import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
+import { AcademyEnrollmentPage } from './components/AcademyEnrollmentPage';
 
 export function App() {
-  const [appTab, setAppTab] = useState<AppTab | 'admin'>('dashboard');
+  const [appTab, setAppTab] = useState<AppTab | 'admin' | 'enrollment'>('dashboard');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
 
@@ -353,7 +354,7 @@ export function App() {
       <Header
         totalQuestionsAnswered={totalQuestionsAnswered}
         isVip={isVip}
-        onOpenPaywall={() => setIsPaywallOpen(true)}
+        onOpenPaywall={() => setAppTab('enrollment')}
         onOpenAbout={() => setIsAboutOpen(true)}
         currentTheme={currentTheme}
         onThemeChange={setCurrentTheme}
@@ -374,7 +375,7 @@ export function App() {
 
       {/* 5-Tab Educational Navigation */}
       <AppNavigation
-        currentTab={appTab === 'admin' ? 'dashboard' : appTab}
+        currentTab={appTab === 'admin' || appTab === 'enrollment' ? 'dashboard' : appTab}
         onTabChange={(tab) => {
           if (['exam', 'errors'].includes(tab)) {
             if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
@@ -436,7 +437,7 @@ export function App() {
               if (!requireLogin('ভুলের খাতা দেখতে')) return;
               setAppTab('errors');
             }}
-            onOpenEnrollment={() => setIsPaywallOpen(true)}
+            onOpenEnrollment={() => setAppTab('enrollment')}
           />
         )}
 
@@ -446,7 +447,7 @@ export function App() {
             unlockedRound={unlockedRound}
             isVip={isVip}
             onSelectRound={handleStartRound}
-            onTriggerEnrollment={(_r) => setIsPaywallOpen(true)}
+            onTriggerEnrollment={(_r) => setAppTab('enrollment')}
             completedRounds={completedRounds}
           />
         )}
@@ -517,6 +518,13 @@ export function App() {
             </div>
           )
         )}
+
+        {appTab === 'enrollment' && (
+          <AcademyEnrollmentPage
+            onBack={() => setAppTab('dashboard')}
+            attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
+          />
+        )}
       </main>
 
       {/* Mandatory Student Auth Modal */}
@@ -534,6 +542,10 @@ export function App() {
         isOpen={isPaywallOpen}
         onClose={() => setIsPaywallOpen(false)}
         onContinueFree={() => setIsPaywallOpen(false)}
+        onViewFullPage={() => {
+          setIsPaywallOpen(false);
+          setAppTab('enrollment');
+        }}
         attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
       />
 
@@ -559,7 +571,7 @@ export function App() {
       <PatenteChatbot
         currentTheme={currentTheme}
         currentUser={currentUser}
-        onOpenPaywall={() => setIsPaywallOpen(true)}
+        onOpenPaywall={() => setAppTab('enrollment')}
       />
 
       {/* Admin Login Gate Modal */}
