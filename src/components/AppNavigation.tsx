@@ -68,7 +68,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
     <>
       {/* Desktop Top Tab Navigation Bar (Car Cockpit Ambient Style) */}
       <nav className="hidden md:block bg-slate-950/85 dark:bg-black/90 backdrop-blur-xl border-b border-slate-800/80 sticky top-16 z-30 shadow-xl transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="max-w-[1600px] mx-auto px-[15px] py-3">
           <div className="flex items-center justify-center gap-3 lg:gap-4 overflow-x-auto no-scrollbar py-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;

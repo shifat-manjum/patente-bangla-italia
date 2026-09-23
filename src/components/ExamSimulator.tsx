@@ -235,7 +235,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 animate-fadeIn">
+    <div className="w-full max-w-5xl mx-auto space-y-4 animate-fadeIn">
       {/* Top Status Bar: Timer + Progress */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
         {/* Round or Mock Test Label */}

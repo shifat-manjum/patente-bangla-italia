@@ -10,7 +10,7 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpenAdmin }) => {
   return (
     <footer className="mt-20 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-[15px] py-10 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand & Purpose */}
           <div className="space-y-2 md:col-span-2">

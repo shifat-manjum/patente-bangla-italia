@@ -85,7 +85,7 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn">
+    <div className="w-full max-w-5xl mx-auto space-y-8 animate-fadeIn">
       {/* Top Banner */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 space-y-4 relative overflow-hidden border border-rose-200 dark:border-rose-900/60 shadow-sm">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
