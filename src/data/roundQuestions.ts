@@ -18636,9 +18636,8 @@ export const getQuestionsForRound = (roundId: number, randomize: boolean = true)
     const otherShuffled = shuffleQuestions(otherQs);
     selected.push(...otherShuffled.slice(0, otherCount));
 
-    pool = selected.map((q, idx) => ({
+    pool = selected.map((q) => ({
       ...q,
-      id: `r${roundId}_q${idx + 1}`,
       roundId
     }));
   }

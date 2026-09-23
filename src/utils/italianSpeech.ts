@@ -123,3 +123,4 @@ export const stopSpeech = (): void => {
     window.speechSynthesis.cancel();
   }
 };
+
