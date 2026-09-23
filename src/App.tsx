@@ -469,6 +469,7 @@ export function App() {
               setCurrentRoundId(null);
               setAppTab('curriculum');
             }}
+            onSelectRound={handleStartRound}
             onSaveMistakes={handleSaveExamMistakes}
             onGoToTopics={() => setAppTab('theory')}
           />

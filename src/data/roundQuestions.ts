@@ -18579,6 +18579,70 @@ export const ALL_200_QUESTIONS: ExtendedQuizQuestion[] = [
   }
 ];
 
-export const getQuestionsForRound = (roundId: number): ExtendedQuizQuestion[] => {
-  return ROUND_QUESTIONS[roundId] || ROUND_QUESTIONS[1] || [];
+/**
+ * Fisher-Yates array shuffling algorithm for true random question ordering on each attempt
+ */
+export function shuffleQuestions<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/**
+ * Returns 30 official questions for any Round from 1 to 240.
+ * Automatically randomizes question order on retakes and tests.
+ */
+export const getQuestionsForRound = (roundId: number, randomize: boolean = true): ExtendedQuizQuestion[] => {
+  let pool: ExtendedQuizQuestion[] = [];
+
+  if (roundId >= 1 && roundId <= 20 && ROUND_QUESTIONS[roundId]) {
+    pool = [...ROUND_QUESTIONS[roundId]];
+  } else {
+    // Determine syllabus topic chapters for Pro rounds (21 to 240)
+    let topicChapters: string[] = [];
+    if (roundId <= 40) {
+      topicChapters = ['ch_9', 'ch_10', 'ch_14']; // Precedenze e Incroci
+    } else if (roundId <= 60) {
+      topicChapters = ['ch_2', 'ch_3']; // Segnali di Divieto
+    } else if (roundId <= 80) {
+      topicChapters = ['ch_4', 'ch_5', 'ch_6']; // Segnali di Obbligo
+    } else if (roundId <= 120) {
+      topicChapters = ['ch_11', 'ch_12', 'ch_13', 'ch_15']; // Velocità e Distanza
+    } else if (roundId <= 160) {
+      topicChapters = ['ch_16', 'ch_17']; // Sosta e Sorpasso
+    } else if (roundId <= 200) {
+      topicChapters = ['ch_18', 'ch_19', 'ch_20', 'ch_21', 'ch_22', 'ch_23', 'ch_24', 'ch_25']; // Autostrada e Sicurezza
+    }
+    // Rounds 201-240: Complete Official Ministerial Simulation (All chapters mixed)
+
+    const themeQs = topicChapters.length > 0 
+      ? ALL_200_QUESTIONS.filter((q) => topicChapters.includes(q.chapterId))
+      : [];
+    const otherQs = topicChapters.length > 0
+      ? ALL_200_QUESTIONS.filter((q) => !topicChapters.includes(q.chapterId))
+      : ALL_200_QUESTIONS;
+
+    const themeCount = Math.min(18, themeQs.length);
+    const otherCount = 30 - themeCount;
+
+    const selected: ExtendedQuizQuestion[] = [];
+    if (themeCount > 0) {
+      const themeShuffled = shuffleQuestions(themeQs);
+      selected.push(...themeShuffled.slice(0, themeCount));
+    }
+    const otherShuffled = shuffleQuestions(otherQs);
+    selected.push(...otherShuffled.slice(0, otherCount));
+
+    pool = selected.map((q, idx) => ({
+      ...q,
+      id: `r${roundId}_q${idx + 1}`,
+      roundId
+    }));
+  }
+
+  return randomize ? shuffleQuestions(pool) : pool;
 };
+

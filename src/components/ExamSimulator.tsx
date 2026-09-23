@@ -11,7 +11,7 @@ import {
   LayoutGrid
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
-import { getQuestionsForRound, ALL_200_QUESTIONS } from '../data/roundQuestions';
+import { getQuestionsForRound, ALL_200_QUESTIONS, shuffleQuestions } from '../data/roundQuestions';
 import { QuizCard } from './QuizCard';
 
 interface ExamSimulatorProps {
@@ -19,21 +19,23 @@ interface ExamSimulatorProps {
   onGoToTopics: () => void;
   roundId?: number | null;
   onBackToRounds?: () => void;
+  onSelectRound?: (roundId: number) => void;
 }
 
 export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   onSaveMistakes,
   onGoToTopics,
   roundId,
-  onBackToRounds
+  onBackToRounds,
+  onSelectRound
 }) => {
-  // Select questions based on round or general mock test
+  // Select questions based on round or general mock test (randomized order on every attempt)
   const generateExamQuestions = (): QuizQuestion[] => {
     if (roundId) {
-      return getQuestionsForRound(roundId);
+      return getQuestionsForRound(roundId, true);
     }
     // General Mock test: pick 30 random questions from ALL_200_QUESTIONS
-    const shuffled = [...ALL_200_QUESTIONS].sort(() => Math.random() - 0.5);
+    const shuffled = shuffleQuestions(ALL_200_QUESTIONS);
     return shuffled.slice(0, 30);
   };
 
@@ -47,12 +49,13 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   // When roundId changes, reset and auto-start or prepare round questions
   useEffect(() => {
     if (roundId) {
-      setQuestions(getQuestionsForRound(roundId));
+      setQuestions(getQuestionsForRound(roundId, true));
       setAnswers({});
       setCurrentIdx(0);
       setTimeLeftSeconds(20 * 60);
       setIsSubmitted(false);
       setIsStarted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [roundId]);
 
@@ -63,6 +66,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
     setTimeLeftSeconds(20 * 60);
     setIsSubmitted(false);
     setIsStarted(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Timer countdown
@@ -90,6 +94,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
 
   const handleSubmitExam = () => {
     setIsSubmitted(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Calculate mistakes
     const mistakeIds: string[] = [];
@@ -120,11 +125,17 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   const currentQuestion = questions[currentIdx];
 
   // Calculate results if submitted
+  const totalQuestions = questions.length || 30;
+  const correctCount = questions.reduce((acc, q, idx) => {
+    const userAns = answers[idx];
+    return userAns === q.isCorrect ? acc + 1 : acc;
+  }, 0);
   const errorCount = questions.reduce((acc, q, idx) => {
     const userAns = answers[idx];
     return userAns !== q.isCorrect ? acc + 1 : acc;
   }, 0);
   const isPassed = errorCount <= 3;
+  const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
 
   const [showFullGrid, setShowFullGrid] = useState<boolean>(false);
   const activePillRef = useRef<HTMLButtonElement | null>(null);
@@ -295,51 +306,159 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
       {/* Results Banner if submitted */}
       {isSubmitted && (
         <div
-          className={`p-6 sm:p-8 rounded-2xl border text-center space-y-4 shadow-sm animate-fadeIn ${
+          className={`p-6 sm:p-8 rounded-3xl border text-center space-y-5 shadow-lg animate-fadeIn ${
             isPassed
-              ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800'
-              : 'bg-rose-50/70 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800'
+              ? 'bg-gradient-to-b from-emerald-50 to-white dark:from-emerald-950/40 dark:to-slate-900 border-emerald-300 dark:border-emerald-800'
+              : 'bg-gradient-to-b from-rose-50 to-white dark:from-rose-950/40 dark:to-slate-900 border-rose-300 dark:border-rose-800'
           }`}
         >
-          <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white shadow-sm">
+          <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white shadow-md">
             {isPassed ? (
-              <div className="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center">
-                <CheckCircle2 className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <CheckCircle2 className="w-9 h-9 text-white" />
               </div>
             ) : (
-              <div className="w-16 h-16 rounded-2xl bg-rose-600 flex items-center justify-center">
-                <XCircle className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 rounded-2xl bg-rose-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                <XCircle className="w-9 h-9 text-white" />
               </div>
             )}
           </div>
 
-          <div className="space-y-1">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+          <div className="space-y-1.5 max-w-xl mx-auto">
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-1 border shadow-xs"
+              style={{
+                backgroundColor: isPassed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                borderColor: isPassed ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)',
+                color: isPassed ? '#059669' : '#dc2626'
+              }}
+            >
+              <span>{isPassed ? '✓ IDONEO • অফিশিয়াল মান উত্তীর্ণ' : '✕ RESPINTO • অকৃতকার্য'}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               {isPassed ? '🎉 অভিনন্দন! আপনি পরীক্ষায় পাস করেছেন!' : '❌ দুঃখিত! আপনি পরীক্ষায় ফেল করেছেন'}
             </h2>
-            <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 leading-relaxed">
               {isPassed
-                ? `IDONEO: আপনি মোট ৩০টি প্রশ্নের মধ্যে ${errorCount}টি ভুল করেছেন (অনুমোদিত সর্বোচ্চ ৩টি)।`
-                : `RESPINTO: আপনি মোট ৩০টি প্রশ্নের মধ্যে ${errorCount}টি ভুল করেছেন। পাস করতে সর্বোচ্চ ৩টি ভুলের সুযোগ আছে।`}
+                ? `চমৎকার ফলাফল! আপনি মোট ৩০টি প্রশ্নের মধ্যে ${correctCount}টি সঠিক উত্তর দিয়েছেন এবং মাত্র ${errorCount}টি ভুল করেছেন (অনুমোদিত সর্বোচ্চ ৩টি ভুল)।`
+                : `আপনি মোট ৩০টি প্রশ্নের মধ্যে ${correctCount}টি সঠিক উত্তর দিয়েছেন এবং ${errorCount}টি ভুল করেছেন। ইতালিয়ান নিয়ম অনুযায়ী পরীক্ষায় পাস করতে সর্বোচ্চ ৩টি ভুলের সুযোগ আছে।`}
             </p>
           </div>
 
+          {/* Prominent Points & Score Cards Breakdown */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto text-left pt-1">
+            {/* 1. Correct Points */}
+            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border-2 border-emerald-400 dark:border-emerald-700/60 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                <span>সঠিক (Correct)</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400">
+                  {correctCount}
+                </span>
+                <span className="text-xs font-bold text-emerald-700/70">/ {totalQuestions}</span>
+              </div>
+              <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 mt-1">
+                Passed Points ✅
+              </span>
+            </div>
+
+            {/* 2. Incorrect Points */}
+            <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border-2 border-rose-400 dark:border-rose-700/60 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs font-bold text-rose-800 dark:text-rose-300">
+                <span>ভুল (Incorrect)</span>
+                <XCircle className="w-4 h-4 text-rose-600" />
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-3xl sm:text-4xl font-black text-rose-600 dark:text-rose-400">
+                  {errorCount}
+                </span>
+                <span className="text-xs font-bold text-rose-700/70">/ {totalQuestions}</span>
+              </div>
+              <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300 mt-1">
+                {errorCount <= 3 ? 'অনুমোদিত সীমার ভেতর' : 'অনুমোদিত ৩টির বেশি'}
+              </span>
+            </div>
+
+            {/* 3. Accuracy Percentage */}
+            <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border-2 border-blue-400 dark:border-blue-700/60 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs font-bold text-blue-800 dark:text-blue-300">
+                <span>অর্জিত স্কোর</span>
+                <Award className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-3xl sm:text-4xl font-black text-blue-600 dark:text-blue-400">
+                  {scorePercentage}%
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 mt-1">
+                সঠিকতার হার
+              </span>
+            </div>
+
+            {/* 4. Ministerial Decision */}
+            <div
+              className={`p-4 rounded-2xl border-2 shadow-xs flex flex-col justify-between ${
+                isPassed
+                  ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-600 text-emerald-900 dark:text-emerald-200'
+                  : 'bg-rose-500/10 border-rose-500 dark:border-rose-600 text-rose-900 dark:text-rose-200'
+              }`}
+            >
+              <div className="flex items-center justify-between text-xs font-bold">
+                <span>অফিসিয়াল স্ট্যাটাস</span>
+                <span className="text-xs">{isPassed ? '🎓' : '⚠️'}</span>
+              </div>
+              <div className="mt-2">
+                <span className="text-xl sm:text-2xl font-black tracking-tight">
+                  {isPassed ? 'IDONEO' : 'RESPINTO'}
+                </span>
+              </div>
+              <span className="text-[11px] font-bold mt-1">
+                {isPassed ? 'পাস সম্পন্ন' : 'সর্বোচ্চ ৩টি ভুল অনুমোদিত'}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
               type="button"
               onClick={startNewExam}
-              className="py-2.5 px-6 rounded-xl bg-slate-900 hover:bg-black text-white font-black text-xs transition cursor-pointer flex items-center gap-2 shadow-sm"
+              className="py-3 px-6 rounded-xl bg-slate-900 hover:bg-black dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-black text-xs sm:text-sm transition cursor-pointer flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>পুনরায় পরীক্ষা দিন</span>
+              <RotateCcw className="w-4 h-4" />
+              <span>পুনরায় পরীক্ষা দিন (Randomized Order)</span>
             </button>
+
+            {isPassed && roundId && onSelectRound && roundId < 240 && (
+              <button
+                type="button"
+                onClick={() => onSelectRound(roundId + 1)}
+                className="py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm transition cursor-pointer flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95"
+              >
+                <span>পরবর্তী রাউন্ড #{roundId + 1} শুরু করুন</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+
             <button
               type="button"
               onClick={onGoToTopics}
-              className="py-2.5 px-6 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition cursor-pointer"
+              className="py-3 px-6 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm border border-slate-200 dark:border-slate-700 transition cursor-pointer"
             >
               অধ্যায়ভিত্তিক রিভিশন নিন
             </button>
+
+            {onBackToRounds && (
+              <button
+                type="button"
+                onClick={onBackToRounds}
+                className="py-3 px-5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm border border-slate-200 dark:border-slate-700 transition cursor-pointer"
+              >
+                রাউন্ড তালিকায় ফিরুন
+              </button>
+            )}
           </div>
         </div>
       )}

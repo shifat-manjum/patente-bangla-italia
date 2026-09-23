@@ -40,3 +40,4 @@ for (let [w, items] of Object.entries(found)) {
     items.slice(0, 3).forEach(it => console.log('  ', it));
   }
 }
+
