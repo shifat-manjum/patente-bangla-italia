@@ -121,7 +121,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     const deltaX = e.clientX - dragStartRef.current.startX;
     const deltaY = e.clientY - dragStartRef.current.startY;
 
-    if (Math.hypot(deltaX, deltaY) > 5) {
+    if (Math.hypot(deltaX, deltaY) > 8) {
       isDraggingRef.current = true;
     }
 
@@ -143,13 +143,16 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       }
     } catch {}
 
+    const wasDragging = isDraggingRef.current;
     dragStartRef.current = null;
     setIsPointerDown(false);
+    isDraggingRef.current = false;
 
-    // Keep dragging flag briefly to suppress accidental click after drag
-    setTimeout(() => {
-      isDraggingRef.current = false;
-    }, 120);
+    // Direct, reliable tap-to-open! If user did not drag, open the chatbot immediately:
+    if (!wasDragging) {
+      setIsOpen(true);
+      setIsMinimized(false);
+    }
   };
 
   // Intelligent Response Generator & Knowledge Matcher
@@ -300,41 +303,38 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       {/* Moveable WhatsApp Floating Action Button */}
       {!isOpen && (
         <div
+          role="button"
+          tabIndex={0}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
-          className="flex items-center select-none touch-none cursor-grab active:cursor-grabbing transition-transform"
-          style={{ transform: isPointerDown ? 'scale(1.05)' : 'scale(1)' }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setIsOpen(true);
+              setIsMinimized(false);
+            }
+          }}
+          className="flex items-center select-none touch-none cursor-grab active:cursor-grabbing transition-transform py-2.5 pl-3 pr-4 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm shadow-2xl shadow-emerald-600/40 hover:scale-[1.03] active:scale-95 border-2 border-white/50 gap-2.5"
+          style={{ transform: isPointerDown ? 'scale(1.05)' : undefined }}
         >
           {/* Visual Drag Gripper for both Mobile & Desktop */}
           <div
             title="Drag with finger or mouse to move anywhere"
-            className="p-1.5 rounded-l-full bg-emerald-800/90 text-emerald-200 shadow-md flex items-center justify-center -mr-1 z-10 border-l border-y border-white/30"
+            className="flex items-center text-emerald-100/90 shrink-0"
           >
             <GripVertical className="w-4 h-4" />
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (!isDraggingRef.current) {
-                setIsOpen(true);
-                setIsMinimized(false);
-              }
-            }}
-            className="group relative py-2.5 pl-3.5 pr-4 rounded-r-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm shadow-2xl shadow-emerald-600/40 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center gap-2 border-2 border-l-0 border-white/40"
-          >
-            <span className="relative flex h-3 w-3 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
-            </span>
-            <MessageCircle className="w-5 h-5 fill-current text-white shrink-0" />
-            <div className="text-left leading-tight">
-              <span className="block text-xs font-black">24/7 Live Support</span>
-              <span className="text-[10px] opacity-90 block font-bold">Replies &lt; 1 min</span>
-            </div>
-          </button>
+          <span className="relative flex h-3 w-3 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
+          </span>
+          <MessageCircle className="w-5 h-5 fill-current text-white shrink-0" />
+          <div className="text-left leading-tight">
+            <span className="block text-xs font-black">24/7 Live Support</span>
+            <span className="text-[10px] opacity-90 block font-bold">Replies &lt; 1 min</span>
+          </div>
         </div>
       )}
 

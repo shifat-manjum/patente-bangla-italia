@@ -168,16 +168,14 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
           return (
             <div
               key={round.id}
-              className={`rounded-2xl border p-4.5 transition-all duration-300 transform hover:scale-[1.03] hover:-translate-y-1 relative flex flex-col justify-between cursor-pointer ${
+              className={`rounded-2xl border p-4 transition-all duration-300 transform hover:scale-[1.03] hover:-translate-y-1 relative flex flex-col justify-between ${
                 isCurrent
-                  ? 'bg-blue-50/90 dark:bg-blue-950/50 border-blue-400 dark:border-blue-500 ring-2 ring-blue-300 dark:ring-blue-800 shadow-sm hover:shadow-[0_20px_35px_-6px_rgba(37,99,235,0.4)] dark:hover:shadow-[0_20px_35px_-6px_rgba(59,130,246,0.35)] hover:border-blue-500'
+                  ? 'bg-blue-50/90 dark:bg-blue-950/50 border-blue-400 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900 shadow-sm'
                   : isPassed
-                  ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 hover:border-emerald-500 hover:shadow-[0_20px_35px_-6px_rgba(16,185,129,0.38)] dark:hover:shadow-[0_20px_35px_-6px_rgba(16,185,129,0.28)]'
-                  : isPaidSyllabus
-                  ? 'bg-gradient-to-br from-indigo-50/70 to-blue-50/50 dark:from-indigo-950/40 dark:to-slate-900 border-indigo-200/90 dark:border-indigo-800/60 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-[0_20px_35px_-6px_rgba(99,102,241,0.35)] dark:hover:shadow-[0_20px_35px_-6px_rgba(99,102,241,0.25)]'
+                  ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 hover:border-emerald-400'
                   : isUnlocked
-                  ? 'bg-white dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-[0_20px_35px_-6px_rgba(16,185,129,0.32)] dark:hover:shadow-[0_20px_35px_-6px_rgba(16,185,129,0.22)]'
-                  : 'bg-slate-50/90 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-[0_16px_30px_-6px_rgba(100,116,139,0.25)]'
+                  ? 'bg-white dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs'
+                  : 'bg-slate-50/90 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 opacity-90'
               }`}
             >
               <div className="space-y-2.5">
