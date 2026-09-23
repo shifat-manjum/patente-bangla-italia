@@ -116,39 +116,92 @@ export const containsBengali = (text?: string): boolean => {
 };
 
 /**
+ * Automatically polishes machine-translated phrases into natural, easily understandable Bengali.
+ */
+export const polishBengaliTranslation = (text: string): string => {
+  if (!text) return '';
+  let res = text;
+
+  const POLISH_MAP: Array<[RegExp, string]> = [
+    // Misleading geometric terms
+    [/\bএকটি ছেদ\b/g, 'একটি চৌরাস্তা বা মোড় (Incrocio)'],
+    [/\bকোনো ছেদে\b/g, 'কোনো চৌরাস্তায় বা মোড়ে'],
+    [/\bছেদের\b/g, 'চৌরাস্তার বা মোড়ের'],
+    [/\bছেদ\b/g, 'চৌরাস্তা বা মোড়'],
+
+    // Italian Patente technical terms made friendly
+    [/\bপ্রেসক্রিপশন সংকেত\b/g, 'বাধ্যতামূলক ও নিয়ন্ত্রণমূলক সংকেত (Segnale di prescrizione)'],
+    [/\bপ্রেসক্রিপশন\b/g, 'বাধ্যতামূলক নিয়ম বা সংকেত'],
+    [/\bক্যারেজওয়ে\b/g, 'ক্যারেজিয়াটা (চলাচলের মূল সড়ক)'],
+    [/\bক্যারেজওয়ের\b/g, 'ক্যারেজিয়াটা (মূল সড়কের)'],
+    [/\bভ্রমণের সময়\b/g, 'গাড়ি চালানোর সময়'],
+    [/\bভ্রমণে বাধা\b/g, 'গাড়ি চলাচল সাময়িক স্থগিত'],
+    [/\bপ্রচলন থাকাকালীন\b/g, 'গাড়ি চালানোর সময়'],
+    [/\bপ্রচলনে\b/g, 'চলাচলে'],
+    [/\bএকটি প্রসারিত রাস্তা\b/g, 'রাস্তার একটি অংশ'],
+    [/\bঅনিয়মিত ফুটপাথ\b/g, 'অমসৃণ বা ভাঙাচোরা রাস্তা (Pavimentazione irregolare)'],
+    [/\bকম রশ্মির আলো\b/g, 'লো-বিম হেডলাইট (Luci anabbaglianti)'],
+    [/\bউচ্চ রশ্মির আলো\b/g, 'হাই-বিম হেডলাইট (Luci abbaglianti)'],
+    [/\bটায়ার এবং অ্যাসফল্টের মধ্যে গ্রিপ\b/g, 'টায়ার ও পিচঢালা রাস্তার গ্রিপ (ঘর্ষণ)'],
+    [/\bটায়ার এবং অ্যাসফল্ট\b/g, 'টায়ার ও পিচঢালা রাস্তা'],
+    [/\bআধা-বাধা\b/g, 'হাফ ব্যারিয়ারযুক্ত রেলগেট'],
+    [/\bলেভেল ক্রসিং\b/g, 'রেল ক্রসিং (Passaggio a livello)'],
+    [/\bড্রাইভওয়ে\b/g, 'ব্যক্তিগত প্রবেশপথ (Passo carrabile)'],
+    [/\bবিচ্ছিন্ন পার্শ্বীয় সাদা ডোরা\b/g, 'ভাঙা সাদা দাগ (Striscia discontinua)'],
+    [/\bসোজা চালিয়ে যাওয়ার বাধ্যবাধকতা\b/g, 'শুধুমাত্র সোজা এগিয়ে যাওয়ার নির্দেশ'],
+    [/\bএকটি লাল স্ট্রাইপ দ্বারা অতিক্রম করা হয়\b/g, 'একটি লাল দাগ দিয়ে কাটা থাকে'],
+    [/\bবন্য প্রাণীদের সম্ভাব্য এবং আকস্মিক ক্রসিং ঘোষণা করে\b/g, 'হঠাৎ বন্য প্রাণী রাস্তা পার হওয়ার আশঙ্কার বিষয়ে সতর্ক করে'],
+    [/\bখুঁজে বের করা নিয়ন্ত্রক\b/g, 'থাকা আইনসম্মত ও নিয়মমাফিক'],
+    [/\bপথের অধিকার রয়েছে\b/g, 'আগে যাওয়ার অগ্রাধিকার (Precedenza) রয়েছে'],
+    [/\bপথের অধিকার\b/g, 'অগ্রাধিকার (Precedenza)'],
+    [/\bউতরাই\b/g, 'নিচের দিকে ঢালু রাস্তা (Discesa)'],
+    [/\bচড়াই\b/g, 'খাড়া উঁচু রাস্তা (Salita)'],
+    [/\bকোয়াড্রিসাইকেল\b/g, 'চার চাকার ছোট যান (Quadricicli)'],
+    [/\bস্বাভাবিক যাতায়াতের\b/g, 'স্বাভাবিক গাড়ি চলাচলের'],
+    [/\bমোটর গাড়ি হল একটি মোটরযান\b/g, 'অটোভেইকেল (Autoveicolo) হলো একটি মোটরচালিত যান'],
+  ];
+
+  for (const [pattern, replacement] of POLISH_MAP) {
+    res = res.replace(pattern, replacement);
+  }
+
+  return res.trim();
+};
+
+/**
  * Returns clean, guaranteed Bangla translation for any Patente Italian question
  */
 export const getBanglaTranslation = (questionIt: string, rawQuestionBn?: string): string => {
   const cleanIt = (questionIt || '').trim();
 
-  // 1. Check exact match in pre-compiled dictionary of all 588 official questions
+  // 1. Check exact match in pre-compiled dictionary of all official questions
   if (PATENTE_TRANSLATIONS_BN[cleanIt]) {
-    return PATENTE_TRANSLATIONS_BN[cleanIt];
+    return polishBengaliTranslation(PATENTE_TRANSLATIONS_BN[cleanIt]);
   }
 
   // 2. Normalize punctuation / quotes and check dictionary again
   const normalizedIt = cleanIt.replace(/['']/g, "'").replace(/[ÀÁ]/g, 'A').replace(/[ÈÉ]/g, 'E');
   for (const [dictIt, dictBn] of Object.entries(PATENTE_TRANSLATIONS_BN)) {
     if (dictIt.trim() === normalizedIt || dictIt.trim().toLowerCase() === cleanIt.toLowerCase()) {
-      return dictBn;
+      return polishBengaliTranslation(dictBn);
     }
   }
 
   // 3. If rawQuestionBn has authentic Bengali and is not raw Italian, return it
   if (rawQuestionBn && containsBengali(rawQuestionBn) && rawQuestionBn.trim() !== cleanIt) {
-    return rawQuestionBn.trim();
+    return polishBengaliTranslation(rawQuestionBn.trim());
   }
 
   // 4. Pattern Match fallback for new dynamic questions
   for (const [pattern, banglaPrefix] of PHRASE_DICTIONARY) {
     if (pattern.test(cleanIt)) {
-      return banglaPrefix;
+      return polishBengaliTranslation(banglaPrefix);
     }
   }
 
   // 5. Clean default fallback
   return rawQuestionBn && containsBengali(rawQuestionBn) 
-    ? rawQuestionBn.trim() 
-    : 'প্রশ্নটির বাংলা ভাবার্থ শীঘ্রই হালনাগাদ করা হবে।';
+    ? polishBengaliTranslation(rawQuestionBn.trim()) 
+    : 'প্রশ্নটির সহজ বাংলা ভাবার্থ শীঘ্রই যুক্ত করা হচ্ছে।';
 };
 

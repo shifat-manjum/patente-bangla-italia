@@ -6,19 +6,16 @@ import {
   Lock,
   Phone,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
   Sparkles,
   LogIn,
   UserPlus,
   Loader2,
-  Cloud,
   AlertCircle,
   GraduationCap
 } from 'lucide-react';
 import { registerStudent, loginStudent } from '../services/studentService';
 import type { StudentProfile } from '../services/studentService';
-import { isFirebaseConfigured } from '../lib/firebase';
 
 export type StudentUser = StudentProfile;
 
@@ -258,53 +255,35 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
           </div>
         ) : (
           <>
-            {/* Top Header Badge & Cloud Status */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 text-xs font-bold text-[#FB6C00]">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Student Portal</span>
-                </div>
-
-                {isFirebaseConfigured ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
-                    <Cloud className="w-3 h-3 text-emerald-500" />
-                    <span>Cloud Sync Active</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
-                    <span>⚡ Local + Cloud Ready</span>
-                  </span>
-                )}
-              </div>
-
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                {mode === 'login' ? 'Sign In to Your Account' : 'Create Free Student Account'}
+            {/* Simple Standard Header */}
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                {mode === 'login' ? 'Sign In' : 'Create Account'}
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {forcedMessage ||
                   (mode === 'login'
-                    ? 'আপনার সংরক্ষিত স্কোর, ভুল প্রশ্ন ও প্রগ্রেস দেখতে সাইন ইন করুন।'
-                    : '২০টি ফ্রি রাউন্ড (৬০০ প্রশ্ন) শুরু করতে ও প্রগ্রেস সেভ রাখতে ফ্রি অ্যাকাউন্ট খুলুন।')}
+                    ? 'Log in to access your unlocked rounds and practice mistakes.'
+                    : 'Register to unlock Round 1 and save your exam progress.')}
               </p>
             </div>
 
-            {/* Tab Switcher: Sign In first, Register second */}
-            <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800 text-xs font-bold">
+            {/* Segmented Tab Switcher */}
+            <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold">
               <button
                 type="button"
                 onClick={() => {
                   setMode('login');
                   setError('');
                 }}
-                className={`py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
                   mode === 'login'
-                    ? 'bg-white dark:bg-slate-900 text-[#FB6C00] shadow-sm font-black'
+                    ? 'bg-white dark:bg-slate-900 text-[#FB6C00] shadow-xs font-black'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Sign In (লগইন)</span>
+                <span>Sign In</span>
               </button>
               <button
                 type="button"
@@ -312,14 +291,14 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                   setMode('register');
                   setError('');
                 }}
-                className={`py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
                   mode === 'register'
-                    ? 'bg-white dark:bg-slate-900 text-[#FB6C00] shadow-sm font-black'
+                    ? 'bg-white dark:bg-slate-900 text-[#FB6C00] shadow-xs font-black'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 <UserPlus className="w-3.5 h-3.5" />
-                <span>Create Account (নতুন)</span>
+                <span>Create Account</span>
               </button>
             </div>
 
@@ -345,7 +324,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@example.com"
+                      placeholder=""
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
@@ -362,7 +341,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      placeholder=""
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
@@ -380,7 +359,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                     </>
                   ) : (
                     <>
-                      <span>Sign In & Continue Studying</span>
+                      <span>Sign In</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -391,15 +370,15 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
             {/* REGISTRATION FORM */}
             {mode === 'register' && (
               <form onSubmit={handleRegister} className="space-y-3.5">
-                {/* Full Document Name */}
+                {/* Full Legal Name */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Full Legal Name (নথিপত্র অনুযায়ী পূর্ণ নাম) *
+                      Full Name *
                     </label>
                     {name && (
                       <span className={`text-[10px] font-bold ${isNameValid(name) ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {isNameValid(name) ? '✓ Valid Name' : 'Min 2 words'}
+                        {isNameValid(name) ? '✓ Valid' : 'Min 3 chars'}
                       </span>
                     )}
                   </div>
@@ -410,7 +389,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Nome e Cognome (e.g. Marco Rossi)"
+                      placeholder=""
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
@@ -424,7 +403,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                     </label>
                     {email && (
                       <span className={`text-[10px] font-bold ${isEmailValid(email) ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {isEmailValid(email) ? '✓ Valid Format' : 'name@domain.com'}
+                        {isEmailValid(email) ? '✓ Valid' : 'Invalid format'}
                       </span>
                     )}
                   </div>
@@ -435,21 +414,21 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="marco.rossi@gmail.com"
+                      placeholder=""
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
                 </div>
 
-                {/* Italian Mobile / WhatsApp Phone Number */}
+                {/* WhatsApp Phone Number */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                      WhatsApp Phone (ইতালিয়ান মোবাইল নম্বর) *
+                      WhatsApp Phone *
                     </label>
                     {phoneNumber && (
                       <span className={`text-[10px] font-bold ${isPhoneValid(phoneCountry, phoneNumber) ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {isPhoneValid(phoneCountry, phoneNumber) ? '✓ Valid Mobile' : 'e.g. 328 123 4567'}
+                        {isPhoneValid(phoneCountry, phoneNumber) ? '✓ Valid' : 'Invalid number'}
                       </span>
                     )}
                   </div>
@@ -460,11 +439,11 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                       aria-label="Country Code"
                       className="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-orange-500 shrink-0 cursor-pointer"
                     >
-                      <option value="+39">🇮🇹 +39 (Italia)</option>
-                      <option value="+880">🇧🇩 +880 (BD)</option>
-                      <option value="+49">🇩🇪 +49 (DE)</option>
-                      <option value="+33">🇫🇷 +33 (FR)</option>
-                      <option value="+44">🇬🇧 +44 (UK)</option>
+                      <option value="+39">🇮🇹 +39</option>
+                      <option value="+880">🇧🇩 +880</option>
+                      <option value="+49">🇩🇪 +49</option>
+                      <option value="+33">🇫🇷 +33</option>
+                      <option value="+44">🇬🇧 +44</option>
                     </select>
                     <div className="relative flex-1">
                       <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -473,18 +452,18 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                         required
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="328 123 4567"
+                        placeholder=""
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Password with Group Policy */}
+                {/* Password */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Password (পাসওয়ার্ড - নিরাপদ পলিসি) *
+                      Password *
                     </label>
                     {password && (
                       <span className={`text-[10px] font-bold ${isPasswordValid(password) ? 'text-emerald-600' : 'text-amber-600'}`}>
@@ -499,7 +478,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="e.g. Patente2026 (min 6 chars, letters & numbers)"
+                      placeholder=""
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
@@ -535,7 +514,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                     </>
                   ) : (
                     <>
-                      <span>Create Free Account & Start</span>
+                      <span>Create Account</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}

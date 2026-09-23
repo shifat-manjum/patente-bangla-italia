@@ -47,13 +47,6 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  // Draggable FAB State for mobile and desktop screens
-  const [fabPosition, setFabPosition] = useState<{ x: number; y: number } | null>(null);
-  const isDraggingRef = useRef(false);
-  const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
-  const fabRef = useRef<HTMLDivElement>(null);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initial welcome message (Human teacher vibe)
@@ -90,13 +83,27 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Drag handlers for FAB on mobile and desktop
-  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+  // Draggable FAB State for mobile and desktop screens
+  const [fabPosition, setFabPosition] = useState<{ x: number; y: number } | null>(null);
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
+  const fabRef = useRef<HTMLDivElement>(null);
+  const [isPointerDown, setIsPointerDown] = useState(false);
 
-    const currentX = fabPosition?.x ?? (window.innerWidth - 180);
-    const currentY = fabPosition?.y ?? (window.innerHeight - 80);
+  // Unified pointer drag handlers for both desktop mouse and mobile touch
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+
+    const currentRect = fabRef.current?.getBoundingClientRect();
+    const currentX = currentRect ? currentRect.left : (fabPosition?.x ?? (window.innerWidth - 210));
+    const currentY = currentRect ? currentRect.top : (fabPosition?.y ?? (window.innerHeight - 80));
 
     dragStartRef.current = {
       startX: clientX,
@@ -105,32 +112,44 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       initialY: currentY,
     };
     isDraggingRef.current = false;
+    setIsPointerDown(true);
   };
 
-  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragStartRef.current) return;
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    const deltaX = clientX - dragStartRef.current.startX;
-    const deltaY = clientY - dragStartRef.current.startY;
+    const deltaX = e.clientX - dragStartRef.current.startX;
+    const deltaY = e.clientY - dragStartRef.current.startY;
 
-    if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+    if (Math.hypot(deltaX, deltaY) > 5) {
       isDraggingRef.current = true;
     }
 
-    const newX = Math.max(10, Math.min(window.innerWidth - 180, dragStartRef.current.initialX + deltaX));
-    const newY = Math.max(10, Math.min(window.innerHeight - 80, dragStartRef.current.initialY + deltaY));
+    if (isDraggingRef.current) {
+      const buttonWidth = fabRef.current?.offsetWidth || 200;
+      const buttonHeight = fabRef.current?.offsetHeight || 60;
 
-    setFabPosition({ x: newX, y: newY });
+      const newX = Math.max(8, Math.min(window.innerWidth - buttonWidth - 8, dragStartRef.current.initialX + deltaX));
+      const newY = Math.max(8, Math.min(window.innerHeight - buttonHeight - 8, dragStartRef.current.initialY + deltaY));
+
+      setFabPosition({ x: newX, y: newY });
+    }
   };
 
-  const handleTouchEnd = () => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
+
     dragStartRef.current = null;
-    // Drag finished; small timeout resets isDragging so click handler knows
+    setIsPointerDown(false);
+
+    // Keep dragging flag briefly to suppress accidental click after drag
     setTimeout(() => {
       isDraggingRef.current = false;
-    }, 50);
+    }, 120);
   };
 
   // Intelligent Response Generator & Knowledge Matcher
@@ -281,20 +300,19 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       {/* Moveable WhatsApp Floating Action Button */}
       {!isOpen && (
         <div
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleTouchStart}
-          onMouseMove={handleTouchMove}
-          onMouseUp={handleTouchEnd}
-          className="flex items-center select-none touch-none"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="flex items-center select-none touch-none cursor-grab active:cursor-grabbing transition-transform"
+          style={{ transform: isPointerDown ? 'scale(1.05)' : 'scale(1)' }}
         >
-          {/* Drag Handle indicator */}
+          {/* Visual Drag Gripper for both Mobile & Desktop */}
           <div
-            title="Drag to move this button"
-            className="p-1 rounded-l-2xl bg-emerald-800/80 text-emerald-200 cursor-grab active:cursor-grabbing hover:bg-emerald-900 shadow-md flex items-center justify-center -mr-1 z-10 hidden sm:flex"
+            title="Drag with finger or mouse to move anywhere"
+            className="p-1.5 rounded-l-full bg-emerald-800/90 text-emerald-200 shadow-md flex items-center justify-center -mr-1 z-10 border-l border-y border-white/30"
           >
-            <GripVertical className="w-3.5 h-3.5" />
+            <GripVertical className="w-4 h-4" />
           </div>
 
           <button
@@ -305,16 +323,16 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                 setIsMinimized(false);
               }
             }}
-            className="group relative py-2.5 px-4 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm shadow-xl shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-2 border-2 border-white/40"
+            className="group relative py-2.5 pl-3.5 pr-4 rounded-r-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm shadow-2xl shadow-emerald-600/40 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center gap-2 border-2 border-l-0 border-white/40"
           >
-            <span className="relative flex h-3 w-3">
+            <span className="relative flex h-3 w-3 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
               <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
             </span>
-            <MessageCircle className="w-5 h-5 fill-current text-white" />
-            <div className="text-left">
-              <span className="block leading-tight text-xs font-black">24/7 Live Support</span>
-              <span className="text-[10px] opacity-90 block font-bold">Typically replies &lt; 1 min</span>
+            <MessageCircle className="w-5 h-5 fill-current text-white shrink-0" />
+            <div className="text-left leading-tight">
+              <span className="block text-xs font-black">24/7 Live Support</span>
+              <span className="text-[10px] opacity-90 block font-bold">Replies &lt; 1 min</span>
             </div>
           </button>
         </div>
