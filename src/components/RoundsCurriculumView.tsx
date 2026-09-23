@@ -9,6 +9,8 @@ import {
 
 interface RoundsCurriculumViewProps {
   currentRoundId: number;
+  unlockedRound?: number;
+  isVip?: boolean;
   onSelectRound: (roundId: number) => void;
   onTriggerEnrollment: (roundId: number) => void;
   completedRounds?: Record<number, { errors: number; passed: boolean }>;
@@ -16,6 +18,8 @@ interface RoundsCurriculumViewProps {
 
 export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
   currentRoundId,
+  unlockedRound = 1,
+  isVip = false,
   onSelectRound,
   onTriggerEnrollment,
   completedRounds = {},
@@ -25,6 +29,8 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
 
   // Total 240 rounds
   const totalRounds = 240;
+  const effectiveUnlocked = unlockedRound ?? currentRoundId ?? 1;
+
   const rounds = Array.from({ length: totalRounds }, (_, i) => {
     const id = i + 1;
     const isFree = id <= 20;
@@ -97,15 +103,15 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
             240 Rounds Course Syllabus
           </h1>
           <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed">
-            Rounds 1 to 20 are available for unrestricted Foundation Assessment. Each round includes 30 official ministerial questions with clear Bengali meaning and oral headphone audio simulation.
+            Sequential progression: Pass each round (max 3 mistakes) to unlock the next. Rounds 1 to 20 are free. Pass all 20 foundation rounds to qualify for Academy Enrollment (€49 one-time lifetime access).
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-bold">
             <div className="px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-xs border border-white/20">
-              🟢 Foundation Assessment: <span className="text-emerald-300">Rounds 1 – 20 (Free)</span>
+              🟢 Unlocked Level: <span className="text-emerald-300">Round #{effectiveUnlocked}</span>
             </div>
             <div className="px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-xs border border-white/20">
-              🎓 Complete Syllabus: <span className="text-blue-300">Rounds 21 – 240 (Enrolled)</span>
+              🎓 Academy Syllabus: <span className="text-blue-300">Rounds 21–240 (€49 One-Time)</span>
             </div>
             <div className="px-3 py-1.5 rounded-lg bg-white/10 backdrop-blur-xs border border-white/20">
               ✅ Passed Rounds: <span className="text-amber-300">{passedCount} / 240</span>
@@ -133,7 +139,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
           {[
             { id: 'all', label: `All Rounds (${totalRounds})` },
             { id: 'free', label: `Foundation (${freeRoundsCount} Free)` },
-            { id: 'pro', label: `Complete Syllabus (220)` },
+            { id: 'pro', label: `Academy Syllabus (220)` },
             { id: 'passed', label: `Passed (${passedCount})` },
           ].map((tab) => (
             <button
@@ -154,8 +160,10 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
       {/* Rounds Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredRounds.map((round) => {
-          const isCurrent = round.id === currentRoundId;
           const isPassed = round.result?.passed === true;
+          const isUnlocked = round.id <= effectiveUnlocked || (isVip && round.id <= 240);
+          const isCurrent = round.id === effectiveUnlocked;
+          const isPaidSyllabus = round.id > 20 && !isVip;
 
           return (
             <div
@@ -165,9 +173,9 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                   ? 'bg-blue-50/90 dark:bg-blue-950/50 border-blue-400 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-900 shadow-sm'
                   : isPassed
                   ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 hover:border-emerald-400'
-                  : round.isFree
+                  : isUnlocked
                   ? 'bg-white dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs'
-                  : 'bg-slate-50/90 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600'
+                  : 'bg-slate-50/90 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 opacity-90'
               }`}
             >
               <div className="space-y-2.5">
@@ -188,10 +196,14 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                       <CheckCircle2 className="w-3 h-3" />
                       <span>{30 - (round.result?.errors ?? 0)}/30 Passed</span>
                     </span>
-                  ) : !round.isFree ? (
+                  ) : !isUnlocked ? (
                     <span className="flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-200/80 dark:bg-slate-700/80 px-2 py-0.5 rounded-md">
                       <Lock className="w-3 h-3" />
-                      <span>Enrolled</span>
+                      <span>{isPaidSyllabus ? '€49 Academy' : `Locked`}</span>
+                    </span>
+                  ) : isCurrent ? (
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/70 px-2 py-0.5 rounded-md animate-pulse">
+                      <span>▶ Active Now</span>
                     </span>
                   ) : null}
                 </div>
@@ -212,29 +224,39 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
 
               {/* Action Button */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-700/60 mt-3">
-                {round.isFree ? (
-                  <button
-                    type="button"
-                    onClick={() => onSelectRound(round.id)}
-                    className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs active:scale-95 ${
-                      isCurrent
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : isPassed
-                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                        : 'bg-slate-900 hover:bg-blue-600 text-white'
-                    }`}
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{isCurrent ? 'Currently Active' : isPassed ? 'Practice Again' : 'Start Round'}</span>
-                  </button>
-                ) : (
+                {isPaidSyllabus ? (
                   <button
                     type="button"
                     onClick={() => onTriggerEnrollment(round.id)}
                     className="w-full py-2.5 px-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs active:scale-95"
                   >
                     <GraduationCap className="w-3.5 h-3.5" />
-                    <span>Academy Enrollment</span>
+                    <span>Academy Enrollment (€49)</span>
+                  </button>
+                ) : !isUnlocked ? (
+                  <button
+                    type="button"
+                    onClick={() => alert(`🔒 রাউন্ড #${round.id} এখনও আনলক হয়নি। দয়া করে প্রথমে রাউন্ড #${round.id - 1} সফলভাবে পাস করুন (সর্বোচ্চ ৩টি ভুল)।`)}
+                    className="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
+                    title={`Pass Round #${round.id - 1} to unlock`}
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Pass Round #{round.id - 1} to Unlock</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onSelectRound(round.id)}
+                    className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs active:scale-95 ${
+                      isCurrent
+                        ? 'bg-blue-600 text-white hover:bg-blue-700 ring-2 ring-blue-300 dark:ring-blue-800'
+                        : isPassed
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        : 'bg-slate-900 hover:bg-blue-600 text-white'
+                    }`}
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{isCurrent ? 'Start Active Round' : isPassed ? 'Practice Again' : 'Start Round'}</span>
                   </button>
                 )}
               </div>

@@ -245,7 +245,7 @@ export function App() {
     });
   };
 
-  const handleSaveExamMistakes = (newIds: string[]) => {
+  const handleSaveExamMistakes = (newIds: string[], finishedRoundId?: number | null) => {
     incrementAnsweredCount(30);
 
     setMistakeIds((prev) => {
@@ -253,17 +253,31 @@ export function App() {
       return Array.from(set);
     });
 
-    // Check if current round passed (<= 3 errors)
-    const errorCount = newIds.length;
-    const passed = errorCount <= 3;
+    const activeRoundNum = finishedRoundId || currentRoundId;
 
-    setCompletedRounds((prev) => ({
-      ...prev,
-      [unlockedRound]: { errors: errorCount, passed }
-    }));
+    if (activeRoundNum) {
+      // Check if current round passed (<= 3 errors)
+      const errorCount = newIds.length;
+      const passed = errorCount <= 3;
 
-    if (passed) {
-      setUnlockedRound((prev) => Math.max(prev, prev + 1));
+      setCompletedRounds((prev) => ({
+        ...prev,
+        [activeRoundNum]: { errors: errorCount, passed }
+      }));
+
+      if (passed) {
+        setUnlockedRound((prev) => {
+          const nextRound = activeRoundNum + 1;
+          const newHighest = Math.max(prev, nextRound);
+          // If student passed round 20, prompt the €49 lifetime paywall for round 21!
+          if (activeRoundNum === 20 && !isVip) {
+            setTimeout(() => {
+              setIsPaywallOpen(true);
+            }, 1800);
+          }
+          return newHighest;
+        });
+      }
     }
   };
 
@@ -277,6 +291,11 @@ export function App() {
     // If round is not free (round > 20) and user is not VIP, show paywall!
     if (roundId > 20 && !isVip) {
       setIsPaywallOpen(true);
+      return;
+    }
+    // Sequential locking: verify student has unlocked this round or is VIP
+    if (roundId > unlockedRound && !isVip) {
+      alert(`🔒 রাউন্ড #${roundId} এখনও আনলক হয়নি। দয়া করে প্রথমে রাউন্ড #${roundId - 1} সফলভাবে পাস করুন (সর্বোচ্চ ৩টি ভুল)।`);
       return;
     }
     // Switch to exam simulator to take the round
@@ -424,6 +443,8 @@ export function App() {
         {appTab === 'curriculum' && (
           <RoundsCurriculumView
             currentRoundId={unlockedRound}
+            unlockedRound={unlockedRound}
+            isVip={isVip}
             onSelectRound={handleStartRound}
             onTriggerEnrollment={(_r) => setIsPaywallOpen(true)}
             completedRounds={completedRounds}

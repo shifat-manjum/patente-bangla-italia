@@ -51,13 +51,10 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Validation Group Policies
+  // Validation Policies
   const isNameValid = (val: string) => {
     const trimmed = val.trim();
-    if (trimmed.length < 4) return false;
-    // Check for at least two words (First & Last name) and only valid letters/spaces
-    const words = trimmed.split(/\s+/);
-    if (words.length < 2) return false;
+    if (trimmed.length < 3) return false;
     return /^[\p{L}\s'-]+$/u.test(trimmed);
   };
 
@@ -66,25 +63,27 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
   };
 
   const isPhoneValid = (prefix: string, rawNumber: string) => {
-    const digits = rawNumber.replace(/\D/g, '');
+    let digits = rawNumber.replace(/\D/g, '');
     if (!digits) return false;
 
-    // Reject fake short repetitive dummy numbers like 123456
-    if (digits.length < 8 || /^(\d)\1+$/.test(digits) || digits === '123456' || digits === '12345678' || digits === '123456789') {
+    // Reject trivial short repetitive dummy numbers
+    if (digits.length < 6 || /^(\d)\1+$/.test(digits) || digits === '123456' || digits === '12345678') {
       return false;
     }
 
     if (prefix === '+39') {
-      // Italian mobile numbers start with 3 and have 9 to 10 digits
-      return /^3\d{8,9}$/.test(digits);
+      // Italian mobile numbers start with 3 and have 9 to 10 digits (strip leading zero if entered)
+      digits = digits.replace(/^0+/, '');
+      return digits.length >= 9 && digits.length <= 10;
     }
     if (prefix === '+880') {
       // Bangladeshi mobile numbers start with 1 and have 10 digits
-      return /^1\d{9}$/.test(digits);
+      digits = digits.replace(/^0+/, '');
+      return digits.length === 10;
     }
 
     // Generic international format
-    return digits.length >= 8 && digits.length <= 13;
+    return digits.length >= 7 && digits.length <= 14;
   };
 
   const isPasswordValid = (val: string) => {
@@ -188,28 +187,6 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     }
   };
 
-  const handleQuickDemoLogin = () => {
-    const demoUser: StudentProfile = {
-      uid: 'std_demo_101',
-      name: 'Demo Student (পরীক্ষার্থী)',
-      email: 'student@autoscuola.it',
-      phone: '+39 351 000 0000',
-      unlockedRound: 1,
-      totalQuestionsAnswered: 0,
-      completedRounds: {},
-      mistakeIds: [],
-      isVip: false,
-      lastLoginAt: new Date().toISOString(),
-    };
-
-    try {
-      localStorage.setItem('patente_student_user', JSON.stringify(demoUser));
-    } catch {}
-
-    onLoginSuccess(demoUser);
-    onClose();
-  };
-
   const handleWelcomeContinue = () => {
     if (registeredStudent) {
       onLoginSuccess(registeredStudent);
@@ -238,13 +215,13 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
 
             <div className="space-y-1.5">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                Registrazione Completata • Welcome!
+                Registration Successful • Welcome!
               </span>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                 Benvenuto su Patente Bangla Italia!
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
-                অভিনন্দন <strong>{registeredStudent.name}</strong>! আপনার ফ্রি স্টুডেন্ট অ্যাকাউন্ট সফলভাবে সক্রিয় করা হয়েছে।
+                Welcome <strong>{registeredStudent.name}</strong>! Your student account is now active and ready.
               </p>
             </div>
 
@@ -252,20 +229,20 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
             <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-500/10 via-amber-500/10 to-emerald-500/10 border border-orange-200/80 dark:border-orange-800/60 text-left space-y-2.5">
               <div className="flex items-center gap-2 font-bold text-xs text-slate-900 dark:text-white">
                 <GraduationCap className="w-4 h-4 text-[#FB6C00]" />
-                <span>আপনার অ্যাকাউন্টে সক্রিয় সুবিধাসমূহ:</span>
+                <span>Active Account Benefits:</span>
               </div>
               <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span><strong>২০টি ফ্রি স্টাডি রাউন্ড (৬০০ কুইজ প্রশ্ন)</strong> উন্মুক্ত</span>
+                  <span><strong>Round 1 Unlocked</strong> — Pass with ≤ 3 errors to unlock the next round sequentially</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>ক্লাউড ফায়ারস্টোরে স্বয়ংক্রিয় প্রগ্রেস ও ভুল রিভিশন সিঙ্ক</span>
+                  <span>Up to <strong>20 Assessment Rounds (600 Questions)</strong> free progress tracking</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>২৪/৭ লাইভ টিউটর সাপোর্ট ({registeredStudent.phone})</span>
+                  <span>Cloud sync for mistake notebook & WhatsApp support ({registeredStudent.phone})</span>
                 </li>
               </ul>
             </div>
@@ -532,16 +509,16 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                 <div className="p-3 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/80 dark:border-orange-900/50 space-y-1 text-xs text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
                     <Sparkles className="w-3.5 h-3.5 text-[#FB6C00]" />
-                    <span>স্টুডেন্ট অ্যাকাউন্টে যা যা পাচ্ছেন:</span>
+                    <span>Free Account Benefits:</span>
                   </div>
                   <div className="grid grid-cols-1 gap-1 pt-1 text-[11px] text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      ২০টি ফ্রি রাউন্ড (৬০০ অফিসিয়াল মিনিস্টেরিয়াল প্রশ্ন)
+                      Sequential Unlocking: Round 1 open, pass to unlock up to Round 20
                     </span>
                     <span className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      ক্লাউড ব্যাকআপ ও ২৪/৭ লাইভ টিউটর সাপোর্ট
+                      Mistake Notebook & progress synchronized to your profile
                     </span>
                   </div>
                 </div>
@@ -554,28 +531,17 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Creating Account & Unlocking Rounds...</span>
+                      <span>Creating Account & Unlocking Round 1...</span>
                     </>
                   ) : (
                     <>
-                      <span>Create Free Account (ফ্রি অ্যাকাউন্ট খুলুন)</span>
+                      <span>Create Free Account & Start</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
               </form>
             )}
-
-            {/* 1-Click Quick Demo Login for instant test access */}
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={handleQuickDemoLogin}
-                className="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
-              >
-                <span>⚡ 1-Click Quick Demo Login (পরীক্ষামূলক ডেমো লগইন)</span>
-              </button>
-            </div>
           </>
         )}
       </div>

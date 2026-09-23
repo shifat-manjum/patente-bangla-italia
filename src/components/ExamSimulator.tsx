@@ -15,7 +15,7 @@ import { getQuestionsForRound, ALL_200_QUESTIONS } from '../data/roundQuestions'
 import { QuizCard } from './QuizCard';
 
 interface ExamSimulatorProps {
-  onSaveMistakes: (questionIds: string[]) => void;
+  onSaveMistakes: (questionIds: string[], roundId?: number | null) => void;
   onGoToTopics: () => void;
   roundId?: number | null;
   onBackToRounds?: () => void;
@@ -100,7 +100,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
       }
     });
 
-    onSaveMistakes(mistakeIds);
+    onSaveMistakes(mistakeIds, roundId);
 
     const errorCount = mistakeIds.length;
     if (errorCount <= 3) {
@@ -157,7 +157,11 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
         handleAnswer(false);
       } else if (e.key === 'ArrowRight' || (e.key === 'Enter' && !isSubmitted)) {
         e.preventDefault();
-        setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1));
+        if (currentIdx === questions.length - 1) {
+          handleSubmitExam();
+        } else {
+          setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1));
+        }
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         setCurrentIdx((prev) => Math.max(0, prev - 1));
@@ -464,15 +468,26 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           </span>
         </div>
 
-        <button
-          type="button"
-          disabled={currentIdx === questions.length - 1}
-          onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-          className="py-3 px-5 sm:px-8 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
-        >
-          <span>Next (পরবর্তী)</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        {currentIdx === questions.length - 1 && !isSubmitted ? (
+          <button
+            type="button"
+            onClick={handleSubmitExam}
+            className="py-3 px-5 sm:px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-emerald-500/20 transition cursor-pointer"
+          >
+            <span>Submit Exam (পরীক্ষা জমা দিন)</span>
+            <CheckCircle2 className="w-4 h-4" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={currentIdx === questions.length - 1}
+            onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
+            className="py-3 px-5 sm:px-8 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+          >
+            <span>Next (পরবর্তী)</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );
