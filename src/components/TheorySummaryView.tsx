@@ -85,10 +85,12 @@ export const TheorySummaryView: React.FC<TheorySummaryViewProps> = ({
         {/* Category Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {[
-            { id: 'all', label: 'All Chapters' },
+            { id: 'all', label: 'All 25 Chapters' },
             { id: 'signals', label: 'Road Signs' },
             { id: 'rules', label: 'Traffic Rules' },
-            { id: 'safety', label: 'Safety & Distance' },
+            { id: 'safety', label: 'Safety & First Aid' },
+            { id: 'mechanics', label: 'Vehicle & Mechanics' },
+            { id: 'legal', label: 'License & Insurance' },
           ].map((cat) => (
             <button
               key={cat.id}

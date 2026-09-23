@@ -451,5 +451,473 @@ export const THEORY_CHAPTERS: TheoryChapter[] = [
       }
     ],
     relatedRounds: [4, 18, 32]
+  },
+  {
+    id: 'ch-13',
+    chapterNumber: 13,
+    titleIt: 'Esempi di Precedenza e Incroci',
+    titleBn: 'চৌরাস্তা ও মোড়ে অগ্রাধিকারের নিয়ম',
+    category: 'rules',
+    icon: 'GitMerge',
+    summaryBn: 'চৌরাস্তায় যার ডান পাশ খালি থাকে সে সবার আগে যাবে (Precedenza a destra)। ট্রাম ও সাইরেন বাজানো জরুরি গাড়ি সর্বদা অগ্রাধিকার পায়।',
+    goldenRules: [
+      {
+        it: "Di norma, negli incroci la precedenza va data ai veicoli provenienti da destra.",
+        bn: "সাধারণ নিয়মে, চৌরাস্তায় ডান দিক থেকে আসা যানবাহনকে সর্বদা আগে যাওয়ার অগ্রাধিকার (Precedenza) দিতে হবে।"
+      },
+      {
+        it: "I tram su rotaia e i veicoli di emergenza con sirena e lampeggiante blu hanno sempre la precedenza.",
+        bn: "রেলের ওপর চলা ট্রাম এবং নীল বাতি ও সাইরেনসহ আসা জরুরি উদ্ধারকারী গাড়ি সর্বদা অগ্রাধিকার পায়।"
+      },
+      {
+        it: "Un veicolo che svolta a sinistra deve dare la precedenza ai veicoli che procedono in senso contrario.",
+        bn: "যে গাড়ি বামে মোড় নেয়, তাকে বিপরীত দিক থেকে সোজা আসা যানবাহনকে অগ্রাধিকার দিতে হবে।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Precedenza a sinistra sempre",
+        meaningBn: "বাঁ পাশকে সবসময় অগ্রাধিকার দেওয়া",
+        trapNoteBn: "বিশেষ সাইন (যেমন Rotatoria) ছাড়া সাধারণ চৌরাস্তায় সবসময় ডানের গাড়ির অগ্রাধিকার থাকে (FALSO)।"
+      },
+      {
+        word: "Disimpegno dell'incrocio",
+        meaningBn: "মোড় অতিক্রম করার ক্রম",
+        trapNoteBn: "ডান দিক উন্মুক্ত হওয়া সাপেক্ষে ক্রমানুসারে যানবাহনগুলো মোড় পার হবে (VERO)।"
+      }
+    ],
+    relatedRounds: [1, 21, 22]
+  },
+  {
+    id: 'ch-14',
+    chapterNumber: 14,
+    titleIt: 'Circolazione su Autostrade e Strade Extraurbane',
+    titleBn: 'অটোস্ট্রাডা ও হাইওয়েতে গাড়ি চালানোর নিয়ম',
+    category: 'rules',
+    icon: 'Milestone',
+    summaryBn: 'অটোস্ট্রাডায় সাধারণ গতিসীমা ১৩০ কিমি/ঘণ্টা, বৃষ্টির দিনে ১১০ কিমি। ইউ-টার্ন নেওয়া, রিভার্স ব্যাক করা বা জরুরি লেন ছাড়া হাঁটা সম্পূর্ণ নিষিদ্ধ।',
+    goldenRules: [
+      {
+        it: "Sulle autostrade il limite massimo generale di velocità è di 130 km/h, ridotto a 110 km/h in caso di precipitazioni atmosferiche.",
+        bn: "অটোস্ট্রাডায় সাধারণ সর্বোচ্চ গতিসীমা ১৩০ কিমি/ঘণ্টা, তবে বৃষ্টিপাতের সময় তা কমে ১১০ কিমি/ঘণ্টা হয়।"
+      },
+      {
+        it: "È vietata la circolazione di pedoni, ciclomotori, biciclette e veicoli a tenuta non stagna con carico scoperto.",
+        bn: "পথচারী, মোপেড, সাইকেল এবং ঢাকনাহীন খোলা মালামাল বোঝাই গাড়ির অটোস্ট্রাডায় চলাচল সম্পূর্ণ নিষিদ্ধ।"
+      },
+      {
+        it: "Sulle autostrade è severamente vietato fare inversione di marcia o fare retromarcia.",
+        bn: "অটোস্ট্রাডায় ইউ-টার্ন (Inversione di marcia) নেওয়া বা ব্যাক গিয়ারে গাড়ি পিছিয়ে নেওয়া মারাত্মক নিষিদ্ধ অপরাধ।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Corsia di emergenza per sosta prolungata",
+        meaningBn: "জরুরি লেনে দীর্ঘসময় বিশ্রাম নেওয়া",
+        trapNoteBn: "জরুরি লেনে কেবল গাড়ি বিকল হলে বা গুরুতর অসুস্থতায় সর্বোচ্চ ৩ ঘণ্টা থামা যায়, বিশ্রামের জন্য নয় (FALSO)।"
+      },
+      {
+        word: "Inversione di marcia in autostrada",
+        meaningBn: "হাইওয়েতে গাড়ি ঘুরিয়ে উল্টো চলা",
+        trapNoteBn: "অটোস্ট্রাডায় যেকোনো পরিস্থিতিতে ইউ-টার্ন নেওয়া কঠোরভাবে নিষিদ্ধ (VERO)।"
+      }
+    ],
+    relatedRounds: [2, 23, 24]
+  },
+  {
+    id: 'ch-15',
+    chapterNumber: 15,
+    titleIt: 'Uso delle Luci e Dispositivi Acustici',
+    titleBn: 'গাড়ির লাইট ও হর্ন ব্যবহারের নিয়ম',
+    category: 'safety',
+    icon: 'Sun',
+    summaryBn: 'সূর্যাস্তের আধা ঘণ্টা পর থেকে সূর্যোদয়ের আধা ঘণ্টা আগে পর্যন্ত এবং টানেলে সর্বদা হেডলাইট (Luci anabbaglianti) জ্বালানো বাধ্যতামূলক।',
+    goldenRules: [
+      {
+        it: "I proiettori anabbaglianti devono essere accesi da mezz'ora dopo il tramonto a mezz'ora prima dell'alba e in galleria.",
+        bn: "সূর্যাস্তের ৩০ মিনিট পর থেকে সূর্যোদয়ের ৩০ মিনিট আগে পর্যন্ত এবং টানেলের ভেতরে লো-বিম লাইট (Anabbaglianti) জ্বালানো বাধ্যতামূলক।"
+      },
+      {
+        it: "I proiettori abbaglianti devono essere spenti incrociando altri veicoli per non abbagliare.",
+        bn: "বিপরীত দিক থেকে আসা গাড়ির চালকের চোখ ধাঁধানো এড়াতে হাই-বিম হেডলাইট (Abbaglianti) বন্ধ করে লো-বিমে নামাতে হবে।"
+      },
+      {
+        it: "Nei centri abitati l'uso del clacson è vietato, salvo in caso di effettivo e immediato pericolo.",
+        bn: "শহরাঞ্চলে অকারণে হর্ন বাজানো সম্পূর্ণ নিষিদ্ধ, শুধুমাত্র তাৎক্ষণিক দুর্ঘটনা প্রতিরোধের জরুরি ক্ষেত্র ছাড়া।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Solo luci di posizione in galleria",
+        meaningBn: "টানেলে শুধু পজিশন লাইট জ্বালানো",
+        trapNoteBn: "টানেল আলোকিত হলেও শুধু পজিশন লাইট জ্বালানো অবৈধ, অবশ্যই Anabbaglianti জ্বালাতে হবে (FALSO)।"
+      },
+      {
+        word: "Clacson per salutare",
+        meaningBn: "পরিচিতদের সালাম দিতে হর্ন দেওয়া",
+        trapNoteBn: "কুশল বিনিময় বা ট্রাফিকে বিরক্ত প্রকাশে হর্ন বাজানো সম্পূর্ণ বেআইনি (FALSO)।"
+      }
+    ],
+    relatedRounds: [3, 25, 26]
+  },
+  {
+    id: 'ch-16',
+    chapterNumber: 16,
+    titleIt: 'Dispositivi di Sicurezza: Cinture, Casco, Airbag e Seggiolini',
+    titleBn: 'সিটবেল্ট, হেলমেট, এয়ারব্যাগ ও শিশুর সিট',
+    category: 'safety',
+    icon: 'ShieldAlert',
+    summaryBn: 'গাড়ির সব আরোহীর সিটবেল্ট পরা বাধ্যতামূলক। ১৫০ সেমির কম উচ্চতার শিশুদের জন্য অনুমোদিত চাইল্ড সিট (Seggiolini) ব্যবহার করতে হবে।',
+    goldenRules: [
+      {
+        it: "L'uso delle cinture di sicurezza è obbligatorio per il conducente e per tutti i passeggeri dei veicoli.",
+        bn: "গাড়ির চালক এবং সামনের ও পেছনের সব সিটের যাত্রীদের সিটবেল্ট বাঁধা আইনত বাধ্যতামূলক।"
+      },
+      {
+        it: "I bambini di statura inferiore a 1,50 m devono essere assicurati con un sistema di ritenuta per bambini omologato.",
+        bn: "১৫০ সেন্টিমিটারের কম উচ্চতার শিশুদের অনুমোদিত চাইল্ড সিটের (Sistema di ritenuta) সাথে বাঁধতে হবে।"
+      },
+      {
+        it: "Il casco protettivo è obbligatorio per tutti i conducenti e passeggeri di motocicli e ciclomotori.",
+        bn: "মোটরসাইকেল ও মোপেডের চালক ও পেছনের যাত্রী উভয়ের জন্যই হেলমেট পরা শতভাগ বাধ্যতামূলক।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Airbag esenta dall'uso della cintura",
+        meaningBn: "এয়ারব্যাগ থাকলে সিটবেল্ট পরা লাগবে না",
+        trapNoteBn: "এয়ারব্যাগ কখনো সিটবেল্টের বিকল্প নয়, সিটবেল্ট না বাঁধলে এয়ারব্যাগ মারাত্মক আঘাত করতে পারে (FALSO)।"
+      },
+      {
+        word: "Cinture solo sui sedili anteriori",
+        meaningBn: "শুধু সামনের সিটে বেল্ট পরা",
+        trapNoteBn: "পেছনের সিটের যাত্রীদেরও সিটবেল্ট বাঁধা আইনত বাধ্যতামূলক (FALSO)।"
+      }
+    ],
+    relatedRounds: [4, 27, 28]
+  },
+  {
+    id: 'ch-17',
+    chapterNumber: 17,
+    titleIt: 'Patente di Guida e Sistema a Punti',
+    titleBn: 'লাইসেন্সের প্রকারভেদ ও ২০ পয়েন্ট কাটার নিয়ম',
+    category: 'legal',
+    icon: 'Award',
+    summaryBn: 'নতুন লাইসেন্সে ২০ পয়েন্ট থাকে। নবীন চালকদের (Neopatentati) জন্য প্রথম ৩ বছর বিশেষ গতিসীমা ও যেকোনো ট্রাফিক অপরাধে দ্বিগুণ পয়েন্ট কাটার নিয়ম।',
+    goldenRules: [
+      {
+        it: "La patente di guida è dotata di un punteggio iniziale di 20 punti.",
+        bn: "ইতালিতে ড্রাইভিং লাইসেন্স পাওয়ার পর শুরুতে চালকের অ্যাকাউন্টে ২০ পয়েন্ট জমা থাকে।"
+      },
+      {
+        it: "Per i neopatentati, nei primi tre anni dal conseguimento, i punti decurtati per ciascuna violazione sono raddoppiati.",
+        bn: "নতুন চালকদের জন্য প্রথম ৩ বছরে প্রতিটি ট্রাফিক অপরাধের পয়েন্ট দ্বিগুণ হারে কাটা হয়।"
+      },
+      {
+        it: "La patente di categoria B consente di guidare autoveicoli fino a 3,5 tonnellate e fino a 9 posti complessivi compreso il conducente.",
+        bn: "ক্যাটাগরি 'বি' লাইসেন্স দিয়ে সর্বোচ্চ ৩.৫ টন ওজনের গাড়ি এবং চালকসহ সর্বোচ্চ ৯ সিটের যানবাহন চালানো যায়।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Neopatentati 130 km/h in autostrada",
+        meaningBn: "নতুন চালকদের হাইওয়েতে ১৩০ কিমি গতি",
+        trapNoteBn: "প্রথম ৩ বছর হাইওয়েতে সর্বোচ্চ ১০০ কিমি/ঘণ্টা এবং শহরের বাইরে ৯০ কিমি/ঘণ্টা সীমা মানতে হবে (FALSO)।"
+      },
+      {
+        word: "Patente B per tutti i motocicli",
+        meaningBn: "বি লাইসেন্সে সব বড় মোটরসাইকেল চালানো যায়",
+        trapNoteBn: "ইতালিতে বি লাইসেন্স দিয়ে শুধু ১২৫ সিসি এবং সর্বোচ্চ ১১ কিলোওয়াটের মোটরসাইকেল চালানো যায় (FALSO)।"
+      }
+    ],
+    relatedRounds: [5, 29, 30]
+  },
+  {
+    id: 'ch-18',
+    chapterNumber: 18,
+    titleIt: 'Comportamento in Caso di Incidente e Soccorso',
+    titleBn: 'দুর্ঘটনায় করণীয় ও ফার্স্ট এইড (Primo Soccorso)',
+    category: 'safety',
+    icon: 'AlertOctagon',
+    summaryBn: 'সড়ক দুর্ঘটনায় আহত ব্যক্তিকে ফেলে চলে যাওয়া মারাত্মক অপরাধ। প্রাথমিক চিকিৎসায় আহত ব্যক্তির হেলমেট খোলা বা তরল ওষুধ খাওয়ানো নিষেধ।',
+    goldenRules: [
+      {
+        it: "In caso di incidente con feriti è obbligatorio fermarsi e prestare assistenza ai feriti chiamando i soccorsi (112).",
+        bn: "দুর্ঘটনায় কেউ আহত হলে গাড়ি থামানো এবং আহতদের সহায়তা ও ১১২ নম্বরে জরুরি অ্যাম্বুলেন্স ডাকা আইনত বাধ্যতামূলক।"
+      },
+      {
+        it: "Non si devono somministrare bevande o medicinali ai feriti della strada in stato di shock o incoscienti.",
+        bn: "দুর্ঘটনায় আহত ও অচেতন ব্যক্তিকে কোনো প্রকার তরল পানি, ওষুধ বা অ্যালকোহল খাওয়ানো সম্পূর্ণ নিষিদ্ধ।"
+      },
+      {
+        it: "Non si deve rimuovere il casco al motociclista infortunato, salvo casi di estrema necessità da parte di personale esperto.",
+        bn: "আহত মোটরসাইকেল চালকের মাথা থেকে হেলমেট টেনে খোলা যাবে না, এতে ঘাড়ে মারাত্মক স্পাইনাল ইনজুরি হতে পারে।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Soccorrere solo se non c'è intralcio",
+        meaningBn: "যানজট না হলেই শুধু আহতকে উদ্ধার করা",
+        trapNoteBn: "আহত ব্যক্তিকে উদ্ধার ও সহায়তা দেওয়া সর্বাবস্থায় চালকের আইনি দায়িত্ব (FALSO)।"
+      },
+      {
+        word: "Togliere subito il casco per farlo respirare",
+        meaningBn: "শ্বাস নেওয়ার সুবিধার জন্য হেলমেট খোলা",
+        trapNoteBn: "সাধারণ মানুষের হেলমেট খোলা নিষিদ্ধ, এটি শুধু প্যারামেডিকরা করতে পারেন (FALSO)।"
+      }
+    ],
+    relatedRounds: [6, 31, 32]
+  },
+  {
+    id: 'ch-19',
+    chapterNumber: 19,
+    titleIt: 'Stato Psicofisico: Alcool, Droga, Farmaci e Sonno',
+    titleBn: 'চালকের শারীরিক ও মানসিক অবস্থা ও ড্রাগ',
+    category: 'safety',
+    icon: 'Activity',
+    summaryBn: 'নতুন চালকদের (Neopatentati) জন্য রক্তের অ্যালকোহল মাত্রা শূন্য (০.০ গ্রাম/লিটার) হতে হবে। ক্লান্তি বা ঘুমের ভাব এলে গাড়ি অবিলম্বে নিরাপদ স্থানে থামাতে হবে।',
+    goldenRules: [
+      {
+        it: "Per i neopatentati nei primi tre anni il tasso alcolemico consentito durante la guida è pari a zero (0,0 g/l).",
+        bn: "প্রথম ৩ বছরের নতুন চালকদের জন্য গাড়ি চালানোর সময় রক্তে অ্যালকোহলের মাত্রা অবশ্যই শূন্য (০.০) হতে হবে।"
+      },
+      {
+        it: "L'assunzione di alcol e farmaci sedativi aumenta il tempo di reazione del conducente.",
+        bn: "অ্যালকোহল ও ঘুমের ওষুধ সেবনের ফলে চালকের প্রতিক্রিয়া সময় (Tempo di reazione) বৃদ্ধি পায় এবং চালকের গতিবিধি ধীর হয়ে যায়।"
+      },
+      {
+        it: "In caso di stanchezza o sonnolenza improvvisa è necessario fermarsi in un'area di sosta e riposare.",
+        bn: "গাড়ি চালানোর সময় ক্লান্তি বা ঘুম এলে অবিলম্বে নিকটস্থ সার্ভিস এরিয়ায় গাড়ি থামিয়ে বিশ্রাম নেওয়া কর্তব্য।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Alcol riduce il tempo di reazione",
+        meaningBn: "অ্যালকোহল রিঅ্যাকশন টাইম কমায়",
+        trapNoteBn: "অ্যালকোহল রিঅ্যাকশন টাইম বাড়ায় (Aumenta il tempo), অর্থাৎ সিদ্ধান্ত নিতে বেশি সময় লাগে (FALSO)।"
+      },
+      {
+        word: "Tasso alcolemico tollerato per neopatentati",
+        meaningBn: "নতুন চালকদের সীমিত মদ্যপান ছাড়",
+        trapNoteBn: "নতুনদের জন্য বিন্দুমাত্র অ্যালকোহল অনুমোদিত নয়, সীমা কঠোরভাবে 0.0 (FALSO)।"
+      }
+    ],
+    relatedRounds: [7, 33, 34]
+  },
+  {
+    id: 'ch-20',
+    chapterNumber: 20,
+    titleIt: 'Responsabilità Civile, Penale e Assicurazione RCA',
+    titleBn: 'আইনি দায়বদ্ধতা ও বাধ্যতামূলক গাড়ি বীমা (RCA)',
+    category: 'legal',
+    icon: 'FileText',
+    summaryBn: 'বাধ্যতামূলক আরসিএ বীমা (RCA) অন্যের মানুষ ও সম্পত্তির ক্ষতিপূরণ দেয়। নিজের গাড়ির ক্ষতি কভার করতে চাইলে অতিরিক্ত কাসকো (Kasko) পলিসি প্রয়োজন।',
+    goldenRules: [
+      {
+        it: "L'assicurazione per la responsabilità civile auto (R.C.A.) è obbligatoria per tutti i veicoli a motore posti in circolazione.",
+        bn: "রাস্তায় চলাচলকারী সকল মোটরযানের জন্য সরকারি আরসিএ (RCA) বীমা থাকা আইনত বাধ্যতামূলক।"
+      },
+      {
+        it: "La polizza R.C.A. risarcisce i danni causati a terzi (persone, animali o cose), ma non i danni subiti dal conducente responsabile.",
+        bn: "আরসিএ বীমা তৃতীয় পক্ষের (মানুষ, পশু ও সম্পত্তির) ক্ষতিপূরণ দেয়, কিন্তু দোষী চালকের নিজের গাড়ির ক্ষতি দেয় না।"
+      },
+      {
+        it: "La responsabilità penale sorge quando vengono violate norme del Codice Penale, come lesioni gravi o omicidio stradale.",
+        bn: "দুর্ঘটনায় মারাত্মক জখম বা মৃত্যু ঘটালে চালকের বিরুদ্ধে ফৌজদারি মামলা (Responsabilità penale) দায়ের হয়।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "RCA copre il furto del veicolo",
+        meaningBn: "আরসিএ গাড়ি চুরি কভার করে",
+        trapNoteBn: "আরসিএ শুধু অন্যের ক্ষতি দেয়, গাড়ি চুরির জন্য আলাদা 'Furto e Incendio' পলিসি লাগে (FALSO)।"
+      },
+      {
+        word: "RCA copre i danni del conducente colpevole",
+        meaningBn: "দোষী চালকের নিজের গাড়ির ক্ষতি দেওয়া",
+        trapNoteBn: "দোষী চালকের গাড়ির ক্ষতি আরসিএ দেয় না, এর জন্য কাসকো (Kasko) পলিসি লাগে (FALSO)।"
+      }
+    ],
+    relatedRounds: [8, 35, 36]
+  },
+  {
+    id: 'ch-21',
+    chapterNumber: 21,
+    titleIt: 'Rispetto dell\'Ambiente e Inquinamento',
+    titleBn: 'পরিবেশ দূষণ রোধ ও জ্বালানি সাশ্রয়',
+    category: 'safety',
+    icon: 'Trees',
+    summaryBn: 'পরিবেশ দূষণ কমাতে অপ্রয়োজনীয় হর্ন না বাজানো, দীর্ঘ ট্রাফিকে ইঞ্জিন বন্ধ রাখা এবং এক্সস্ট ধোঁয়া ও টায়ারের ঘর্ষণ কমানো।',
+    goldenRules: [
+      {
+        it: "Per diminuire l'inquinamento atmosferico è opportuno spegnere il motore in caso di arresto prolungato.",
+        bn: "রেলগেট বা দীর্ঘ ট্রাফিকে গাড়ি আটকে থাকলে বায়ুদূষণ কমাতে গাড়ির ইঞ্জিন বন্ধ করে রাখা উচিত।"
+      },
+      {
+        it: "Un'eccessiva pressione o una pressione insufficiente dei pneumatici aumenta il consumo di carburante e l'usura.",
+        bn: "টায়ারে বাতাসের চাপ কম বা বেশি থাকলে জ্বালানি খরচ বাড়ে এবং টায়ার দ্রুত নষ্ট হয়।"
+      },
+      {
+        it: "L'inquinamento acustico può essere ridotto evitando accelerate brusche e usando il clacson solo nei casi consentiti.",
+        bn: "হঠাৎ করে অতিরিক্ত এক্সিলারেটর না চেপে এবং হর্নের পরিমিত ব্যবহারে শব্দদূষণ অনেকটাই কমানো যায়।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Filtro olio per inquinamento dell'aria",
+        meaningBn: "বায়ুদূষণ কমাতে অয়েল ফিল্টার বদলানো",
+        trapNoteBn: "অয়েল ফিল্টার ইঞ্জিন তেলের ময়লা ছাঁকে, এটি সরাসরি ধোঁয়া বা বায়ুদূষণ নিয়ন্ত্রণ করে না (FALSO)।"
+      },
+      {
+        word: "Gettare mozziconi dal finestrino",
+        meaningBn: "জানালা দিয়ে সিগারেটের শেষাংশ ফেলা",
+        trapNoteBn: "চলন্ত গাড়ি থেকে সিগারেট বা ময়লা ফেলা কঠোর শাস্তিযোগ্য অপরাধ (FALSO)।"
+      }
+    ],
+    relatedRounds: [9, 37, 38]
+  },
+  {
+    id: 'ch-22',
+    chapterNumber: 22,
+    titleIt: 'Elementi del Veicolo: Freni, Pneumatici, Sospensioni e Sterzo',
+    titleBn: 'গাড়ির মূল যন্ত্রাংশ: ব্রেক, টায়ার, সাসপেনশন ও স্টিয়ারিং',
+    category: 'mechanics',
+    icon: 'Wrench',
+    summaryBn: 'টায়ারের ট্রেড গভীরতা প্রাইভেট গাড়ির জন্য কমপক্ষে ১.৬ মিমি হতে হবে। ব্রেক ও এবিএস (ABS) চাকা লক হওয়া আটকে স্টিয়ারিং নিয়ন্ত্রণ বজায় রাখে।',
+    goldenRules: [
+      {
+        it: "Lo spessore minimo del battistrada dei pneumatici degli autoveicoli deve essere di almeno 1,6 mm.",
+        bn: "যাত্রীবাহী প্রাইভেট গাড়ির টায়ারের খাঁজের (Battistrada) সর্বনিম্ন গভীরতা কমপক্ষে ১.৬ মিলিমিটার হতে হবে।"
+      },
+      {
+        it: "Il sistema antibloccaggio ABS impedisce il bloccaggio delle ruote durante una frenata di emergenza garantendo la manovrabilità.",
+        bn: "এবিএস (ABS) সিস্টেম জরুরি ব্রেক করার সময় চাকা লক হওয়া আটকে স্টিয়ারিং ঘুরিয়ে গাড়ি নিয়ন্ত্রণের সুযোগ দেয়।"
+      },
+      {
+        it: "Il servofreno funziona solo quando il motore del veicolo è acceso.",
+        bn: "সার্ভোব্রেক বুস্টার শুধুমাত্র গাড়ির ইঞ্জিন চালু থাকা অবস্থাতেই কাজ করে।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Spessore battistrada minimo 0,5 mm",
+        meaningBn: "টায়ারের খাঁজ সর্বনিম্ন ০.৫ মিমি",
+        trapNoteBn: "গাড়ির জন্য সর্বনিম্ন ১.৬ মিমি এবং মোপেডের জন্য ১.০ মিমি হতে হবে (FALSO)।"
+      },
+      {
+        word: "ABS riduce sempre lo spazio di frenata su neve",
+        meaningBn: "বরফে এবিএস ব্রেকিং দূরত্ব সবসময় কমায়",
+        trapNoteBn: "বরফ বা আলগা নুড়ি পাথরে এবিএস ব্রেকিং দূরত্ব বাড়িয়ে দিতে পারে (FALSO)।"
+      }
+    ],
+    relatedRounds: [10, 39, 40]
+  },
+  {
+    id: 'ch-23',
+    chapterNumber: 23,
+    titleIt: 'Spie del Cruscotto e Manutenzione',
+    titleBn: 'ড্যাশবোর্ডের ওয়ার্নিং লাইট ও প্রতীক (Spie)',
+    category: 'mechanics',
+    icon: 'Gauge',
+    summaryBn: 'লাল বাতি মানে মারাত্মক বিপদ (অবিলম্বে গাড়ি থামাতে হবে)। অ্যাম্বার/হলুদ বাতি সতর্কতা বোঝায়। নীল বাতি হাই-বিম হেডলাইট নির্দেশ করে।',
+    goldenRules: [
+      {
+        it: "Le spie di colore rosso sul cruscotto indicano pericolo grave o il mancato funzionamento di sistemi vitali del veicolo.",
+        bn: "ড্যাশবোর্ডের লাল বাতিগুলো গুরুতর বিপদ অথবা গাড়ির জরুরি সিস্টেম বিকল হওয়ার সতর্কতা নির্দেশ করে।"
+      },
+      {
+        it: "La spia della pressione dell'olio motore di colore rosso impone l'arresto immediato del motore per evitare gravi danni.",
+        bn: "ইঞ্জিন অয়েল প্রেশারের লাল বাতি জ্বলে উঠলে ইঞ্জিন রক্ষা করতে অবিলম্বে নিরাপদ জায়গায় গাড়ি বন্ধ করতে হবে।"
+      },
+      {
+        it: "La spia luminosa dei proiettori abbaglianti è di colore blu.",
+        bn: "হাই-বিম হেডলাইটের (Luci abbaglianti) নির্দেশক ড্যাশবোর্ড বাতিটি নীল রঙের হয়ে থাকে।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Spia anabbaglianti rossa",
+        meaningBn: "লো-বিম লাইটের বাতি লাল",
+        trapNoteBn: "লো-বিম লাইটের বাতি সবুজ, হাই-বিম নীল, কখনোই লাল নয় (FALSO)।"
+      },
+      {
+        word: "Spia temperatura liquido raffreddamento verde",
+        meaningBn: "ইঞ্জিন অতিরিক্ত গরম হওয়ার বাতি সবুজ",
+        trapNoteBn: "ইঞ্জিন অতিরিক্ত গরম হওয়ার সতর্কতা বাতি সবসময় লাল রঙের হয় (FALSO)।"
+      }
+    ],
+    relatedRounds: [11, 41, 42]
+  },
+  {
+    id: 'ch-24',
+    chapterNumber: 24,
+    titleIt: 'Traino di Rimorchi e Carrelli',
+    titleBn: 'ট্রেলার ও নষ্ট গাড়ি টেনে নিয়ে যাওয়া (Traino)',
+    category: 'rules',
+    icon: 'Truck',
+    summaryBn: 'নষ্ট গাড়ি টেনে নেওয়ার সময় শক্ত বার বা মজবুত দড়ি ব্যবহার করতে হবে। হালকা ট্রেলারের (Rimorchi leggeri) সর্বোচ্চ অনুমোদিত ওজন ৭৫০ কেজি।',
+    goldenRules: [
+      {
+        it: "Il traino di un veicolo in avaria deve avvenire mediante un solido aggancio (barra rigida, fune o catena ben segnalata).",
+        bn: "নষ্ট গাড়ি টেনে নেওয়ার সময় শক্ত ধাতব বার অথবা উজ্জ্বল সিগন্যালযুক্ত মজবুত দড়ি দিয়ে বাঁধতে হবে।"
+      },
+      {
+        it: "I rimorchi durante la sosta devono essere frenati con il freno a mano o con cunei bloccaruota.",
+        bn: "ট্রেলার খুলে পার্ক করে রাখার সময় হ্যান্ডব্রেক টেনে এবং চাকার নিচে কুনি বা কাঠের ব্লক দিতে হবে।"
+      },
+      {
+        it: "I rimorchi leggeri hanno una massa complessiva a pieno carico fino a 750 kg.",
+        bn: "হালকা ট্রেলারের (Rimorchi leggeri) সর্বোচ্চ অনুমোদিত মোট ওজন ৭৫০ কেজি পর্যন্ত হয়ে থাকে।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Traino di due veicoli contemporaneamente",
+        meaningBn: "একসাথে দুটি গাড়ি বা ট্রেলার টানা",
+        trapNoteBn: "সাধারণ যাত্রীবাহী গাড়িতে একসাথে একাধিক নষ্ট গাড়ি বা ট্রেলার টানা সম্পূর্ণ নিষিদ্ধ (FALSO)।"
+      },
+      {
+        word: "Rimorchio leggero fino a 1500 kg",
+        meaningBn: "১৫০০ কেজি পর্যন্ত হালকা ট্রেলার",
+        trapNoteBn: "হালকা ট্রেলার সর্বোচ্চ ৭৫০ কেজি পর্যন্ত, এর বেশি হলে তা ভারী ট্রেলার (FALSO)।"
+      }
+    ],
+    relatedRounds: [12, 43, 44]
+  },
+  {
+    id: 'ch-25',
+    chapterNumber: 25,
+    titleIt: 'Consumi, Risparmio Energetico e Guida Ecologica',
+    titleBn: 'জ্বালানি সাশ্রয় ও পরিবেশবান্ধব ড্রাইভিং',
+    category: 'safety',
+    icon: 'Fuel',
+    summaryBn: 'ছাদের লাগেজ বক্স খুলে রাখা, সঠিক সময়ে উচ্চতর গিয়ার ব্যবহার এবং উইন্ডো বন্ধ রেখে ড্রাইভ করলে জ্বালানি খরচ ও কার্বন নির্গমন উল্লেখযোগ্যভাবে কমে।',
+    goldenRules: [
+      {
+        it: "Un portapacchi carico o un box da tetto peggiora l'aerodinamica del veicolo e aumenta notevolmente i consumi di carburante.",
+        bn: "গাড়ির ছাদের ওপর লাগেজ বা বক্স রাখলে বাতাসের বাধা বাড়ে এবং তেলের খরচ অনেক বাড়িয়ে দেয়।"
+      },
+      {
+        it: "Guidare con marce alte appena possibile consente di ridurre il regime del motore e risparmiare carburante.",
+        bn: "সম্ভব হওয়ামাত্র উচ্চতর গিয়ারে গাড়ি চালালে ইঞ্জিনের চাপ কমে এবং জ্বালানি সাশ্রয় হয়।"
+      },
+      {
+        it: "Viaggiare con i finestrini aperti ad alta velocità aumenta la resistenza dell'aria e il consumo di carburante.",
+        bn: "হাইওয়েতে বেশি গতিতে চলার সময় জানালার কাচ খোলা রাখলে বায়ুর বাধার কারণে তেলের খরচ বাড়ে।"
+      }
+    ],
+    trapKeywords: [
+      {
+        word: "Aria condizionata non influenza i consumi",
+        meaningBn: "এসি চালালে তেলে কোনো প্রভাব পড়ে না",
+        trapNoteBn: "গাড়ির এসি চালালে ইঞ্জিনের লোড বাড়ে এবং জ্বালানি খরচ বৃদ্ধি পায় (FALSO)।"
+      },
+      {
+        word: "Riscaldare il motore da fermo per 10 minuti",
+        meaningBn: "স্টার্ট দিয়ে গাড়ি ১০ মিনিট দাঁড় করিয়ে রাখা",
+        trapNoteBn: "দাঁড়িয়ে গাড়ি গরম করলে তেল নষ্ট ও পরিবেশ দূষণ হয়, স্টার্ট দিয়ে অবিলম্বে ধীরে গাড়ি চালানো শুরু করতে হবে (FALSO)।"
+      }
+    ],
+    relatedRounds: [13, 45, 46]
   }
 ];
