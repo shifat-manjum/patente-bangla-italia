@@ -150,20 +150,37 @@ export const loginStudent = async (
       const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
       const firebaseUser = userCredential.user;
 
-      // Fetch student document from Firestore
-      const studentDocRef = doc(db, 'students', firebaseUser.uid);
-      const studentDocSnap = await getDoc(studentDocRef);
+      // Fetch student document from Firestore with safety timeout & graceful fallback
+      let profile: StudentProfile | null = null;
+      try {
+        const studentDocRef = doc(db, 'students', firebaseUser.uid);
+        const studentDocSnap = await Promise.race([
+          getDoc(studentDocRef),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
+        ]);
 
-      let profile: StudentProfile;
+        if (studentDocSnap && studentDocSnap.exists()) {
+          profile = studentDocSnap.data() as StudentProfile;
+          try {
+            await updateDoc(studentDocRef, {
+              lastLoginAt: serverTimestamp(),
+            });
+          } catch {}
+        }
+      } catch (fsErr) {
+        console.warn('Firestore fetch notice (using cached/fallback profile):', fsErr);
+      }
 
-      if (studentDocSnap.exists()) {
-        profile = studentDocSnap.data() as StudentProfile;
-        // Update last login timestamp
-        await updateDoc(studentDocRef, {
-          lastLoginAt: serverTimestamp(),
-        });
-      } else {
-        // Fallback document if not found in Firestore
+      // Check local registered directory for student's profile (name, phone, rounds)
+      if (!profile) {
+        try {
+          const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
+          profile = all.find((s) => s.email?.toLowerCase() === cleanEmail) || null;
+        } catch {}
+      }
+
+      // If still not found, construct a clean student profile
+      if (!profile) {
         profile = {
           uid: firebaseUser.uid,
           name: firebaseUser.displayName || cleanEmail.split('@')[0],
@@ -173,15 +190,25 @@ export const loginStudent = async (
           completedRounds: {},
           mistakeIds: [],
           isVip: false,
-          lastLoginAt: serverTimestamp(),
+          lastLoginAt: new Date().toISOString(),
         };
-        await setDoc(studentDocRef, profile);
       }
 
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(profile));
       return profile;
     } catch (err: any) {
-      console.error('Firebase login error:', err);
+      console.warn('Firebase login attempt notice:', err);
+
+      // Check if student exists in local registered students list
+      try {
+        const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
+        const localFound = all.find((s) => s.email?.toLowerCase() === cleanEmail);
+        if (localFound) {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localFound));
+          return localFound;
+        }
+      } catch {}
+
       throw err;
     }
   }
