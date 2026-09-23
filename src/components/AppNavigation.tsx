@@ -7,7 +7,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 
-export type AppTab = 'dashboard' | 'curriculum' | 'theory' | 'exam' | 'errors';
+export type AppTab = 'dashboard' | 'curriculum' | 'exam' | 'theory' | 'errors';
 
 interface AppNavigationProps {
   currentTab: AppTab;
@@ -25,99 +25,129 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
     {
       id: 'dashboard' as AppTab,
       label: 'Dashboard',
+      subtext: 'Overview & Stats',
       icon: LayoutDashboard,
-      badge: null,
-      badgeColor: '',
+      neonColor: '#00D2FF', // Electric Cyan
+      glowColor: 'rgba(0, 210, 255, 0.45)',
     },
     {
       id: 'curriculum' as AppTab,
       label: '240 Rounds',
+      subtext: '7K+ Questions',
       icon: BookOpen,
-      badge: '1–20 Free',
-      badgeColor: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20',
-    },
-    {
-      id: 'theory' as AppTab,
-      label: 'Theory Summaries',
-      icon: FileText,
-      badge: '25 Chapters',
-      badgeColor: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20',
+      neonColor: '#00F5A0', // Modern Mint / Emerald
+      glowColor: 'rgba(0, 245, 160, 0.45)',
     },
     {
       id: 'exam' as AppTab,
-      label: 'Exam Simulation',
+      label: 'Real Life Exam Simulator',
+      subtext: '30 Qs Official / 20 Min',
       icon: Clock,
-      badge: '30 Qs Official',
-      badgeColor: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20',
+      neonColor: '#B249F8', // Hyper Violet
+      glowColor: 'rgba(178, 73, 248, 0.45)',
+    },
+    {
+      id: 'theory' as AppTab,
+      label: 'Summarized Theory',
+      subtext: '25 Chapters',
+      icon: FileText,
+      neonColor: '#FFB800', // Cyber Gold / Amber
+      glowColor: 'rgba(255, 184, 0, 0.45)',
     },
     {
       id: 'errors' as AppTab,
       label: 'Error Review',
+      subtext: errorCount > 0 ? `${errorCount} Errors Saved` : 'Revisione Errori',
       icon: AlertCircle,
-      badge: errorCount > 0 ? (errorCount === 1 ? '1 Error' : `${errorCount} Errors`) : null,
-      badgeColor: 'bg-rose-500 text-white shadow-xs',
+      neonColor: '#FF3366', // Neon Crimson / Rose
+      glowColor: 'rgba(255, 51, 102, 0.45)',
     },
   ];
 
   return (
     <>
-      {/* Desktop Top Tab Navigation Bar */}
-      <nav className="hidden md:block bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 sticky top-16 z-30 shadow-xs transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Dynamic Segmented Navigation Tabs */}
-            <div className="flex items-center gap-1.5 lg:gap-2.5 overflow-x-auto no-scrollbar py-2">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = currentTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => onTabChange(tab.id)}
-                    className={`group relative flex items-center gap-2.5 px-4 lg:px-4.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer ${
+      {/* Desktop Top Tab Navigation Bar (Car Cockpit Ambient Style) */}
+      <nav className="hidden md:block bg-slate-950/85 dark:bg-black/90 backdrop-blur-xl border-b border-slate-800/80 sticky top-16 z-30 shadow-xl transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-center gap-3 lg:gap-4 overflow-x-auto no-scrollbar py-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = currentTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => onTabChange(tab.id)}
+                  style={{
+                    boxShadow: isActive
+                      ? `0 0 25px ${tab.glowColor}, inset 0 0 12px ${tab.neonColor}20`
+                      : `0 0 15px ${tab.glowColor}`,
+                  }}
+                  className={`group relative p-[1.8px] rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shrink-0 transform hover:-translate-y-0.5 ${
+                    isActive ? 'scale-[1.02]' : 'hover:scale-[1.01]'
+                  }`}
+                >
+                  {/* Moving Neon Light Line Around Border (Like Modern Car Ambient Cockpit Lighting) */}
+                  <span
+                    className="absolute inset-[-250%] animate-ambient-beam pointer-events-none"
+                    style={{
+                      background: `conic-gradient(from 0deg, transparent 0%, transparent 68%, ${tab.neonColor} 84%, #ffffff 94%, ${tab.neonColor} 100%)`,
+                    }}
+                  />
+
+                  {/* Inner Button Body (Cockpit Dashboard Slate with High Contrast Text) */}
+                  <div
+                    className={`relative z-10 w-full h-full rounded-[14.5px] px-4 py-2.5 lg:px-5 lg:py-2.5 flex items-center gap-3 transition-all ${
                       isActive
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 ring-2 ring-blue-500/30'
-                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/80'
+                        ? 'bg-slate-900/95 dark:bg-black/95 text-white'
+                        : 'bg-slate-950/90 hover:bg-slate-900/90 dark:bg-black/90 text-white'
                     }`}
                   >
-                    <Icon
-                      className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
-                        isActive
-                          ? 'text-white scale-110'
-                          : 'text-slate-400 dark:text-slate-500 group-hover:text-blue-500'
-                      }`}
-                    />
-                    <span>{tab.label}</span>
-                    {tab.badge && (
-                      <span
-                        className={`text-[10px] font-black px-2 py-0.5 rounded-full transition-colors shrink-0 ${
-                          isActive
-                            ? 'bg-white/20 text-white border border-white/30 backdrop-blur-xs'
-                            : tab.badgeColor || 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700'
-                        }`}
-                      >
-                        {tab.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                    {/* Glowing Illuminated Icon */}
+                    <div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110"
+                      style={{
+                        backgroundColor: `${tab.neonColor}18`,
+                        border: `1px solid ${tab.neonColor}50`,
+                        boxShadow: `0 0 10px ${tab.neonColor}40`,
+                      }}
+                    >
+                      <Icon className="w-4 h-4" style={{ color: tab.neonColor }} />
+                    </div>
 
-            {/* Right Status Pill (Gracefully hidden on narrower screens to prevent crowding) */}
-            <div className="hidden xl:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 shrink-0">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span>Official 2026 Ministerial Syllabus</span>
-            </div>
+                    {/* Dual-Tier Text: Clean Title + Matching Neon Subtext */}
+                    <div className="text-left flex flex-col justify-center">
+                      <span className="text-xs lg:text-sm font-black text-white tracking-tight whitespace-nowrap drop-shadow-xs">
+                        {tab.label}
+                      </span>
+                      <span
+                        className="text-[9.5px] lg:text-[10px] font-black tracking-wider uppercase whitespace-nowrap block"
+                        style={{ color: tab.neonColor }}
+                      >
+                        {tab.subtext}
+                      </span>
+                    </div>
+
+                    {/* Active Bottom Glow Line Indicator */}
+                    {isActive && (
+                      <span
+                        className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full"
+                        style={{
+                          backgroundColor: tab.neonColor,
+                          boxShadow: `0 0 12px ${tab.neonColor}`,
+                        }}
+                      />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </nav>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-lg safe-bottom">
+      {/* Mobile Bottom Navigation Bar (Modern Ambient Cockpit Style) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 dark:bg-black/95 backdrop-blur-xl border-t border-slate-800 shadow-2xl safe-bottom">
         <div className="grid grid-cols-5 h-16">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -126,28 +156,42 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex flex-col items-center justify-center gap-0.5 relative transition-colors cursor-pointer ${
-                  isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
+                className="flex flex-col items-center justify-center gap-1 relative transition-colors cursor-pointer"
               >
-                <div className="relative">
-                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center relative transition-transform"
+                  style={{
+                    backgroundColor: isActive ? `${tab.neonColor}25` : 'transparent',
+                    boxShadow: isActive ? `0 0 14px ${tab.neonColor}50` : 'none',
+                  }}
+                >
+                  <Icon
+                    className={`w-4 h-4 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`}
+                    style={{ color: isActive ? tab.neonColor : '#94A3B8' }}
+                  />
                   {tab.id === 'errors' && errorCount > 0 && (
-                    <span className="absolute -top-1.5 -right-2.5 text-[9px] font-black px-1.5 py-0.2 rounded-full bg-rose-500 text-white shadow-xs">
+                    <span className="absolute -top-1.5 -right-2 text-[8px] font-black px-1.5 py-0.2 rounded-full bg-rose-500 text-white shadow-xs">
                       {errorCount > 99 ? '99+' : errorCount}
                     </span>
                   )}
-                  {tab.id === 'curriculum' && !isActive && (
-                    <span className="absolute -top-1.5 -right-2 text-[8px] font-black px-1 py-0.2 rounded-full bg-emerald-500 text-white">
-                      Free
-                    </span>
-                  )}
                 </div>
-                <span className={`text-[10px] tracking-tight whitespace-nowrap ${isActive ? 'font-black' : 'font-medium'}`}>
-                  {tab.label}
+                <span
+                  className="text-[9px] tracking-tight whitespace-nowrap truncate max-w-[62px]"
+                  style={{
+                    color: isActive ? '#FFFFFF' : '#94A3B8',
+                    fontWeight: isActive ? 800 : 500,
+                  }}
+                >
+                  {tab.id === 'exam' ? 'Exam Sim' : tab.label}
                 </span>
                 {isActive && (
-                  <span className="absolute bottom-0 w-8 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-full"></span>
+                  <span
+                    className="absolute bottom-0 w-8 h-1 rounded-t-full"
+                    style={{
+                      backgroundColor: tab.neonColor,
+                      boxShadow: `0 0 8px ${tab.neonColor}`,
+                    }}
+                  />
                 )}
               </button>
             );

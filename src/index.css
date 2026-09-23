@@ -143,5 +143,19 @@ body.dark,
   background-color: rgba(245, 158, 11, 0.12) !important;
 }
 
+/* Modern Car Ambient Lighting & Moving Neon Border Beam */
+@keyframes ambientBorderSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-ambient-beam {
+  animation: ambientBorderSpin 3.5s linear infinite;
+}
+
 
 
