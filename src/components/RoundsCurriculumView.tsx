@@ -173,7 +173,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
               🟢 বর্তমান আনলক: <span className="text-emerald-300">রাউন্ড #{effectiveUnlocked}</span>
             </div>
             <div className="px-3.5 py-1.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20">
-              🎓 একাডেমি প্রো: <span className="text-blue-300">রাউন্ড ২১–২৪০ (লাইফটাইম €৪৯)</span>
+              🎓 একাডেমি প্রো: <span className="text-blue-300">রাউন্ড ২১–২৪০ (€৪৯ • পাস করা পর্যন্ত এক্সেস)</span>
             </div>
             <div className="px-3.5 py-1.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20">
               ✅ পাস করা রাউন্ড: <span className="text-amber-300">{passedCount} / ২৪০</span>

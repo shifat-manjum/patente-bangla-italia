@@ -87,7 +87,7 @@ export const VipPaywallModal: React.FC<VipPaywallModalProps> = ({
         <div className="p-5 rounded-2xl bg-orange-50/70 border border-orange-200 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-              One-Time Enrollment (Lifetime Access)
+              One-Time Enrollment • Access Until You Pass (Fino alla Patente)
             </span>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl sm:text-4xl font-black text-slate-900">€49</span>

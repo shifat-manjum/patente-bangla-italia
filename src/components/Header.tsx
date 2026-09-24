@@ -130,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
                           <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Plan Status</span>
                           {currentUser.isVip || isVip ? (
                             <span className="px-2 py-0.5 rounded-md bg-emerald-500 text-white text-[10px] font-black uppercase">
-                              VIP LIFETIME
+                              ACADEMY PRO
                             </span>
                           ) : (
                             <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-black uppercase">

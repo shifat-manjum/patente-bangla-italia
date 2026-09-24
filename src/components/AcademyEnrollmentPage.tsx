@@ -55,9 +55,9 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
     },
     {
       icon: ShieldCheck,
-      titleIt: 'Aggiornamenti Ministeriali 2026 Gratuiti',
-      titleBn: '২০২৬ সালের সকল নতুন প্রশ্ন ও লাইফটাইম এক্সেস',
-      desc: 'কোনো মাসিক সাবস্ক্রিপশন বা অতিরিক্ত চার্জ নেই। একবার এনরোল করলে পরীক্ষায় পাস করার আগ পর্যন্ত আজীবন এক্সেস।',
+      titleIt: 'Accesso Garantito Fino al Conseguimento della Patente',
+      titleBn: 'এককালীন পেমেন্ট • লাইসেন্স পাস করার আগ পর্যন্ত সম্পূর্ণ এক্সেস',
+      desc: 'কোনো মাসিক সাবস্ক্রিপশন বা রিনিউ ফি নেই। একবার এনরোল করলেই ড্রাইভিং লাইসেন্স (Patente B) পরীক্ষায় পাস করে লাইসেন্স পাওয়ার আগ পর্যন্ত ১০০% আনলিমিটেড সাপোর্ট ও কুইজ এক্সেস।',
       color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-900',
     },
     {
@@ -94,7 +94,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
         <div className="relative z-10 space-y-5">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-600/40 border border-blue-400/40 text-xs sm:text-sm font-black text-blue-200">
             <GraduationCap className="w-4 h-4 text-emerald-400" />
-            <span>অফিসিয়াল একাডেমি লাইফটাইম এনরোলমেন্ট (Accesso Completo)</span>
+            <span>অফিসিয়াল একাডেমি এনরোলমেন্ট (পাস করা পর্যন্ত সম্পূর্ণ এক্সেস)</span>
           </div>
 
           <div className="space-y-2">
@@ -113,7 +113,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
                 €
               </div>
               <div>
-                <span className="text-xs text-blue-200 font-bold block">এককালীন লাইফটাইম ফি (Una Tantum)</span>
+                <span className="text-xs text-blue-200 font-bold block">এককালীন কোর্স ফি • পাস করা পর্যন্ত এক্সেস (Una Tantum)</span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl sm:text-3xl font-black text-white">€৪৯</span>
                   <span className="text-xs text-slate-400 line-through">€৯৯</span>

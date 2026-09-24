@@ -79,7 +79,7 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               Complete Syllabus & Full Academy Access
             </h2>
             <p className="text-xs sm:text-[13px] text-blue-100/90 leading-relaxed">
-              ফাউন্ডেশন রাউন্ড (১–২০) সফলভাবে মূল্যায়নের পর সম্পূর্ণ কোর্স অ্যাক্টিভ করুন (€৪৯ এককালীন লাইফটাইম ফি)।
+              ফাউন্ডেশন রাউন্ড (১–২০) সফলভাবে মূল্যায়নের পর সম্পূর্ণ কোর্স অ্যাক্টিভ করুন (€৪৯ এককালীন কোর্স ফি • পাস করা পর্যন্ত এক্সেস)।
             </p>
           </div>
         </div>
@@ -115,8 +115,8 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
                 },
                 {
                   icon: ShieldCheck,
-                  title: 'Lifetime 2026 Ministerial Updates Included',
-                  desc: 'কোনো মাসিক ফি নেই। একবার এনরোল করলে পাস করার আগ পর্যন্ত আনলিমিটেড লাইফটাইম এক্সেস।',
+                  title: '2026 Ministerial Updates • Access Until You Pass',
+                  desc: 'কোনো মাসিক ফি নেই। একবার এককালীন এনরোল করলে ড্রাইভিং লাইসেন্স (Patente) পাস করা পর্যন্ত আনলিমিটেড এক্সেস।',
                 },
               ].map((item, idx) => {
                 const Icon = item.icon;

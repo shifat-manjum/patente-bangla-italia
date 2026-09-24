@@ -250,7 +250,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const handleToggleProPass = async (student: StudentProfile) => {
     const newStatus = !student.isVip;
     const confirmMsg = newStatus
-      ? `আপনি কি ${student.name}-কে লাইফটাইম Pro Student Pass (€49) প্রদান করতে চান?`
+      ? `আপনি কি ${student.name}-কে একাডেমি Pro Student Pass (€49 • পাস করা পর্যন্ত এক্সেস) প্রদান করতে চান?`
       : `আপনি কি ${student.name}-এর Pro Student Pass প্রত্যাহার করতে চান?`;
 
     if (!window.confirm(confirmMsg)) return;
