@@ -7,7 +7,8 @@ import {
   MessageCircle, 
   Sparkles, 
   ShieldCheck,
-  ExternalLink
+  ExternalLink,
+  CreditCard
 } from 'lucide-react';
 
 interface EnrollmentModalProps {
@@ -15,6 +16,7 @@ interface EnrollmentModalProps {
   onClose: () => void;
   onContinueFree: () => void;
   onViewFullPage?: () => void;
+  onOpenPayment?: () => void;
   attemptedRound?: number;
 }
 
@@ -23,6 +25,7 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   onClose,
   onContinueFree,
   onViewFullPage,
+  onOpenPayment,
   attemptedRound = 21,
 }) => {
   // Listen for Escape key to close
@@ -159,15 +162,29 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
 
         {/* Fixed Bottom Action Buttons */}
         <div className="p-4 sm:p-5 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 shrink-0 space-y-2">
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-98"
-          >
-            <MessageCircle className="w-4.5 h-4.5" />
-            <span>Confirm Enrollment via WhatsApp (€৪৯)</span>
-          </a>
+          {onOpenPayment ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenPayment();
+              }}
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-98"
+            >
+              <CreditCard className="w-4.5 h-4.5" />
+              <span>অনলাইনে সরাসরি পেমেন্ট করুন (€৪৯) • Paga Online</span>
+            </button>
+          ) : (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-98"
+            >
+              <MessageCircle className="w-4.5 h-4.5" />
+              <span>Confirm Enrollment via WhatsApp (€৪৯)</span>
+            </a>
+          )}
 
           <div className="flex items-center gap-2">
             <button
@@ -177,6 +194,17 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
             >
               Continue Free (১–২০ রাউন্ড)
             </button>
+
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-2 px-3 rounded-xl text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-bold text-xs text-center transition cursor-pointer flex items-center gap-1 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+              title="WhatsApp সহায়তা"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>WhatsApp</span>
+            </a>
 
             <button
               type="button"

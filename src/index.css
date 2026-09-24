@@ -157,6 +157,30 @@ body.dark,
   animation: neonDotsTrace 12s linear infinite;
 }
 
-
-
-
+/* Print Optimization for Official Course Invoices and Receipts */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+  .no-print, header, nav, footer, aside, button, .custom-chatbot {
+    display: none !important;
+  }
+  #printable-invoice {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: auto;
+    margin: 0;
+    padding: 24px;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+    z-index: 999999;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -24,11 +24,25 @@ import { PatenteChatbot } from './components/PatenteChatbot';
 import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
 import { AcademyEnrollmentPage } from './components/AcademyEnrollmentPage';
+import confetti from 'canvas-confetti';
+import { CoursePaymentModal } from './components/CoursePaymentModal';
+import { CourseInvoiceModal } from './components/CourseInvoiceModal';
+import { 
+  getLatestInvoice, 
+  createInvoiceRecord, 
+  saveInvoice 
+} from './services/paymentService';
+import type { InvoiceRecord } from './services/paymentService';
 
 export function App() {
   const [appTab, setAppTab] = useState<AppTab | 'admin' | 'enrollment'>('dashboard');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+
+  // Direct Online Payment & Invoicing State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [activeInvoice, setActiveInvoice] = useState<InvoiceRecord | null>(() => getLatestInvoice());
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   // Theme State: 'light' | 'sepia' | 'dark'
   const [currentTheme, setCurrentTheme] = useState<ThemeMode>(() => {
@@ -322,6 +336,53 @@ export function App() {
     }
   };
 
+  const handlePaymentSuccess = (invoice: InvoiceRecord) => {
+    setIsVip(true);
+    try {
+      localStorage.setItem('patente_bangla_is_vip', 'true');
+    } catch {}
+    setUnlockedRound((prev) => Math.max(prev, 240));
+    try {
+      localStorage.setItem('patente_bangla_unlocked_round', '240');
+    } catch {}
+    setActiveInvoice(invoice);
+    setIsPaymentModalOpen(false);
+    setIsInvoiceModalOpen(true);
+
+    if (currentUser?.uid) {
+      syncStudentProgressToCloud(currentUser.uid, {
+        isVip: true,
+        unlockedRound: 240,
+      });
+    }
+
+    try {
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+      });
+    } catch {}
+  };
+
+  const handleOpenInvoice = () => {
+    let inv = activeInvoice || getLatestInvoice(currentUser?.email);
+    if (!inv) {
+      inv = createInvoiceRecord({
+        studentName: currentUser?.name || studentLead?.name || 'Studente Ufficiale Patente B',
+        studentEmail: currentUser?.email || studentLead?.email || 'khshifat@gmail.com',
+        studentPhone: studentLead?.phone || '+39 351 000 0000',
+        codiceFiscale: 'REGOLARE',
+        address: 'Italia',
+        city: 'Bolzano',
+        paymentMethod: 'card',
+      });
+      saveInvoice(inv);
+      setActiveInvoice(inv);
+    }
+    setIsInvoiceModalOpen(true);
+  };
+
   return (
     <div
       className={`min-h-screen flex flex-col transition-colors duration-300 font-sans relative overflow-x-hidden ${
@@ -371,6 +432,7 @@ export function App() {
             setIsAdminLoginOpen(true);
           }
         }}
+        onOpenInvoice={handleOpenInvoice}
       />
 
       {/* 5-Tab Educational Navigation */}
@@ -522,6 +584,7 @@ export function App() {
         {appTab === 'enrollment' && (
           <AcademyEnrollmentPage
             onBack={() => setAppTab('dashboard')}
+            onOpenPayment={() => setIsPaymentModalOpen(true)}
             attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
           />
         )}
@@ -546,7 +609,44 @@ export function App() {
           setIsPaywallOpen(false);
           setAppTab('enrollment');
         }}
+        onOpenPayment={() => {
+          setIsPaywallOpen(false);
+          setIsPaymentModalOpen(true);
+        }}
         attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
+      />
+
+      {/* Direct Online Payment Checkout Modal */}
+      <CoursePaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onSuccess={handlePaymentSuccess}
+        initialStudent={
+          currentUser
+            ? {
+                name: currentUser.name,
+                email: currentUser.email,
+              }
+            : studentLead
+            ? {
+                name: studentLead.name,
+                email: studentLead.email,
+                phone: studentLead.phone,
+              }
+            : null
+        }
+        attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
+      />
+
+      {/* Official Tax Invoice & Payment Receipt Modal (Printable/Downloadable PDF) */}
+      <CourseInvoiceModal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        invoice={activeInvoice}
+        onStartCourse={() => {
+          setIsInvoiceModalOpen(false);
+          setAppTab('curriculum');
+        }}
       />
 
       {/* Student Lead Registration Modal */}

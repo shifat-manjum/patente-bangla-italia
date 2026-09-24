@@ -7,20 +7,23 @@ import {
   MessageCircle, 
   ShieldCheck, 
   ArrowLeft,
-  Award
+  Award,
+  CreditCard
 } from 'lucide-react';
 
 interface AcademyEnrollmentPageProps {
   onBack: () => void;
+  onOpenPayment: () => void;
   attemptedRound?: number;
 }
 
 export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
   onBack,
+  onOpenPayment,
   attemptedRound = 21,
 }) => {
   const whatsappMessage = encodeURIComponent(
-    `Hello! I would like to enroll in the complete course on Patente Bangla Italia (Activating Round #${attemptedRound} to 240). Please share enrollment details.`
+    `Hello! I have questions regarding the complete course enrollment on Patente Bangla Italia / PatenteGuru (Round #${attemptedRound} to 240).`
   );
   const whatsappUrl = `https://wa.me/393510000000?text=${whatsappMessage}`;
 
@@ -70,7 +73,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
   ];
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-8 animate-fadeIn pb-24">
+    <div className="w-full max-w-5xl mx-auto space-y-8 animate-fadeIn pb-24 text-left">
       {/* Top Navigation Back Action */}
       <div className="flex items-center justify-between">
         <button
@@ -83,7 +86,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
         </button>
 
         <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-          Autoscuola Ufficiale Patente B
+          Autoscuola Ufficiale Patente B • Bolzano, Italia
         </span>
       </div>
 
@@ -102,11 +105,11 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               প্রথমবারেই ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) পাসের পূর্ণাঙ্গ কোর্স
             </h1>
             <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed max-w-3xl">
-              আপনি বর্তমানে ১ থেকে ২০টি ফ্রি ফাউন্ডেশন রাউন্ডে প্র্যাকটিস করছেন। একাডেমি এনরোলমেন্টের মাধ্যমে আনলক করুন বাকি ২২০টি প্রো রাউন্ড, অফিসিয়াল অডিও সিমুলেশন এবং সরাসরি শিক্ষক সহায়তা।
+              আপনি বর্তমানে ১ থেকে ২০টি ফ্রি ফাউন্ডেশন রাউন্ডে প্র্যাকটিস করছেন। সরাসরি অনলাইনে পেমেন্ট করে তাৎক্ষণিকভাবে আনলক করুন বাকি ২২০টি প্রো রাউন্ড, অফিসিয়াল অডিও সিমুলেশন এবং সাথে সাথে ডাউনলোড করুন আপনার অফিসিয়াল ইনভয়েস রসিদ।
             </p>
           </div>
 
-          {/* Pricing Highlight Pill */}
+          {/* Pricing Highlight Pill & Direct Payment Button */}
           <div className="pt-2 flex flex-wrap items-center gap-4">
             <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center gap-4 shadow-inner">
               <div className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-2xl font-black shadow-md">
@@ -124,14 +127,25 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               </div>
             </div>
 
+            {/* Direct Online Payment Button */}
+            <button
+              type="button"
+              onClick={onOpenPayment}
+              className="py-4 px-6 sm:px-8 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition cursor-pointer shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 w-full sm:w-auto text-center"
+            >
+              <CreditCard className="w-5 h-5 shrink-0" />
+              <span>অনলাইনে সরাসরি পেমেন্ট করুন (€৪৯) • Paga Online</span>
+            </button>
+
+            {/* Secondary WhatsApp Help Button */}
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="py-4 px-6 sm:px-8 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition cursor-pointer shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 w-full sm:w-auto text-center"
+              className="py-4 px-5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer w-full sm:w-auto text-center"
             >
-              <MessageCircle className="w-5 h-5 shrink-0" />
-              <span>WhatsApp-এ যোগাযোগ ও অ্যাক্টিভেশন</span>
+              <MessageCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+              <span>WhatsApp হেল্পলাইন</span>
             </a>
           </div>
         </div>
@@ -185,22 +199,22 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               ১
             </span>
             <h4 className="font-black text-sm text-slate-900 dark:text-white">
-              WhatsApp-এ মেসেজ দিন
+              অনলাইনে পেমেন্ট করুন (€৪৯)
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              নিচের লিংকে ক্লিক করে আপনার স্টুডেন্ট নাম ও ইমেইল আমাদের পাঠান।
+              ওয়েবসাইটেই সরাসরি ডেবিট/ক্রেডিট কার্ড, PostePay, PayPal বা Bonifico দিয়ে নিরাপদে পেমেন্ট করুন।
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
-            <span className="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center mx-auto sm:mx-0">
+            <span className="w-8 h-8 rounded-full bg-indigo-600 text-white font-black text-sm flex items-center justify-center mx-auto sm:mx-0">
               ২
             </span>
             <h4 className="font-black text-sm text-slate-900 dark:text-white">
-              ফি নিশ্চিত করুন (€৪৯)
+              তাৎক্ষণিক ইনভয়েস ও রসিদ 📄
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Postepay, Bonifico, PayPal বা কার্ডের মাধ্যমে সহজ পেমেন্ট সম্পন্ন করুন।
+              পেমেন্ট সফল হওয়ামাত্র আপনার নামের অফিসিয়াল ইতালিয়ান ট্যাক্স রসিদ স্বয়ংক্রিয়ভাবে ডাউনলোড বা প্রিন্ট করুন।
             </p>
           </div>
 
@@ -209,10 +223,10 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               ৩
             </span>
             <h4 className="font-black text-sm text-slate-900 dark:text-white">
-              ২৪০ রাউন্ড অ্যাক্টিভ! 🚀
+              ২৪০ রাউন্ড সাথে সাথে অ্যাক্টিভ! 🚀
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              পেমেন্ট কনফার্ম হওয়ামাত্র আপনার অ্যাকাউন্টে সম্পূর্ণ সিলেবাস আনলক হবে।
+              কোনো অপেক্ষা নেই—পেমেন্টের সাথে সাথে অ্যাকাউন্টে সম্পূর্ণ কোর্স ও সব রাউন্ড আনলক হবে।
             </p>
           </div>
         </div>
@@ -224,19 +238,28 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               সরাসরি যোগাযোগ: Shifat Manjum (Founder & Lead Instructor)
             </p>
             <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Bologna, Italy • info@patente-bangla.it
+              Bolzano, Italy • khshifat@gmail.com
             </p>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={onOpenPayment}
+              className="flex-1 sm:flex-none py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md transition cursor-pointer active:scale-95"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>অনলাইনে পেমেন্ট (€৪৯)</span>
+            </button>
+
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 sm:flex-none py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md transition"
+              className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+              title="WhatsApp সাপোর্ট"
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>কনফার্ম করুন (WhatsApp)</span>
+              <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </a>
 
             <button

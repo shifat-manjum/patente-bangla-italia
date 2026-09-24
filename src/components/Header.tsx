@@ -6,7 +6,8 @@ import {
   LogOut,
   LogIn,
   ChevronDown,
-  Phone
+  Phone,
+  FileText
 } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import type { ThemeMode } from './ThemeSwitcher';
@@ -26,6 +27,7 @@ interface HeaderProps {
   onOpenAuth: () => void;
   onLogout: () => void;
   onOpenAdmin: () => void;
+  onOpenInvoice?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -39,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuth,
   onLogout,
   onOpenAdmin,
+  onOpenInvoice,
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   return (
@@ -142,6 +145,20 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                      {isVip && onOpenInvoice && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            onOpenInvoice();
+                          }}
+                          className="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer border border-blue-200 dark:border-blue-900/50"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>অফিসিয়াল ইনভয়েস (Fattura PDF)</span>
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={() => {
@@ -210,9 +227,24 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 px-4 py-2 sm:py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-black">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Enrolled Student (240 Rounds)</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-black">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="hidden sm:inline">Enrolled Student (240 Rounds)</span>
+                  <span className="sm:hidden">Pro Pass</span>
+                </div>
+
+                {onOpenInvoice && (
+                  <button
+                    type="button"
+                    onClick={onOpenInvoice}
+                    className="py-2 px-2.5 sm:px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    title="Scarica e Stampa Ricevuta Ufficiale (Download Invoice PDF)"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    <span className="hidden md:inline">রসিদ / Fattura</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
