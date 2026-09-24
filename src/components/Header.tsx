@@ -51,15 +51,13 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Top Line: Brand & VIP Upgrade Action */}
         <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-3 sm:gap-4">
+            {/* Transparent Supercar Brand Logo */}
+            <CarLogo size="xl" className="shrink-0 drop-shadow-md" />
+
             <div>
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                {/* User Supercar Transparent Logo directly before PatenteBangla */}
-                <CarLogo size="lg" className="shrink-0 drop-shadow-md" />
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
                 <span className="font-black text-xl sm:text-3xl tracking-tight text-slate-900 dark:text-white">
                   Patente<span className="text-[#FB6C00]">Bangla</span>
-                </span>
-                <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-[9px] sm:text-[11px] font-black bg-orange-50 dark:bg-orange-950/50 text-[#FB6C00] border border-orange-200 dark:border-orange-800">
-                  AUTOSCUOLA 2026
                 </span>
               </div>
               <p className="text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block mt-0.5">

@@ -184,3 +184,39 @@ body.dark,
     -webkit-print-color-adjust: exact;
   }
 }
+
+/* Disable Google Translate popups, balloon tooltips, and highlights */
+.notranslate,
+[translate="no"] {
+  translate: no !important;
+}
+
+.goog-te-banner-frame,
+.goog-te-menu-frame,
+.goog-te-balloon-frame,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-text-highlight {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body {
+  top: 0px !important;
+  -webkit-touch-callout: none;
+}
+
+/* Prevent accidental text selection and browser translate contextual menus on touch */
+button,
+a,
+header,
+nav,
+[role="button"],
+.select-none {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
