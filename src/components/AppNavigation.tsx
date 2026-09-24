@@ -66,10 +66,10 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
 
   return (
     <>
-      {/* Desktop Top Tab Navigation Bar (Car Cockpit Ambient Style - 25% Taller Buttons) */}
+      {/* Desktop & Tablet Top Tab Navigation Bar (Car Cockpit Ambient Style - 25% Taller Buttons) */}
       <nav className="hidden md:block bg-slate-950/85 dark:bg-black/90 backdrop-blur-xl border-b border-slate-800/80 sticky top-[80px] sm:top-[88px] z-30 shadow-xl transition-colors">
-        <div className="max-w-[1600px] mx-auto px-[15px] py-3.5 sm:py-4">
-          <div className="flex items-center justify-center gap-3.5 lg:gap-4.5 overflow-x-auto no-scrollbar py-1">
+        <div className="max-w-[1600px] mx-auto px-[15px] py-3 sm:py-4">
+          <div className="flex items-center justify-start xl:justify-center gap-2.5 lg:gap-4.5 overflow-x-auto no-scrollbar py-1 px-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = currentTab === tab.id;
@@ -95,33 +95,33 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
                     }}
                   />
 
-                  {/* Inner Button Body (+25% Height: py-3.5 sm:py-4 with min-h-[62px] lg:min-h-[66px]) */}
+                  {/* Inner Button Body (+25% Height: py-3 sm:py-4 with min-h-[58px] lg:min-h-[66px]) */}
                   <div
-                    className={`relative z-10 w-full h-full rounded-[14px] px-4.5 py-3.5 sm:px-5 sm:py-4 min-h-[62px] lg:min-h-[66px] flex items-center gap-3.5 transition-all ${
+                    className={`relative z-10 w-full h-full rounded-[14px] px-3.5 py-3 sm:px-4.5 sm:py-3.5 lg:px-5 lg:py-4 min-h-[58px] lg:min-h-[66px] flex items-center gap-2.5 lg:gap-3.5 transition-all ${
                       isActive
                         ? 'bg-slate-900/95 dark:bg-black/95 text-white'
                         : 'bg-slate-950/90 hover:bg-slate-900/90 dark:bg-black/90 text-white'
                     }`}
                   >
-                    {/* Glowing Illuminated Icon (Slightly larger for proportional height) */}
+                    {/* Glowing Illuminated Icon */}
                     <div
-                      className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110"
+                      className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110"
                       style={{
                         backgroundColor: `${tab.neonColor}18`,
                         border: `1px solid ${tab.neonColor}50`,
                         boxShadow: `0 0 12px ${tab.neonColor}40`,
                       }}
                     >
-                      <Icon className="w-5 h-5" style={{ color: tab.neonColor }} />
+                      <Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5" style={{ color: tab.neonColor }} />
                     </div>
 
                     {/* Dual-Tier Text: Prominent Title + Matching Neon Subtext */}
                     <div className="text-left flex flex-col justify-center">
-                      <span className="text-sm sm:text-base font-black text-white tracking-tight whitespace-nowrap drop-shadow-xs">
+                      <span className="text-xs sm:text-sm lg:text-base font-black text-white tracking-tight whitespace-nowrap drop-shadow-xs">
                         {tab.label}
                       </span>
                       <span
-                        className="text-[10px] sm:text-[11px] font-black tracking-wider uppercase whitespace-nowrap block mt-0.5"
+                        className="text-[9.5px] sm:text-[10px] lg:text-[11px] font-black tracking-wider uppercase whitespace-nowrap block mt-0.5"
                         style={{ color: tab.neonColor }}
                       >
                         {tab.subtext}
@@ -131,7 +131,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
                     {/* Active Bottom Glow Line Indicator */}
                     {isActive && (
                       <span
-                        className="absolute bottom-0 left-4 right-4 h-0.5 sm:h-1 rounded-full"
+                        className="absolute bottom-0 left-3 right-3 sm:left-4 sm:right-4 h-0.5 sm:h-1 rounded-full"
                         style={{
                           backgroundColor: tab.neonColor,
                           boxShadow: `0 0 14px ${tab.neonColor}`,
@@ -146,9 +146,9 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
         </div>
       </nav>
 
-      {/* Mobile Bottom Navigation Bar (Modern Ambient Cockpit Style - Scaled Height) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 dark:bg-black/95 backdrop-blur-xl border-t border-slate-800 shadow-2xl safe-bottom">
-        <div className="grid grid-cols-5 h-[70px]">
+      {/* Mobile Bottom Navigation Bar (Modern Ambient Cockpit Style - Scaled Height & Safe Touch Area) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 dark:bg-black/95 backdrop-blur-xl border-t border-slate-800 shadow-2xl safe-bottom select-none touch-manipulation">
+        <div className="grid grid-cols-5 h-[68px] sm:h-[72px]">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = currentTab === tab.id;
@@ -156,7 +156,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className="flex flex-col items-center justify-center gap-1 relative transition-colors cursor-pointer"
+                className="flex flex-col items-center justify-center gap-1 relative transition-all duration-150 cursor-pointer active:scale-95"
               >
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center relative transition-transform"
@@ -176,7 +176,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
                   )}
                 </div>
                 <span
-                  className="text-[9.5px] tracking-tight whitespace-nowrap truncate max-w-[64px]"
+                  className="text-[9px] sm:text-[10px] tracking-tight whitespace-nowrap truncate max-w-[62px] text-center"
                   style={{
                     color: isActive ? '#FFFFFF' : '#94A3B8',
                     fontWeight: isActive ? 800 : 500,

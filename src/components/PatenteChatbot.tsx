@@ -96,9 +96,10 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     const clientX = e.clientX;
     const clientY = e.clientY;
 
+    const bottomSafeMargin = window.innerWidth < 768 ? 85 : 20;
     const currentRect = fabRef.current?.getBoundingClientRect();
     const currentX = currentRect ? currentRect.left : (fabPosition?.x ?? (window.innerWidth - 210));
-    const currentY = currentRect ? currentRect.top : (fabPosition?.y ?? (window.innerHeight - 80));
+    const currentY = currentRect ? currentRect.top : (fabPosition?.y ?? (window.innerHeight - 60 - bottomSafeMargin));
 
     dragStartRef.current = {
       startX: clientX,
@@ -121,11 +122,12 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     }
 
     if (isDraggingRef.current) {
+      const bottomSafeMargin = window.innerWidth < 768 ? 85 : 16;
       const buttonWidth = fabRef.current?.offsetWidth || 200;
       const buttonHeight = fabRef.current?.offsetHeight || 60;
 
       const newX = Math.max(8, Math.min(window.innerWidth - buttonWidth - 8, dragStartRef.current.initialX + deltaX));
-      const newY = Math.max(8, Math.min(window.innerHeight - buttonHeight - 8, dragStartRef.current.initialY + deltaY));
+      const newY = Math.max(8, Math.min(window.innerHeight - buttonHeight - bottomSafeMargin, dragStartRef.current.initialY + deltaY));
 
       setFabPosition({ x: newX, y: newY });
     }
@@ -293,7 +295,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
           ? { position: 'fixed', left: `${fabPosition.x}px`, top: `${fabPosition.y}px`, zIndex: 50 }
           : undefined
       }
-      className={!fabPosition || isOpen ? 'fixed bottom-5 right-4 sm:right-6 z-50 flex flex-col items-end' : ''}
+      className={!fabPosition || isOpen ? 'fixed bottom-22 md:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end' : ''}
     >
       {/* Moveable WhatsApp Floating Action Button */}
       {!isOpen && (
@@ -340,8 +342,8 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
             currentTheme === 'sepia' ? 'theme-sepia' : currentTheme === 'dark' ? 'dark' : ''
           } ${
             isMinimized
-              ? 'w-80 h-16'
-              : 'w-[94vw] sm:w-[420px] md:w-[460px] h-[590px] max-h-[85vh]'
+              ? 'w-72 sm:w-80 h-16'
+              : 'w-[94vw] sm:w-[420px] md:w-[460px] h-[540px] max-h-[calc(100vh-160px)] md:max-h-[85vh]'
           }`}
         >
           {/* WhatsApp Header: Deep Emerald Green (#075E54) */}

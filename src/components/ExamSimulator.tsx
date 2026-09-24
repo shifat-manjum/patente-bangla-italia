@@ -567,19 +567,20 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
       )}
 
       {/* Stationary Navigation Bar: Clean, high contrast, predictable position */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-2.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2 sm:gap-3">
         <button
           type="button"
           disabled={currentIdx === 0}
           onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
-          className="py-3 px-4 sm:px-6 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-2 border border-slate-200 dark:border-slate-700 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+          className="py-2.5 sm:py-3 px-3 sm:px-6 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 border border-slate-200 dark:border-slate-700 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Previous (পূর্ববর্তী)</span>
+          <ArrowLeft className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">Previous (পূর্ববর্তী)</span>
+          <span className="sm:hidden">পূর্ববর্তী</span>
         </button>
 
         <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
-          <span className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-sm font-black text-slate-900 dark:text-white">
+          <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-xs sm:text-sm font-black text-slate-900 dark:text-white">
             {currentIdx + 1} / {questions.length}
           </span>
           <span className="hidden md:inline text-[11px] text-slate-400 dark:text-slate-500">
@@ -591,20 +592,22 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           <button
             type="button"
             onClick={handleSubmitExam}
-            className="py-3 px-5 sm:px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-emerald-500/20 transition cursor-pointer"
+            className="py-2.5 sm:py-3 px-3.5 sm:px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-emerald-500/20 transition cursor-pointer shrink-0"
           >
-            <span>Submit Exam (পরীক্ষা জমা দিন)</span>
-            <CheckCircle2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Submit Exam (পরীক্ষা জমা দিন)</span>
+            <span className="sm:hidden">জমা দিন</span>
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
           </button>
         ) : (
           <button
             type="button"
             disabled={currentIdx === questions.length - 1}
             onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-            className="py-3 px-5 sm:px-8 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+            className="py-2.5 sm:py-3 px-3.5 sm:px-8 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
           >
-            <span>Next (পরবর্তী)</span>
-            <ArrowRight className="w-4 h-4" />
+            <span className="hidden sm:inline">Next (পরবর্তী)</span>
+            <span className="sm:hidden">পরবর্তী</span>
+            <ArrowRight className="w-4 h-4 shrink-0" />
           </button>
         )}
       </div>

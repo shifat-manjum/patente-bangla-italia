@@ -128,9 +128,9 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="py-4 px-6 sm:px-8 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm sm:text-base flex items-center gap-2.5 transition cursor-pointer shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95"
+              className="py-4 px-6 sm:px-8 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition cursor-pointer shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 w-full sm:w-auto text-center"
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="w-5 h-5 shrink-0" />
               <span>WhatsApp-এ যোগাযোগ ও অ্যাক্টিভেশন</span>
             </a>
           </div>

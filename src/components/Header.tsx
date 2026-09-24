@@ -43,33 +43,33 @@ export const Header: React.FC<HeaderProps> = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
-      <div className="max-w-[1600px] mx-auto px-[15px] py-4 sm:py-5 space-y-4">
+      <div className="max-w-[1600px] mx-auto px-[15px] py-3.5 sm:py-5 space-y-3 sm:space-y-4">
         {/* Top Line: Brand & VIP Upgrade Action */}
-        <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
-          <div className="flex items-center gap-3.5 sm:gap-4">
+        <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-3 sm:gap-4">
             {/* Expanded 50% Bigger Brand Icon */}
-            <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-[#E73F1E] via-[#FB6C00] to-[#F9B637] p-0.5 sm:p-1 shadow-lg shadow-orange-500/25 shrink-0">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-[#E73F1E] via-[#FB6C00] to-[#F9B637] p-0.5 sm:p-1 shadow-lg shadow-orange-500/25 shrink-0">
               <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center text-xl sm:text-2xl font-black text-slate-900 dark:text-white shadow-inner">
                 🇮🇹🇧🇩
               </div>
             </div>
 
             <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="font-black text-2xl sm:text-3xl tracking-tight text-slate-900 dark:text-white">
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                <span className="font-black text-xl sm:text-3xl tracking-tight text-slate-900 dark:text-white">
                   Patente<span className="text-[#FB6C00]">Bangla</span>
                 </span>
-                <span className="px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-black bg-orange-50 dark:bg-orange-950/50 text-[#FB6C00] border border-orange-200 dark:border-orange-800">
+                <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-[9px] sm:text-[11px] font-black bg-orange-50 dark:bg-orange-950/50 text-[#FB6C00] border border-orange-200 dark:border-orange-800">
                   AUTOSCUOLA 2026
                 </span>
               </div>
               <p className="text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block mt-0.5">
                 ইতালিয়ান ড্রাইভিং লাইসেন্স স্কুল কুইজ • সহজ বাংলা ব্যাখ্যা ও অডিও
               </p>
-              <div className="inline-flex items-center gap-2 mt-1 px-3 py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs sm:text-[12px] font-black tracking-wide">
-                <span className="relative flex h-2.5 w-2.5">
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 mt-1 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-[10.5px] sm:text-[12px] font-black tracking-wide leading-tight">
+                <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-emerald-500"></span>
                 </span>
                 <span>Official 2026 Ministerial Questions • সরকারি অফিসিয়াল সিলেবাস</span>
               </div>
@@ -77,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Right Status / Theme / Music / Student Pass Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-between sm:justify-end w-full sm:w-auto pt-2.5 sm:pt-0 border-t border-slate-100 sm:border-0 dark:border-slate-800">
             {/* 3-Way Theme Switcher (Light / Reader / Dark) */}
             <ThemeSwitcher currentTheme={currentTheme} onThemeChange={onThemeChange} />
 
@@ -193,7 +193,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Academy Enrollment CTA */}
             {!isVip ? (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2 sm:gap-2.5">
                 <div className="text-right hidden sm:block">
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">Foundation Access</span>
                   <span className="text-xs sm:text-sm font-black text-blue-600 dark:text-blue-400">
@@ -203,9 +203,9 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onOpenPaywall}
-                  className="py-2.5 sm:py-3 px-4 sm:px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm shadow-md shadow-blue-500/20 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-2"
+                  className="py-2 sm:py-3 px-3 sm:px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm shadow-md shadow-blue-500/20 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0"
                 >
-                  <GraduationCap className="w-4 h-4 text-white" />
+                  <GraduationCap className="w-4 h-4 text-white shrink-0" />
                   <span>Academy Enrollment</span>
                 </button>
               </div>

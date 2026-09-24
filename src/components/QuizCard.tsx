@@ -64,25 +64,25 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     >
       <div className="space-y-4">
         {/* Top Header: Question # and Category */}
-        <div className="flex items-center justify-between gap-3 text-xs border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 text-xs border-b border-slate-100 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-md bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black border border-blue-200 dark:border-blue-800">
+            <span className="px-3 py-1 rounded-md bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black border border-blue-200 dark:border-blue-800 text-xs">
               Question #{index + 1}
             </span>
-            <span className="text-slate-600 dark:text-slate-400 font-bold hidden sm:inline">
+            <span className="text-slate-600 dark:text-slate-400 font-bold hidden md:inline truncate max-w-[200px]">
               {question.chapterTitleIt}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {/* Audio Speed Toggle */}
             <button
               type="button"
               onClick={() => setSpeechRate(speechRate === 1.0 ? 0.85 : 1.0)}
-              className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
               title="Speech Speed"
             >
-              {speechRate === 1.0 ? 'Speed: 1.0x (Regular)' : 'Speed: 0.85x (Slow)'}
+              <span>{speechRate === 1.0 ? '1.0x (Regular)' : '0.85x (Slow)'}</span>
             </button>
 
             {/* Oral Exam Headphone Audio Button */}
@@ -90,14 +90,14 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               type="button"
               onClick={() => speakItalian(question.questionIt)}
               title="Listen official Italian pronunciation (Oral Exam Mode)"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold shadow-2xs ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold shadow-2xs ${
                 isSpeaking
                   ? 'bg-blue-600 text-white border-blue-600 animate-pulse'
                   : 'bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800'
               }`}
             >
-              <Headphones className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              <span>{isSpeaking ? 'Playing... (Stop)' : 'Oral Exam Audio'}</span>
+              <Headphones className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span>{isSpeaking ? 'Playing...' : 'Audio'}</span>
             </button>
 
             {/* Bangla Translation Toggle */}
@@ -105,14 +105,14 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               type="button"
               onClick={() => setShowBanglaTranslation(!showBanglaTranslation)}
               title="Toggle Bengali Meaning"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
                 showBanglaTranslation
                   ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700'
                   : 'bg-slate-50 dark:bg-slate-850 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800'
               }`}
             >
-              <Languages className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
-              <span>{showBanglaTranslation ? 'Bangla: ON' : 'Bangla: OFF'}</span>
+              <Languages className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 shrink-0" />
+              <span>{showBanglaTranslation ? 'বাংলা: ON' : 'বাংলা: OFF'}</span>
             </button>
           </div>
         </div>
