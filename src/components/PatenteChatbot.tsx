@@ -295,7 +295,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
           ? { position: 'fixed', left: `${fabPosition.x}px`, top: `${fabPosition.y}px`, zIndex: 50 }
           : undefined
       }
-      className={!fabPosition || isOpen ? 'fixed bottom-52 sm:bottom-48 md:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end' : ''}
+      className={!fabPosition || isOpen ? 'fixed bottom-52 sm:bottom-48 md:bottom-28 right-3 sm:right-6 z-50 flex flex-col items-end' : ''}
     >
       {/* Moveable WhatsApp Floating Action Button */}
       {!isOpen && (
