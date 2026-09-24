@@ -78,7 +78,21 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Draggable FAB State for mobile and desktop screens
+  // Draggable FAB & Dock State for mobile and desktop screens
+  const [isDocked, setIsDocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('patente_chatbot_docked') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('patente_chatbot_docked', String(isDocked));
+    } catch {}
+  }, [isDocked]);
+
   const [fabPosition, setFabPosition] = useState<{ x: number; y: number } | null>(null);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
@@ -88,6 +102,8 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   // Unified pointer drag handlers for both desktop mouse and mobile touch
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+    // Don't drag if clicking dismiss/close button
+    if ((e.target as HTMLElement).closest('.fab-dismiss-btn')) return;
 
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -126,7 +142,8 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       const buttonWidth = fabRef.current?.offsetWidth || 200;
       const buttonHeight = fabRef.current?.offsetHeight || 60;
 
-      const newX = Math.max(8, Math.min(window.innerWidth - buttonWidth - 8, dragStartRef.current.initialX + deltaX));
+      // Allow dragging freely and swiping off towards the right
+      const newX = Math.max(8, Math.min(window.innerWidth - 30, dragStartRef.current.initialX + deltaX));
       const newY = Math.max(8, Math.min(window.innerHeight - buttonHeight - bottomSafeMargin, dragStartRef.current.initialY + deltaY));
 
       setFabPosition({ x: newX, y: newY });
@@ -141,9 +158,19 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     } catch {}
 
     const wasDragging = isDraggingRef.current;
+    const dragStart = dragStartRef.current;
     dragStartRef.current = null;
     setIsPointerDown(false);
     isDraggingRef.current = false;
+
+    // Check if user wiped/swiped with finger towards right (deltaX > 35) or dropped near right screen edge
+    if (wasDragging && dragStart) {
+      const deltaX = e.clientX - dragStart.startX;
+      if (deltaX > 35 || e.clientX > window.innerWidth - 75) {
+        setIsDocked(true);
+        return;
+      }
+    }
 
     // Direct, reliable tap-to-open! If user did not drag, open the chatbot immediately:
     if (!wasDragging) {
@@ -288,52 +315,66 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   ];
 
   return (
-    <div
-      ref={fabRef}
-      style={
-        fabPosition && !isOpen
-          ? { position: 'fixed', left: `${fabPosition.x}px`, top: `${fabPosition.y}px`, zIndex: 50 }
-          : undefined
-      }
-      className={!fabPosition || isOpen ? 'fixed bottom-52 sm:bottom-48 md:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end' : ''}
-    >
-      {/* Moveable WhatsApp Floating Action Button */}
-      {!isOpen && (
-        <div
-          role="button"
-          tabIndex={0}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              setIsOpen(true);
-              setIsMinimized(false);
-            }
-          }}
-          className="flex items-center select-none touch-none cursor-grab active:cursor-grabbing transition-transform py-2.5 pl-3 pr-4 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm shadow-2xl shadow-emerald-600/40 hover:scale-[1.03] active:scale-95 border-2 border-white/50 gap-2.5"
-          style={{ transform: isPointerDown ? 'scale(1.05)' : undefined }}
-        >
-          {/* Visual Drag Gripper for both Mobile & Desktop */}
+    <>
+      <div
+        ref={fabRef}
+        style={
+          fabPosition && !isOpen
+            ? { position: 'fixed', left: `${fabPosition.x}px`, top: `${fabPosition.y}px`, zIndex: 50 }
+            : undefined
+        }
+        className={!fabPosition || isOpen ? 'fixed bottom-52 sm:bottom-48 md:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end' : ''}
+      >
+        {/* Moveable WhatsApp Floating Action Button */}
+        {!isOpen && !isDocked && (
           <div
-            title="Drag with finger or mouse to move anywhere"
-            className="flex items-center text-emerald-100/90 shrink-0"
+            role="button"
+            tabIndex={0}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                setIsOpen(true);
+                setIsMinimized(false);
+              }
+            }}
+            className="flex items-center select-none touch-none cursor-grab active:cursor-grabbing transition-transform py-2.5 pl-3 pr-2 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm shadow-2xl shadow-emerald-600/40 hover:scale-[1.03] active:scale-95 border-2 border-white/50 gap-2"
+            style={{ transform: isPointerDown ? 'scale(1.05)' : undefined }}
           >
-            <GripVertical className="w-4 h-4" />
-          </div>
+            {/* Visual Drag Gripper for both Mobile & Desktop */}
+            <div
+              title="Drag anywhere or wipe with finger to right to hide"
+              className="flex items-center text-emerald-100/90 shrink-0"
+            >
+              <GripVertical className="w-4 h-4" />
+            </div>
 
-          <span className="relative flex h-3 w-3 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
-          </span>
-          <MessageCircle className="w-5 h-5 fill-current text-white shrink-0" />
-          <div className="text-left leading-tight">
-            <span className="block text-xs font-black">24/7 Live Support</span>
-            <span className="text-[10px] opacity-90 block font-bold">Replies &lt; 1 min</span>
+            <span className="relative flex h-3 w-3 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
+            </span>
+            <MessageCircle className="w-5 h-5 fill-current text-white shrink-0" />
+            <div className="text-left leading-tight">
+              <span className="block text-xs font-black">24/7 Live Support</span>
+              <span className="text-[10px] opacity-90 block font-bold">Replies &lt; 1 min</span>
+            </div>
+
+            {/* Wipe / Hide Button (parks into the right edge tab) */}
+            <button
+              type="button"
+              className="fab-dismiss-btn p-1 ml-1 rounded-full bg-black/15 hover:bg-black/30 text-white/90 hover:text-white transition cursor-pointer shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDocked(true);
+              }}
+              title="ডানে সরিয়ে রাখুন (Wipe to right edge)"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Authentic WhatsApp Chat Window */}
       {isOpen && (
@@ -572,5 +613,30 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
         </div>
       )}
     </div>
-  );
+
+    {/* Right-Edge Docked Trigger (Small button on the right side of the screen) */}
+    {!isOpen && isDocked && (
+      <button
+        type="button"
+        onClick={() => {
+          setIsDocked(false);
+        }}
+        style={{
+          top: fabPosition ? `${Math.max(80, Math.min(window.innerHeight - 140, fabPosition.y))}px` : undefined,
+        }}
+        className={`fixed right-0 ${!fabPosition ? 'bottom-52 sm:bottom-48 md:bottom-6' : ''} z-40 bg-[#25D366] hover:bg-[#20bd5a] text-white py-2 pl-2.5 pr-2 rounded-l-2xl shadow-2xl border-l-2 border-y-2 border-white/60 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer group animate-fadeIn`}
+        title="লাইভ সাপোর্ট আবার দেখান (Click or touch to restore Live Support)"
+      >
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+        </span>
+        <MessageCircle className="w-4.5 h-4.5 fill-current text-white shrink-0" />
+        <span className="text-[10px] font-black uppercase tracking-tight">
+          Support
+        </span>
+      </button>
+    )}
+  </>
+);
 };
