@@ -139,7 +139,6 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
     if (isDraggingRef.current) {
       const bottomSafeMargin = window.innerWidth < 768 ? 85 : 16;
-      const buttonWidth = fabRef.current?.offsetWidth || 200;
       const buttonHeight = fabRef.current?.offsetHeight || 60;
 
       // Allow dragging freely and swiping off towards the right
