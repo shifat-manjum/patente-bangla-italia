@@ -34,6 +34,15 @@ import {
 } from './services/paymentService';
 import type { InvoiceRecord } from './services/paymentService';
 
+// Calculate true sequential progress: a student can only reach Round N if rounds 1..N-1 are passed
+export const getSequentialUnlockedRound = (completed: Record<number, { passed: boolean }>): number => {
+  let r = 1;
+  while (completed[r]?.passed === true && r < 240) {
+    r++;
+  }
+  return r;
+};
+
 export function App() {
   const [appTab, setAppTab] = useState<AppTab | 'admin' | 'enrollment'>('dashboard');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
@@ -217,10 +226,16 @@ export function App() {
     localStorage.setItem('patente_bangla_answered_count', String(totalQuestionsAnswered));
   }, [totalQuestionsAnswered]);
 
-  // Persist unlocked round
+  // Effective sequential unlocked round derived strictly from passed rounds
+  const effectiveUnlockedRound = getSequentialUnlockedRound(completedRounds);
+
+  // Sync unlockedRound with real sequential progress (cleans up any previous bug data)
   useEffect(() => {
-    localStorage.setItem('patente_bangla_unlocked_round', String(unlockedRound));
-  }, [unlockedRound]);
+    setUnlockedRound(effectiveUnlockedRound);
+    try {
+      localStorage.setItem('patente_bangla_unlocked_round', String(effectiveUnlockedRound));
+    } catch {}
+  }, [effectiveUnlockedRound]);
 
   // Persist completed rounds
   useEffect(() => {
@@ -323,9 +338,11 @@ export function App() {
       setIsPaywallOpen(true);
       return;
     }
-    // Sequential locking: verify student has unlocked this round or is VIP
-    if (roundId > unlockedRound && !isVip) {
-      alert(`🔒 রাউন্ড #${roundId} এখনও আনলক হয়নি। দয়া করে প্রথমে রাউন্ড #${roundId - 1} সফলভাবে পাস করুন (সর্বোচ্চ ৩টি ভুল)।`);
+    // Sequential locking for ALL students (paid or unpaid):
+    // Students can access any previously completed round, OR the current running round.
+    // They CANNOT access round N+1 if round N has not been passed!
+    if (roundId > effectiveUnlockedRound) {
+      alert(`🔒 রাউন্ড #${roundId} এখনও লক করা। দয়া করে প্রথমে পূর্ববর্তী রাউন্ড #${roundId - 1} সফলভাবে পাস করুন (সর্বোচ্চ ৩টি ভুল)।`);
       return;
     }
     // Switch to exam simulator to take the round
@@ -356,9 +373,10 @@ export function App() {
     try {
       localStorage.setItem('patente_bangla_is_vip', 'true');
     } catch {}
-    setUnlockedRound((prev) => Math.max(prev, 240));
+    // DO NOT force jump to round 240! Maintain student's legitimate sequential progress
+    setUnlockedRound(effectiveUnlockedRound);
     try {
-      localStorage.setItem('patente_bangla_unlocked_round', '240');
+      localStorage.setItem('patente_bangla_unlocked_round', String(effectiveUnlockedRound));
     } catch {}
     setActiveInvoice(invoice);
     setIsPaymentModalOpen(false);
@@ -367,7 +385,7 @@ export function App() {
     if (currentUser?.uid) {
       syncStudentProgressToCloud(currentUser.uid, {
         isVip: true,
-        unlockedRound: 240,
+        unlockedRound: effectiveUnlockedRound,
       });
     }
 
@@ -498,7 +516,7 @@ export function App() {
         {appTab === 'dashboard' && (
           <StudentDashboardView
             student={currentUser}
-            activeRound={unlockedRound}
+            activeRound={effectiveUnlockedRound}
             completedRoundsCount={Object.values(completedRounds).filter(r => r.passed).length}
             totalQuestionsSolved={totalQuestionsAnswered}
             errorCount={mistakeIds.length}
@@ -521,8 +539,8 @@ export function App() {
 
         {appTab === 'curriculum' && (
           <RoundsCurriculumView
-            currentRoundId={unlockedRound}
-            unlockedRound={unlockedRound}
+            currentRoundId={effectiveUnlockedRound}
+            unlockedRound={effectiveUnlockedRound}
             isVip={isVip}
             onSelectRound={handleStartRound}
             onTriggerEnrollment={(_r) => setAppTab('enrollment')}

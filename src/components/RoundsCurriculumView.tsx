@@ -18,8 +18,8 @@ interface RoundsCurriculumViewProps {
 }
 
 export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
-  currentRoundId,
-  unlockedRound = 1,
+  currentRoundId: _currentRoundId,
+  unlockedRound: _unlockedRound,
   isVip = false,
   onSelectRound,
   onTriggerEnrollment,
@@ -30,7 +30,12 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
 
   // Total 240 rounds
   const totalRounds = 240;
-  const effectiveUnlocked = unlockedRound ?? currentRoundId ?? 1;
+  // Strict sequential unlock: round N+1 is unlocked only if rounds 1..N have been completed and passed.
+  let sequentialUnlocked = 1;
+  while (completedRounds[sequentialUnlocked]?.passed === true && sequentialUnlocked < totalRounds) {
+    sequentialUnlocked++;
+  }
+  const effectiveUnlocked = sequentialUnlocked;
 
   const rounds = Array.from({ length: totalRounds }, (_, i) => {
     const id = i + 1;
@@ -143,7 +148,9 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
         {filteredRounds.map((round) => {
           const isPassed = round.result?.passed === true;
-          const isUnlocked = round.id <= effectiveUnlocked || (isVip && round.id <= 240);
+          // Sequential unlocking for ALL students (paid and unpaid):
+          // A round is accessible only if it is at or below the student's highest reached unlocked round
+          const isUnlocked = round.id <= effectiveUnlocked;
           const isCurrent = round.id === effectiveUnlocked;
           const isPaidSyllabus = round.id > 20 && !isVip;
 

@@ -319,7 +319,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       name: newStudentName.trim(),
       email: newStudentEmail.trim().toLowerCase(),
       phone: newStudentPhone.trim() || undefined,
-      unlockedRound: newStudentIsVip ? 240 : 1,
+      unlockedRound: 1,
       totalQuestionsAnswered: 0,
       completedRounds: {},
       mistakeIds: [],
