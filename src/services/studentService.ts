@@ -32,6 +32,19 @@ export interface StudentProfile {
 const LOCAL_STORAGE_KEY = 'patente_student_user';
 const LOCAL_STUDENTS_LIST_KEY = 'patente_registered_students';
 
+// Helper to sync student to server-side JSON DB for multi-device cross sync (mobile & desktop)
+export const syncStudentToServerDb = (student: StudentProfile) => {
+  try {
+    if (typeof window !== 'undefined') {
+      fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(student),
+      }).catch(() => {});
+    }
+  } catch {}
+};
+
 // Helper to get local mock user
 export const getCachedStudent = (): StudentProfile | null => {
   try {
@@ -102,6 +115,7 @@ export const registerStudent = async (
         const filtered = all.filter((s: any) => s.email?.toLowerCase() !== cleanEmail);
         filtered.unshift(clientProfile);
         localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(filtered));
+        syncStudentToServerDb(clientProfile);
       } catch (storageErr) {
         console.warn('Local student list update error:', storageErr);
       }
@@ -133,6 +147,7 @@ export const registerStudent = async (
     const all = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
     all.push(fallbackProfile);
     localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(all));
+    syncStudentToServerDb(fallbackProfile);
   } catch {}
 
   return fallbackProfile;

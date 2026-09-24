@@ -13,7 +13,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { db, isFirebaseConfigured } from '../lib/firebase';
-import { collection, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import type { StudentProfile } from '../services/studentService';
 import { AdminQuestionExplorer } from './AdminQuestionExplorer';
 
@@ -25,17 +25,54 @@ interface AdminCrmDashboardProps {
 // Helper for instantaneous local cache retrieval (0ms initial render)
 const getInitialCachedStudents = (): StudentProfile[] => {
   try {
-    const localStudents: StudentProfile[] = JSON.parse(
-      localStorage.getItem('patente_registered_students') || '[]'
-    );
-    const current = localStorage.getItem('patente_student_user');
-    if (current) {
-      const curObj = JSON.parse(current);
-      if (curObj?.email && !localStudents.some((s) => s.email?.toLowerCase() === curObj.email.toLowerCase())) {
-        localStudents.unshift(curObj);
+    const map = new Map<string, StudentProfile>();
+
+    // 1. Registered students
+    try {
+      const localStudents: StudentProfile[] = JSON.parse(
+        localStorage.getItem('patente_registered_students') || '[]'
+      );
+      if (Array.isArray(localStudents)) {
+        localStudents.forEach((s) => {
+          if (s?.email) map.set(s.email.toLowerCase(), s);
+        });
       }
-    }
-    return localStudents;
+    } catch {}
+
+    // 2. Currently logged-in student user
+    try {
+      const current = localStorage.getItem('patente_student_user');
+      if (current) {
+        const curObj = JSON.parse(current);
+        if (curObj?.email) {
+          map.set(curObj.email.toLowerCase(), { ...map.get(curObj.email.toLowerCase()), ...curObj });
+        }
+      }
+    } catch {}
+
+    // 3. Lead modal submissions
+    try {
+      const lead = localStorage.getItem('patente_bangla_student_lead');
+      if (lead) {
+        const l = JSON.parse(lead);
+        if (l?.email && !map.has(l.email.toLowerCase())) {
+          map.set(l.email.toLowerCase(), {
+            uid: 'lead_' + Date.now(),
+            name: l.name || 'Student Lead',
+            email: l.email,
+            phone: l.phone || undefined,
+            unlockedRound: 1,
+            totalQuestionsAnswered: 0,
+            completedRounds: {},
+            mistakeIds: [],
+            isVip: false,
+            createdAt: l.date || new Date().toISOString(),
+          });
+        }
+      }
+    } catch {}
+
+    return Array.from(map.values());
   } catch {
     return [];
   }
@@ -52,10 +89,17 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'free' | 'pro'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [firestoreStatus, setFirestoreStatus] = useState<'connected' | 'not_created' | 'offline'>('connected');
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentEmail, setNewStudentEmail] = useState('');
+  const [newStudentPhone, setNewStudentPhone] = useState('');
+  const [newStudentIsVip, setNewStudentIsVip] = useState(false);
 
-  // Fetch students with instant local fallback and 2.5s fast Cloud Firestore timeout
+  // Fetch students with instant local fallback, Server JSON DB (/api/students), and Cloud Firestore
   const fetchStudents = async () => {
     setIsRefreshing(true);
+    let serverStudents: StudentProfile[] = [];
     let firestoreStudents: StudentProfile[] = [];
 
     // 1. Read immediate local data first
@@ -65,7 +109,20 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       setIsLoading(false);
     }
 
-    // 2. Query Cloud Firestore with a 2.5-second race timeout (guarantees UI never freezes)
+    // 2. Fetch from local network API (/api/students backed by students_db.json)
+    try {
+      const res = await fetch('/api/students');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          serverStudents = data;
+        }
+      }
+    } catch (e) {
+      console.warn('Server JSON database fetch notice:', e);
+    }
+
+    // 3. Query Cloud Firestore with a 2.5-second race timeout (guarantees UI never freezes)
     if (isFirebaseConfigured && db) {
       try {
         const firestorePromise = getDocs(collection(db, 'students'));
@@ -76,25 +133,49 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
         querySnapshot.forEach((docSnap) => {
           firestoreStudents.push(docSnap.data() as StudentProfile);
         });
-      } catch (err) {
-        console.warn('Firestore fetch notice (using instantaneous cached records):', err);
+        setFirestoreStatus('connected');
+      } catch (err: any) {
+        const msg = String(err?.message || err || '');
+        if (msg.includes('not found') || msg.includes('default') || msg.includes('FAILED_PRECONDITION')) {
+          setFirestoreStatus('not_created');
+        } else {
+          setFirestoreStatus('offline');
+        }
+        console.warn('Firestore fetch notice (using instantaneous server/cached records):', err);
       }
     }
 
-    // 3. Merge without duplicates (keyed by email or uid)
+    // 4. Merge without duplicates (keyed by email or uid)
     const map = new Map<string, StudentProfile>();
-    localStudents.forEach((s) => {
+    serverStudents.forEach((s) => {
       if (s.email) map.set(s.email.toLowerCase(), s);
+      else if (s.uid) map.set(s.uid, s);
+    });
+    localStudents.forEach((s) => {
+      if (s.email) map.set(s.email.toLowerCase(), { ...map.get(s.email.toLowerCase()), ...s });
+      else if (s.uid) map.set(s.uid, { ...map.get(s.uid), ...s });
     });
     firestoreStudents.forEach((s) => {
-      if (s.email) map.set(s.email.toLowerCase(), s);
+      if (s.email) map.set(s.email.toLowerCase(), { ...map.get(s.email.toLowerCase()), ...s });
+      else if (s.uid) map.set(s.uid, { ...map.get(s.uid), ...s });
     });
 
     const merged = Array.from(map.values());
-    setStudents(merged);
-    try {
-      localStorage.setItem('patente_registered_students', JSON.stringify(merged));
-    } catch {}
+    if (merged.length > 0) {
+      setStudents(merged);
+      try {
+        localStorage.setItem('patente_registered_students', JSON.stringify(merged));
+      } catch {}
+
+      // Sync merged records to server DB so mobile & desktop always have identical data
+      try {
+        await fetch('/api/students', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(merged),
+        });
+      } catch {}
+    }
 
     setIsLoading(false);
     setIsRefreshing(false);
@@ -121,10 +202,14 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
               } catch {}
               return result;
             });
+            setFirestoreStatus('connected');
           }
         },
         (err) => {
-          console.warn('Real-time listener notice (continuing with offline-first data):', err.message);
+          const msg = String(err?.message || err || '');
+          if (msg.includes('not found') || msg.includes('default')) {
+            setFirestoreStatus('not_created');
+          }
         }
       );
       return () => unsubscribe();
@@ -180,10 +265,67 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       }
     }
 
-    // Update state
-    setStudents((prev) =>
-      prev.map((s) => (s.email === student.email ? { ...s, isVip: newStatus } : s))
-    );
+    // Update state and local/server database
+    const updated = students.map((s) => (s.email === student.email ? { ...s, isVip: newStatus } : s));
+    setStudents(updated);
+    try {
+      localStorage.setItem('patente_registered_students', JSON.stringify(updated));
+      fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...student, isVip: newStatus }),
+      }).catch(() => {});
+    } catch {}
+  };
+
+  // Add new student manually from CRM
+  const handleCreateStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStudentName.trim() || !newStudentEmail.trim()) {
+      alert('দয়া করে নাম ও ইমেইল পূরণ করুন');
+      return;
+    }
+
+    const createdProfile: StudentProfile = {
+      uid: 'std_' + Date.now(),
+      name: newStudentName.trim(),
+      email: newStudentEmail.trim().toLowerCase(),
+      phone: newStudentPhone.trim() || undefined,
+      unlockedRound: newStudentIsVip ? 240 : 1,
+      totalQuestionsAnswered: 0,
+      completedRounds: {},
+      mistakeIds: [],
+      isVip: newStudentIsVip,
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    };
+
+    // Update Firestore if available
+    if (isFirebaseConfigured && db) {
+      try {
+        await setDoc(doc(db, 'students', createdProfile.uid), createdProfile);
+      } catch (e) {
+        console.warn('Firestore setDoc notice:', e);
+      }
+    }
+
+    // Update state and local/server database
+    const updated = [createdProfile, ...students.filter((s) => s.email?.toLowerCase() !== createdProfile.email.toLowerCase())];
+    setStudents(updated);
+    try {
+      localStorage.setItem('patente_registered_students', JSON.stringify(updated));
+      await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(createdProfile),
+      });
+    } catch {}
+
+    setNewStudentName('');
+    setNewStudentEmail('');
+    setNewStudentPhone('');
+    setNewStudentIsVip(false);
+    setIsAddStudentOpen(false);
   };
 
   // Export students list to CSV
@@ -261,6 +403,29 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Firestore Database Setup Guidance Banner */}
+      {firestoreStatus === 'not_created' && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="space-y-1">
+            <span className="font-bold flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+              <span>⚠️</span> Cloud Firestore ডাটাবেজ এখনও তৈরি করা হয়নি (Project: patenta-bangla)
+            </span>
+            <p className="text-[12px] opacity-90 leading-relaxed">
+              লোকাল নেটওয়ার্ক ডাটাবেজ (students_db.json) সক্রিয় আছে এবং মোবাইল ও ডেস্কটপে ডেটা লোড হচ্ছে। তবে যেকোনো ডিভাইস থেকে আজীবন গ্লোবাল ক্লাউড সিঙ্ক চালু করতে Firebase Console-এ মাত্র ১-ক্লিকে ডাটাবেজ তৈরি করুন:
+            </p>
+          </div>
+          <a
+            href="https://console.firebase.google.com/project/patenta-bangla/firestore"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-xs transition"
+          >
+            <span>Firebase Console খুলুন (Create DB)</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      )}
 
       {/* Admin Tab Switcher */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-fit shadow-xs">
@@ -408,6 +573,15 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                 </button>
               </div>
 
+              {/* Add Student Button */}
+              <button
+                type="button"
+                onClick={() => setIsAddStudentOpen(true)}
+                className="py-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <span>+ Add Student</span>
+              </button>
+
               {/* Export to CSV Button */}
               <button
                 type="button"
@@ -547,6 +721,98 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       ) : (
         /* Tab 2: Master Questions Explorer */
         <AdminQuestionExplorer onBackToApp={() => setActiveTab('crm')} />
+      )}
+
+      {/* Manual Student Addition Modal */}
+      {isAddStudentOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800 text-left">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                নতুন স্টুডেন্ট যোগ করুন (Add Student)
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsAddStudentOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateStudent} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  পূর্ণ নাম (Student Full Name) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newStudentName}
+                  onChange={(e) => setNewStudentName(e.target.value)}
+                  placeholder="e.g. Marco Hossain"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  ইমেইল এড্রেস (Email Address) *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={newStudentEmail}
+                  onChange={(e) => setNewStudentEmail(e.target.value)}
+                  placeholder="e.g. student@gmail.com"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  WhatsApp / ফোন নম্বর (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={newStudentPhone}
+                  onChange={(e) => setNewStudentPhone(e.target.value)}
+                  placeholder="e.g. +39 328 123 4567"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="isVipCheck"
+                  checked={newStudentIsVip}
+                  onChange={(e) => setNewStudentIsVip(e.target.checked)}
+                  className="w-4 h-4 rounded text-orange-500 focus:ring-orange-400 cursor-pointer"
+                />
+                <label htmlFor="isVipCheck" className="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                  একাডেমি Pro VIP Pass (€49 লাইফটাইম এক্সেস)
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAddStudentOpen(false)}
+                  className="py-2 px-4 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  বাতিল
+                </button>
+                <button
+                  type="submit"
+                  className="py-2 px-5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black transition cursor-pointer shadow-md"
+                >
+                  সেভ করুন (Save Student)
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
