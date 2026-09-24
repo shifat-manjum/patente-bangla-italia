@@ -7,13 +7,31 @@
     "unlockedRound": 24,
     "totalQuestionsAnswered": 720,
     "completedRounds": {
-      "1": { "errors": 1, "passed": true },
-      "2": { "errors": 0, "passed": true },
-      "3": { "errors": 2, "passed": true },
-      "4": { "errors": 1, "passed": true },
-      "5": { "errors": 0, "passed": true }
+      "1": {
+        "errors": 1,
+        "passed": true
+      },
+      "2": {
+        "errors": 0,
+        "passed": true
+      },
+      "3": {
+        "errors": 2,
+        "passed": true
+      },
+      "4": {
+        "errors": 1,
+        "passed": true
+      },
+      "5": {
+        "errors": 0,
+        "passed": true
+      }
     },
-    "mistakeIds": ["q_ch1_04", "q_ch2_09"],
+    "mistakeIds": [
+      "q_ch1_04",
+      "q_ch2_09"
+    ],
     "isVip": true,
     "createdAt": "2026-09-23T10:15:00.000Z",
     "lastLoginAt": "2026-09-24T08:30:00.000Z"
@@ -26,13 +44,37 @@
     "unlockedRound": 8,
     "totalQuestionsAnswered": 240,
     "completedRounds": {
-      "1": { "errors": 2, "passed": true },
-      "2": { "errors": 1, "passed": true },
-      "3": { "errors": 3, "passed": true }
+      "1": {
+        "errors": 2,
+        "passed": true
+      },
+      "2": {
+        "errors": 1,
+        "passed": true
+      },
+      "3": {
+        "errors": 3,
+        "passed": true
+      }
     },
-    "mistakeIds": ["q_ch3_12"],
+    "mistakeIds": [
+      "q_ch3_12"
+    ],
     "isVip": false,
     "createdAt": "2026-09-23T14:40:00.000Z",
     "lastLoginAt": "2026-09-24T09:10:00.000Z"
+  },
+  {
+    "uid": "uw0TSz8M0OchxH9wqIWCkbl9Z3X2",
+    "name": "hospital",
+    "email": "hospital@gmail.com",
+    "phone": "+39 3481134181",
+    "unlockedRound": 1,
+    "totalQuestionsAnswered": 0,
+    "completedRounds": {},
+    "mistakeIds": [],
+    "isVip": false,
+    "createdAt": "2026-09-24T17:01:27.543Z",
+    "lastLoginAt": "2026-09-24T17:01:27.543Z"
   }
 ]

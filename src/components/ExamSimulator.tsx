@@ -554,62 +554,125 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
         </div>
       )}
 
-      {/* Active Question Card: Visible immediately in the viewport! */}
-      {currentQuestion && (
-        <QuizCard
-          question={currentQuestion}
-          index={currentIdx}
-          userAnswer={answers[currentIdx] ?? null}
-          onAnswer={handleAnswer}
-          showInstantResult={isSubmitted}
-          isExamSubmitted={isSubmitted}
-        />
-      )}
+      {/* Active Question Card: Visible immediately in the viewport, freely scrollable on mobile */}
+      <div className="pb-36 md:pb-0">
+        {currentQuestion && (
+          <QuizCard
+            question={currentQuestion}
+            index={currentIdx}
+            userAnswer={answers[currentIdx] ?? null}
+            onAnswer={handleAnswer}
+            showInstantResult={isSubmitted}
+            isExamSubmitted={isSubmitted}
+            hideAnswerButtons={true}
+          />
+        )}
+      </div>
 
-      {/* Stationary Navigation Bar: Clean, high contrast, predictable position */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-2.5 sm:p-4 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-2 sm:gap-3">
-        <button
-          type="button"
-          disabled={currentIdx === 0}
-          onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
-          className="py-2.5 sm:py-3 px-3 sm:px-6 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 border border-slate-200 dark:border-slate-700 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
-        >
-          <ArrowLeft className="w-4 h-4 shrink-0" />
-          <span className="hidden sm:inline">Previous (পূর্ববর্তী)</span>
-          <span className="sm:hidden">পূর্ববর্তী</span>
-        </button>
+      {/* Fixed Cockpit Answer & Navigation Deck: Anchored on mobile (no jumping), stationary console on desktop */}
+      <div className="fixed md:relative bottom-[68px] sm:bottom-[72px] md:bottom-auto left-0 right-0 z-35 md:z-auto bg-white/95 dark:bg-slate-900/95 md:bg-white md:dark:bg-slate-900 backdrop-blur-md md:backdrop-blur-none border-t md:border border-slate-200 dark:border-slate-800 md:rounded-2xl p-2.5 sm:p-3.5 md:p-4 shadow-2xl md:shadow-sm space-y-2 md:space-y-3 md:mt-4 transition-all">
+        {/* Row 1: Fixed Anchor VERO / FALSO Buttons */}
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 max-w-4xl mx-auto">
+          {/* VERO Button */}
+          <button
+            type="button"
+            onClick={() => handleAnswer(true)}
+            disabled={isSubmitted}
+            className={`py-3 sm:py-3.5 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black text-base sm:text-lg flex items-center justify-center gap-1.5 sm:gap-2.5 transition-all cursor-pointer shadow-xs active:scale-95 select-none touch-manipulation min-h-[48px] sm:min-h-[54px] ${
+              answers[currentIdx] === true
+                ? isSubmitted
+                  ? currentQuestion?.isCorrect
+                    ? 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900 border-2 border-emerald-500'
+                    : 'bg-rose-600 text-white ring-4 ring-rose-200 dark:ring-rose-900 border-2 border-rose-500'
+                  : 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900 border-2 border-emerald-500'
+                : isSubmitted && currentQuestion?.isCorrect
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-500'
+                : 'bg-slate-50 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500'
+            }`}
+          >
+            <span className="tracking-wide text-base sm:text-xl">VERO</span>
+            <span className="text-xs font-bold opacity-80">(সত্য)</span>
+            {isSubmitted && currentQuestion?.isCorrect && (
+              <CheckCircle2 className="w-4.5 h-4.5 text-emerald-100 ml-1" />
+            )}
+            {isSubmitted && answers[currentIdx] === true && !currentQuestion?.isCorrect && (
+              <XCircle className="w-4.5 h-4.5 text-white ml-1" />
+            )}
+          </button>
 
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
-          <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-xs sm:text-sm font-black text-slate-900 dark:text-white">
-            {currentIdx + 1} / {questions.length}
-          </span>
-          <span className="hidden md:inline text-[11px] text-slate-400 dark:text-slate-500">
-            Keyboard: [V] Vero • [F] Falso • [➔] Next
-          </span>
+          {/* FALSO Button */}
+          <button
+            type="button"
+            onClick={() => handleAnswer(false)}
+            disabled={isSubmitted}
+            className={`py-3 sm:py-3.5 px-3 sm:px-6 rounded-xl sm:rounded-2xl font-black text-base sm:text-lg flex items-center justify-center gap-1.5 sm:gap-2.5 transition-all cursor-pointer shadow-xs active:scale-95 select-none touch-manipulation min-h-[48px] sm:min-h-[54px] ${
+              answers[currentIdx] === false
+                ? isSubmitted
+                  ? !currentQuestion?.isCorrect
+                    ? 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900 border-2 border-emerald-500'
+                    : 'bg-rose-600 text-white ring-4 ring-rose-200 dark:ring-rose-900 border-2 border-rose-500'
+                  : 'bg-rose-600 text-white ring-4 ring-rose-200 dark:ring-rose-900 border-2 border-rose-500'
+                : isSubmitted && !currentQuestion?.isCorrect
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-500'
+                : 'bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500'
+            }`}
+          >
+            <span className="tracking-wide text-base sm:text-xl">FALSO</span>
+            <span className="text-xs font-bold opacity-80">(মিথ্যা)</span>
+            {isSubmitted && !currentQuestion?.isCorrect && (
+              <CheckCircle2 className="w-4.5 h-4.5 text-emerald-100 ml-1" />
+            )}
+            {isSubmitted && answers[currentIdx] === false && currentQuestion?.isCorrect && (
+              <XCircle className="w-4.5 h-4.5 text-white ml-1" />
+            )}
+          </button>
         </div>
 
-        {currentIdx === questions.length - 1 && !isSubmitted ? (
+        {/* Row 2: Navigation & Progress */}
+        <div className="flex items-center justify-between gap-2 sm:gap-3 max-w-4xl mx-auto pt-0.5">
           <button
             type="button"
-            onClick={handleSubmitExam}
-            className="py-2.5 sm:py-3 px-3.5 sm:px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-emerald-500/20 transition cursor-pointer shrink-0"
+            disabled={currentIdx === 0}
+            onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
+            className="py-2 sm:py-2.5 px-3 sm:px-6 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 border border-slate-200 dark:border-slate-700 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
           >
-            <span className="hidden sm:inline">Submit Exam (পরীক্ষা জমা দিন)</span>
-            <span className="sm:hidden">জমা দিন</span>
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">Previous (পূর্ববর্তী)</span>
+            <span className="sm:hidden">পূর্ববর্তী</span>
           </button>
-        ) : (
-          <button
-            type="button"
-            disabled={currentIdx === questions.length - 1}
-            onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-            className="py-2.5 sm:py-3 px-3.5 sm:px-8 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
-          >
-            <span className="hidden sm:inline">Next (পরবর্তী)</span>
-            <span className="sm:hidden">পরবর্তী</span>
-            <ArrowRight className="w-4 h-4 shrink-0" />
-          </button>
-        )}
+
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+            <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+              {currentIdx + 1} / {questions.length}
+            </span>
+            <span className="hidden md:inline text-[11px] text-slate-400 dark:text-slate-500">
+              Keyboard: [V] Vero • [F] Falso • [➔] Next
+            </span>
+          </div>
+
+          {currentIdx === questions.length - 1 && !isSubmitted ? (
+            <button
+              type="button"
+              onClick={handleSubmitExam}
+              className="py-2 sm:py-2.5 px-3.5 sm:px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-emerald-500/20 transition cursor-pointer shrink-0"
+            >
+              <span className="hidden sm:inline">Submit Exam (পরীক্ষা জমা দিন)</span>
+              <span className="sm:hidden">জমা দিন</span>
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={currentIdx === questions.length - 1}
+              onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
+              className="py-2 sm:py-2.5 px-3.5 sm:px-8 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
+            >
+              <span className="hidden sm:inline">Next (পরবর্তী)</span>
+              <span className="sm:hidden">পরবর্তী</span>
+              <ArrowRight className="w-4 h-4 shrink-0" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

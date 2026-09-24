@@ -20,6 +20,7 @@ interface QuizCardProps {
   onAnswer: (answer: boolean) => void;
   showInstantResult?: boolean;
   isExamSubmitted?: boolean;
+  hideAnswerButtons?: boolean;
 }
 
 export const QuizCard: React.FC<QuizCardProps> = ({
@@ -28,7 +29,8 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   userAnswer,
   onAnswer,
   showInstantResult = true,
-  isExamSubmitted = false
+  isExamSubmitted = false,
+  hideAnswerButtons = false,
 }) => {
   const [showBanglaTranslation, setShowBanglaTranslation] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -170,61 +172,63 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         </div>
 
         {/* Big High-Contrast VERO / FALSO Buttons */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-1">
-          {/* VERO Button */}
-          <button
-            type="button"
-            onClick={() => onAnswer(true)}
-            disabled={isExamSubmitted}
-            className={`py-4 px-4 sm:px-6 rounded-2xl font-black text-base sm:text-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 transition-all cursor-pointer shadow-sm active:scale-95 ${
-              userAnswer === true
-                ? shouldRevealOutcome
-                  ? question.isCorrect
-                    ? 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900'
-                    : 'bg-rose-600 text-white ring-4 ring-rose-200 dark:ring-rose-900'
-                  : 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900'
-                : shouldRevealOutcome && question.isCorrect
-                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-500'
-                : 'bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500'
-            }`}
-          >
-            <span className="tracking-wide text-lg sm:text-xl">VERO</span>
-            <span className="text-xs font-bold opacity-80">(সত্য)</span>
-            {shouldRevealOutcome && question.isCorrect && (
-              <CheckCircle2 className="w-5 h-5 text-emerald-100 sm:ml-1" />
-            )}
-            {shouldRevealOutcome && userAnswer === true && !question.isCorrect && (
-              <XCircle className="w-5 h-5 text-white sm:ml-1" />
-            )}
-          </button>
+        {!hideAnswerButtons && (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-1">
+            {/* VERO Button */}
+            <button
+              type="button"
+              onClick={() => onAnswer(true)}
+              disabled={isExamSubmitted}
+              className={`py-4 px-4 sm:px-6 rounded-2xl font-black text-base sm:text-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 transition-all cursor-pointer shadow-sm active:scale-95 ${
+                userAnswer === true
+                  ? shouldRevealOutcome
+                    ? question.isCorrect
+                      ? 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900'
+                      : 'bg-rose-600 text-white ring-4 ring-rose-200 dark:ring-rose-900'
+                    : 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900'
+                  : shouldRevealOutcome && question.isCorrect
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-500'
+                  : 'bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500'
+              }`}
+            >
+              <span className="tracking-wide text-lg sm:text-xl">VERO</span>
+              <span className="text-xs font-bold opacity-80">(সত্য)</span>
+              {shouldRevealOutcome && question.isCorrect && (
+                <CheckCircle2 className="w-5 h-5 text-emerald-100 sm:ml-1" />
+              )}
+              {shouldRevealOutcome && userAnswer === true && !question.isCorrect && (
+                <XCircle className="w-5 h-5 text-white sm:ml-1" />
+              )}
+            </button>
 
-          {/* FALSO Button */}
-          <button
-            type="button"
-            onClick={() => onAnswer(false)}
-            disabled={isExamSubmitted}
-            className={`py-4 px-4 sm:px-6 rounded-2xl font-black text-base sm:text-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 transition-all cursor-pointer shadow-sm active:scale-95 ${
-              userAnswer === false
-                ? shouldRevealOutcome
-                  ? !question.isCorrect
-                    ? 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900'
+            {/* FALSO Button */}
+            <button
+              type="button"
+              onClick={() => onAnswer(false)}
+              disabled={isExamSubmitted}
+              className={`py-4 px-4 sm:px-6 rounded-2xl font-black text-base sm:text-lg flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2.5 transition-all cursor-pointer shadow-sm active:scale-95 ${
+                userAnswer === false
+                  ? shouldRevealOutcome
+                    ? !question.isCorrect
+                      ? 'bg-emerald-600 text-white ring-4 ring-emerald-200 dark:ring-emerald-900'
+                      : 'bg-rose-600 text-white ring-4 ring-rose-200 dark:ring-rose-900'
                     : 'bg-rose-600 text-white ring-4 ring-rose-200 dark:ring-rose-900'
-                  : 'bg-rose-600 text-white ring-4 ring-rose-200 dark:ring-rose-900'
-                : shouldRevealOutcome && !question.isCorrect
-                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-500'
-                : 'bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500'
-            }`}
-          >
-            <span className="tracking-wide text-lg sm:text-xl">FALSO</span>
-            <span className="text-xs font-bold opacity-80">(মিথ্যা)</span>
-            {shouldRevealOutcome && !question.isCorrect && (
-              <CheckCircle2 className="w-5 h-5 text-emerald-100 sm:ml-1" />
-            )}
-            {shouldRevealOutcome && userAnswer === false && question.isCorrect && (
-              <XCircle className="w-5 h-5 text-white sm:ml-1" />
-            )}
-          </button>
-        </div>
+                  : shouldRevealOutcome && !question.isCorrect
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-2 border-emerald-500'
+                  : 'bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-800 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500'
+              }`}
+            >
+              <span className="tracking-wide text-lg sm:text-xl">FALSO</span>
+              <span className="text-xs font-bold opacity-80">(মিথ্যা)</span>
+              {shouldRevealOutcome && !question.isCorrect && (
+                <CheckCircle2 className="w-5 h-5 text-emerald-100 sm:ml-1" />
+              )}
+              {shouldRevealOutcome && userAnswer === false && question.isCorrect && (
+                <XCircle className="w-5 h-5 text-white sm:ml-1" />
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Detailed Outcome & Explanation Box */}
         {shouldRevealOutcome && (
