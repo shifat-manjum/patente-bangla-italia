@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
 import { getQuestionsForRound, ALL_200_QUESTIONS, shuffleQuestions } from '../data/roundQuestions';
+import { getRoundTopic } from '../data/roundCurriculumData';
 import { QuizCard } from './QuizCard';
 
 interface ExamSimulatorProps {
@@ -30,6 +31,8 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   onSelectRound
 }) => {
   // Select questions based on round or general mock test (randomized order on every attempt)
+  const currentRoundTopic = roundId ? getRoundTopic(roundId) : null;
+
   const generateExamQuestions = (): QuizQuestion[] => {
     if (roundId) {
       return getQuestionsForRound(roundId, true);
@@ -192,11 +195,22 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
 
         <div className="space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-900/60 text-xs font-black text-orange-800 dark:text-orange-300">
-            <span>Official Ministerial Simulation • Simulazione Esame Ufficiale</span>
+            <span>
+              {currentRoundTopic
+                ? `${currentRoundTopic.badgeBn} • ${currentRoundTopic.badgeIt}`
+                : 'Official Ministerial Simulation • Simulazione Esame Ufficiale'}
+            </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            {roundId ? `রাউন্ড #${roundId} এর ৩০টি কুইজ পরীক্ষা` : 'সরকারি ড্রাইভিং লাইসেন্স সিমুলেশন পরীক্ষা'}
+            {currentRoundTopic
+              ? `রাউন্ড #${roundId}: ${currentRoundTopic.titleBn}`
+              : roundId ? `রাউন্ড #${roundId} এর ৩০টি কুইজ পরীক্ষা` : 'সরকারি ড্রাইভিং লাইসেন্স সিমুলেশন পরীক্ষা'}
           </h2>
+          {currentRoundTopic && (
+            <p className="text-[#FB6C00] font-bold text-sm tracking-wide">
+              {currentRoundTopic.titleIt}
+            </p>
+          )}
           <p className="text-slate-600 dark:text-slate-300 text-sm max-w-md mx-auto leading-relaxed">
             ইতালির পরিবহন মন্ত্রণালয়ের (Ministero dei Trasporti) অফিসিয়াল নিয়মে ৩০টি প্রশ্ন এবং ২০ মিনিট সময়।
           </p>
@@ -253,11 +267,13 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           )}
 
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/70 text-[#FB6C00] font-black text-xs border border-orange-200 dark:border-orange-900/60">
+            <span className="px-2.5 py-1 rounded-lg bg-orange-50 dark:bg-orange-950/70 text-[#FB6C00] font-black text-xs border border-orange-200 dark:border-orange-900/60 shrink-0">
               {roundId ? `রাউন্ড #${roundId}` : 'মডেল টেস্ট'}
             </span>
-            <span className="text-xs text-slate-600 dark:text-slate-300 font-bold hidden md:inline">
-              {roundId ? `লেভেল ${roundId} পরীক্ষা` : '৩০টি অফিসিয়াল প্রশ্ন'}
+            <span className="text-xs text-slate-600 dark:text-slate-300 font-bold hidden md:inline truncate max-w-[320px]">
+              {currentRoundTopic
+                ? `${currentRoundTopic.titleBn} (${currentRoundTopic.titleIt})`
+                : (roundId ? `লেভেল ${roundId} পরীক্ষা` : '৩০টি অফিসিয়াল প্রশ্ন')}
             </span>
           </div>
         </div>
@@ -335,6 +351,11 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
             >
               <span>{isPassed ? '✓ IDONEO • অফিশিয়াল মান উত্তীর্ণ' : '✕ RESPINTO • অকৃতকার্য'}</span>
             </div>
+            {currentRoundTopic && (
+              <p className="text-xs font-black text-[#FB6C00] uppercase tracking-wide">
+                রাউন্ড #{roundId}: {currentRoundTopic.titleBn} • {currentRoundTopic.titleIt}
+              </p>
+            )}
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               {isPassed ? '🎉 অভিনন্দন! আপনি পরীক্ষায় পাস করেছেন!' : '❌ দুঃখিত! আপনি পরীক্ষায় ফেল করেছেন'}
             </h2>

@@ -1,5 +1,6 @@
 // Auto-generated 600 official ministerial questions pool for Rounds 1 to 20
 import type { QuizQuestion } from './quizData';
+import { getRoundTopic } from './roundCurriculumData';
 
 export interface ExtendedQuizQuestion extends QuizQuestion {
   roundId?: number;
@@ -18636,8 +18637,11 @@ export const getQuestionsForRound = (roundId: number, randomize: boolean = true)
     const otherShuffled = shuffleQuestions(otherQs);
     selected.push(...otherShuffled.slice(0, otherCount));
 
+    const topic = getRoundTopic(roundId);
     pool = selected.map((q) => ({
       ...q,
+      chapterTitleIt: topic.titleIt,
+      chapterTitleBn: `রাউন্ড ${roundId}: ${topic.titleBn}`,
       roundId
     }));
   }

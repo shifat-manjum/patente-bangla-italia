@@ -141,3 +141,4 @@ export const getLatestInvoice = (studentEmail?: string): InvoiceRecord | null =>
   const list = getInvoices(studentEmail);
   return list.length > 0 ? list[0] : null;
 };
+

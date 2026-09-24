@@ -6,6 +6,7 @@ import {
   Search, 
   GraduationCap
 } from 'lucide-react';
+import { getRoundTopic } from '../data/roundCurriculumData';
 
 interface RoundsCurriculumViewProps {
   currentRoundId: number;
@@ -15,90 +16,6 @@ interface RoundsCurriculumViewProps {
   onTriggerEnrollment: (roundId: number) => void;
   completedRounds?: Record<number, { errors: number; passed: boolean }>;
 }
-
-// 20 Foundation Rounds with Specific Italian Titles and Bengali Translations
-const FOUNDATION_ROUND_TOPICS: Record<number, { titleIt: string; titleBn: string }> = {
-  1: { titleIt: 'Segnali di Pericolo Base', titleBn: 'বিপদজনক ট্রাফিক সংকেত' },
-  2: { titleIt: 'Precedenze e Regola STOP', titleBn: 'স্টপ ও ডানদিকের অগ্রাধিকার' },
-  3: { titleIt: 'Limiti di Velocità e Frenata', titleBn: 'গতিসীমা ও ব্রেকিং দূরত্ব' },
-  4: { titleIt: 'Norme di Sosta e Fermata', titleBn: 'পার্কিং ও সাময়িক থামা' },
-  5: { titleIt: 'Sorpasso in Curva e Dosso', titleBn: 'ওভারটেকিং ও বাঁকের নিয়ম' },
-  6: { titleIt: 'Rotatorie, Tram e Binari', titleBn: 'গোলচত্বর ও ট্রাম অগ্রাধিকার' },
-  7: { titleIt: 'Segnali di Obbligo Ministeriali', titleBn: 'বাধ্যতামূলক ট্রাফিক সংকেত' },
-  8: { titleIt: 'Segnali di Divieto Ministeriali', titleBn: 'নিষেধাজ্ঞামূলক ট্রাফিক সংকেত' },
-  9: { titleIt: 'Circolazione su Autostrade', titleBn: 'হাইওয়ে (Autostrada) নিয়মাবলি' },
-  10: { titleIt: 'Uso dei Fari e Visibilità', titleBn: 'হেডলাইট ও দৃশ্যমানতার নিয়ম' },
-  11: { titleIt: 'Guida in Stato di Ebbrezza e Punti', titleBn: 'অ্যালকোহল, ড্রাগস ও লাইসেন্স পয়েন্ট' },
-  12: { titleIt: 'Primo Soccorso Stradale', titleBn: 'জরুরি প্রাথমিক চিকিৎসা ও দুর্ঘটনা' },
-  13: { titleIt: 'Meccanica, Motore e Freni', titleBn: 'গাড়ির ইঞ্জিন, ব্রেক ও মেকানিক্স' },
-  14: { titleIt: 'Ordine di Precedenza agli Incroci', titleBn: 'ট্রাফিক মোড়ে ক্রসিংয়ের ক্রম' },
-  15: { titleIt: 'Guida Ecologica e Sicurezza Attiva', titleBn: 'পরিবেশবান্ধব ও নিরাপদ ড্রাইভিং' },
-  16: { titleIt: 'Segnaletica Orizzontale e Semafori', titleBn: 'রাস্তার সাদা-হলুদ দাগ ও ট্রাফিক লাইট' },
-  17: { titleIt: 'Pannelli Integrativi dei Segnali', titleBn: 'সম্পূরক সাইনবোর্ড ও ফলক' },
-  18: { titleIt: 'Cinture di Sicurezza, Airbag e Casco', titleBn: 'সিটবেল্ট, এয়ারব্যাগ ও হেলমেট' },
-  19: { titleIt: 'Patenti di Guida, Categorie ed Età', titleBn: 'লাইসেন্স ক্যাটাগরি ও নবাগতদের নিয়ম' },
-  20: { titleIt: 'Simulazione Finale dei 20 Round', titleBn: 'ফাউন্ডেশন গ্র্যান্ড ফাইনাল মক টেস্ট' },
-};
-
-// Generator for Pro Syllabus Rounds 21 to 240
-const getProRoundTopic = (roundId: number): { titleIt: string; titleBn: string } => {
-  if (roundId <= 40) {
-    return {
-      titleIt: `Precedenze e Incroci Stradali - Scheda #${roundId}`,
-      titleBn: 'অগ্রাধিকারের জটিল নিয়ম ও চৌরাস্তা',
-    };
-  } else if (roundId <= 60) {
-    return {
-      titleIt: `Segnali di Divieto Ministeriali - Scheda #${roundId}`,
-      titleBn: 'নিষেধাজ্ঞামূলক ট্রাফিক সংকেত',
-    };
-  } else if (roundId <= 80) {
-    return {
-      titleIt: `Segnali di Obbligo e Precedenza - Scheda #${roundId}`,
-      titleBn: 'বাধ্যতামূলক নির্দেশ ও ট্রাফিক সাইন',
-    };
-  } else if (roundId <= 100) {
-    return {
-      titleIt: `Velocità e Distanza di Sicurezza - Scheda #${roundId}`,
-      titleBn: 'গতি নিয়ন্ত্রণ ও নিরাপদ দূরত্ব',
-    };
-  } else if (roundId <= 120) {
-    return {
-      titleIt: `Norme di Sorpasso e Circolazione - Scheda #${roundId}`,
-      titleBn: 'ওভারটেকিং ও সঠিক লেনে চলাচলের নিয়ম',
-    };
-  } else if (roundId <= 140) {
-    return {
-      titleIt: `Sosta, Fermata e Dispositivi - Scheda #${roundId}`,
-      titleBn: 'পার্কিং, সাময়িক থামা ও লাইটের ব্যবহার',
-    };
-  } else if (roundId <= 160) {
-    return {
-      titleIt: `Autostrade e Strade Extraurbane - Scheda #${roundId}`,
-      titleBn: 'হাইওয়ে, এক্সপ্রেসওয়ে ও জরুরি লেন',
-    };
-  } else if (roundId <= 180) {
-    return {
-      titleIt: `Sicurezza Attiva e Passiva - Scheda #${roundId}`,
-      titleBn: 'নিরাপত্তা ব্যবস্থা, হেলমেট ও সিটবেল্ট',
-    };
-  } else if (roundId <= 200) {
-    return {
-      titleIt: `Primo Soccorso ed Emergenze - Scheda #${roundId}`,
-      titleBn: 'দুর্ঘটনায় প্রাথমিক চিকিৎসা ও সতর্কতা',
-    };
-  } else if (roundId <= 220) {
-    return {
-      titleIt: `Meccanica del Veicolo e Patente - Scheda #${roundId}`,
-      titleBn: 'গাড়ির ব্রেক, টায়ার, ডকুমেন্টস ও লাইসেন্স',
-    };
-  } else {
-    return {
-      titleIt: `Scheda Ministeriale Master - Scheda #${roundId}`,
-      titleBn: 'মন্ত্রণালয়ের অফিশিয়াল মাস্টার পরীক্ষা',
-    };
-  }
-};
 
 export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
   currentRoundId,
@@ -120,14 +37,17 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
     const isFree = id <= 20;
     const result = completedRounds[id];
     
-    // Resolve Italian and Bangla topic
-    const topic = id <= 20 ? FOUNDATION_ROUND_TOPICS[id] : getProRoundTopic(id);
+    // Resolve unique official Italian and Bangla topic for every round 1 to 240
+    const topic = getRoundTopic(id);
 
     return {
       id,
       isFree,
       titleIt: topic.titleIt,
       titleBn: topic.titleBn,
+      badgeIt: topic.badgeIt,
+      badgeBn: topic.badgeBn,
+      category: topic.category,
       result,
     };
   });
@@ -140,8 +60,8 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const matchNum = String(r.id) === q || `round ${r.id}`.includes(q) || `রাউন্ড ${r.id}`.includes(q);
-      const matchTopicIt = r.titleIt.toLowerCase().includes(q);
-      const matchTopicBn = r.titleBn.toLowerCase().includes(q);
+      const matchTopicIt = r.titleIt.toLowerCase().includes(q) || (r.badgeIt && r.badgeIt.toLowerCase().includes(q));
+      const matchTopicBn = r.titleBn.toLowerCase().includes(q) || (r.badgeBn && r.badgeBn.toLowerCase().includes(q));
       return matchNum || matchTopicIt || matchTopicBn;
     }
 
@@ -285,12 +205,21 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                   )}
                 </div>
 
-                {/* Card Title: Italian First, then Bengali */}
-                <div className="pt-1">
+                {/* Card Title: Category Badge + Italian First, then Bengali */}
+                <div className="pt-1 space-y-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                      {round.badgeBn}
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                      • {round.badgeIt}
+                    </span>
+                  </div>
+
                   <h3 className="text-base sm:text-[17px] font-black text-slate-900 dark:text-white leading-snug tracking-tight">
                     {round.titleIt}
                   </h3>
-                  <p className="text-xs sm:text-[13px] font-bold text-blue-600 dark:text-blue-400 pt-1 leading-snug">
+                  <p className="text-xs sm:text-[13px] font-bold text-blue-600 dark:text-blue-400 pt-0.5 leading-snug">
                     {round.titleBn}
                   </p>
                 </div>
