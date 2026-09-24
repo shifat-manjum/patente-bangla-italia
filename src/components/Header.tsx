@@ -13,6 +13,7 @@ import { ThemeSwitcher } from './ThemeSwitcher';
 import type { ThemeMode } from './ThemeSwitcher';
 import { StudyMusicPlayer } from './StudyMusicPlayer';
 import type { StudentUser } from './StudentAuthModal';
+import { CarLogo } from './CarLogo';
 
 export type NavTab = 'rounds' | 'exam' | 'hotshot' | 'topics' | 'vocab' | 'mistakes' | 'admin';
 
@@ -50,12 +51,8 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Top Line: Brand & VIP Upgrade Action */}
         <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Expanded 50% Bigger Brand Icon */}
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-[#E73F1E] via-[#FB6C00] to-[#F9B637] p-0.5 sm:p-1 shadow-lg shadow-orange-500/25 shrink-0">
-              <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center text-xl sm:text-2xl font-black text-slate-900 dark:text-white shadow-inner">
-                🇮🇹🇧🇩
-              </div>
-            </div>
+            {/* Sleek Modern Transparent Car Logo */}
+            <CarLogo size="lg" className="shrink-0" />
 
             <div>
               <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">

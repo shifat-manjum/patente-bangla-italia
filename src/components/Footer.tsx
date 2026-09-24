@@ -1,5 +1,6 @@
 import React from 'react';
 import type { NavTab } from './Header';
+import { CarLogo } from './CarLogo';
 
 interface FooterProps {
   setActiveTab: (tab: NavTab) => void;
@@ -14,9 +15,10 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand & Purpose */}
           <div className="space-y-2 md:col-span-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
+              <CarLogo size="sm" />
               <span className="font-black text-lg text-slate-900 dark:text-white">
-                Patente<span className="text-[#FB6C00]">Bangla</span> Italia 🇮🇹🇧🇩
+                Patente<span className="text-[#FB6C00]">Bangla</span> Italia
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">

@@ -1966,3 +1966,4 @@ export const getRoundTopic = (roundId: number): RoundTopicDetail => {
     category: 'simulazione',
   };
 };
+

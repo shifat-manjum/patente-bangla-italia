@@ -246,6 +246,21 @@ export function App() {
   }, [unlockedRound, totalQuestionsAnswered, completedRounds, mistakeIds, isVip, currentUser?.uid]);
 
   const incrementAnsweredCount = (amount: number = 1) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const lastDate = localStorage.getItem('patente_last_study_date');
+      const savedStreak = parseInt(localStorage.getItem('patente_study_streak') || '0', 10);
+      if (lastDate !== today) {
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        if (lastDate === yesterday) {
+          localStorage.setItem('patente_study_streak', String(savedStreak + 1));
+        } else {
+          localStorage.setItem('patente_study_streak', '1');
+        }
+        localStorage.setItem('patente_last_study_date', today);
+      }
+    } catch {}
+
     setTotalQuestionsAnswered((prev) => {
       const updated = prev + amount;
       // If student hits 600 questions and is not VIP, trigger paywall!
@@ -487,6 +502,7 @@ export function App() {
             completedRoundsCount={Object.values(completedRounds).filter(r => r.passed).length}
             totalQuestionsSolved={totalQuestionsAnswered}
             errorCount={mistakeIds.length}
+            isVip={isVip}
             onContinueRound={(r) => handleStartRound(r)}
             onGoToCurriculum={() => setAppTab('curriculum')}
             onGoToTheory={() => setAppTab('theory')}

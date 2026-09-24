@@ -13,12 +13,41 @@ import {
 } from 'lucide-react';
 import type { StudentProfile } from '../services/studentService';
 
+const getDynamicStreak = (): number => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const lastDate = localStorage.getItem('patente_last_study_date');
+    const saved = localStorage.getItem('patente_study_streak');
+    const streak = saved ? parseInt(saved, 10) : 1;
+
+    if (!lastDate) {
+      localStorage.setItem('patente_last_study_date', today);
+      localStorage.setItem('patente_study_streak', '1');
+      return 1;
+    }
+
+    if (lastDate === today) {
+      return Math.max(1, streak);
+    }
+
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    if (lastDate === yesterday) {
+      return Math.max(1, streak);
+    }
+
+    return 1;
+  } catch {
+    return 1;
+  }
+};
+
 interface StudentDashboardViewProps {
   student: StudentProfile | null;
   activeRound: number;
   completedRoundsCount: number;
   totalQuestionsSolved: number;
   errorCount: number;
+  isVip?: boolean;
   onContinueRound: (roundId: number) => void;
   onGoToCurriculum: () => void;
   onGoToTheory: () => void;
@@ -33,14 +62,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   completedRoundsCount,
   totalQuestionsSolved,
   errorCount,
+  isVip = false,
   onContinueRound,
   onGoToCurriculum,
   onGoToTheory,
   onGoToExam,
   onGoToErrors,
 }) => {
-  // Readiness score estimation
-  const readinessScore = Math.min(100, Math.round((completedRoundsCount / 20) * 80 + (totalQuestionsSolved > 100 ? 20 : 10)));
+  const dynamicStreak = getDynamicStreak();
+  const maxRounds = isVip ? 240 : 20;
+  // Readiness score estimation based on actual progress
+  const roundRatio = Math.min(1, completedRoundsCount / maxRounds);
+  const questionsRatio = Math.min(1, totalQuestionsSolved / 150);
+  const errorPenalty = totalQuestionsSolved > 20 ? Math.min(0.2, (errorCount / totalQuestionsSolved)) : 0;
+  const readinessScore = Math.min(100, Math.max(10, Math.round((roundRatio * 0.65 + questionsRatio * 0.35 - errorPenalty) * 100)));
 
   return (
     <div className="space-y-6 pb-24 md:pb-12">
@@ -120,73 +155,106 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 4 Quick Stat Cards */}
+      {/* 4 Quick Stat Cards (Fully Dynamic & Interactive) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Solved Questions */}
-        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1">
+        {/* 1. Solved Questions (Clickable to Curriculum) */}
+        <div
+          onClick={onGoToCurriculum}
+          className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1.5 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all active:scale-[0.98] group"
+          title="কুইজ প্র্যাকটিস করতে ক্লিক করুন"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Solved Questions</span>
-            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+            <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {totalQuestionsSolved}
           </p>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-            Official 30-Question Sets
-          </span>
+          <div className="flex items-center justify-between text-[11px] pt-0.5">
+            <span className="text-blue-600 dark:text-blue-400 font-bold group-hover:underline">
+              অনুশীলন করুন ➔
+            </span>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+              {Math.floor(totalQuestionsSolved / 30)} সেট কুইজ
+            </span>
+          </div>
         </div>
 
-        {/* Foundation Rounds Completed */}
-        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1">
+        {/* 2. Completed Rounds (Clickable to Curriculum) */}
+        <div
+          onClick={onGoToCurriculum}
+          className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1.5 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-md transition-all active:scale-[0.98] group"
+          title="রাউন্ড কারিকুলাম দেখতে ক্লিক করুন"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Completed Rounds</span>
-            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+            <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
               <Award className="w-4 h-4" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-            {completedRoundsCount} <span className="text-sm font-bold text-slate-400 dark:text-slate-500">/ 20</span>
+            {completedRoundsCount} <span className="text-sm font-bold text-slate-400 dark:text-slate-500">/ {maxRounds}</span>
           </p>
-          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
-            Foundation Assessment
-          </span>
+          <div className="flex items-center justify-between text-[11px] pt-0.5">
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold group-hover:underline">
+              সিলেবাস খুলুন ➔
+            </span>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+              {isVip ? '২৪০ একাডেমি' : 'ফাউন্ডেশন'}
+            </span>
+          </div>
         </div>
 
-        {/* Errors to Review */}
+        {/* 3. Errors to Review (Clickable to Mistakes) */}
         <div 
           onClick={onGoToErrors}
-          className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1 cursor-pointer hover:border-rose-300 dark:hover:border-rose-500 transition"
+          className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1.5 cursor-pointer hover:border-rose-400 dark:hover:border-rose-500 hover:shadow-md transition-all active:scale-[0.98] group"
+          title="ভুলের খাতা দেখতে ক্লিক করুন"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Error Review</span>
-            <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+            <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
               <AlertCircle className="w-4 h-4" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {errorCount}
           </p>
-          <span className="text-[11px] text-rose-600 dark:text-rose-400 font-bold hover:underline">
-            Review Mistakes ➔
-          </span>
+          <div className="flex items-center justify-between text-[11px] pt-0.5">
+            <span className="text-rose-600 dark:text-rose-400 font-bold group-hover:underline">
+              {errorCount > 0 ? 'ভুলগুলো শুধরান ➔' : 'কোনো ভুল নেই ✅'}
+            </span>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+              ভুলের খাতা
+            </span>
+          </div>
         </div>
 
-        {/* Daily Streak */}
-        <div className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1">
+        {/* 4. Daily Streak (Clickable to Continue Round) */}
+        <div
+          onClick={() => onContinueRound(activeRound)}
+          className="bg-white dark:bg-slate-800/90 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xs space-y-1.5 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md transition-all active:scale-[0.98] group"
+          title="ধারাবাহিক অনুশীলন করতে ক্লিক করুন"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Study Streak</span>
-            <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+            <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
               <Flame className="w-4 h-4" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-            3 Days 🔥
+            {dynamicStreak} {dynamicStreak === 1 ? 'Day' : 'Days'} 🔥
           </p>
-          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-            Consistent Daily Practice
-          </span>
+          <div className="flex items-center justify-between text-[11px] pt-0.5">
+            <span className="text-amber-600 dark:text-amber-400 font-bold group-hover:underline">
+              রাউন্ড #{activeRound} শুরু ➔
+            </span>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">
+              দৈনিক টার্গেট
+            </span>
+          </div>
         </div>
       </div>
 
