@@ -118,7 +118,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
 
         <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
           <div>
-            © {new Date().getFullYear()} PatenteBangla Italia. 100% Free &amp; Open Learning.
+            © {new Date().getFullYear()} PatenteBangla Italia. All Rights Reserved • সর্বস্বত্ব সংরক্ষিত।
           </div>
           <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
             <button

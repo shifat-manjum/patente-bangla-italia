@@ -51,11 +51,10 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Top Line: Brand & VIP Upgrade Action */}
         <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Sleek Modern Transparent Car Logo */}
-            <CarLogo size="lg" className="shrink-0" />
-
             <div>
-              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                {/* User Supercar Transparent Logo directly before PatenteBangla */}
+                <CarLogo size="lg" className="shrink-0 drop-shadow-md" />
                 <span className="font-black text-xl sm:text-3xl tracking-tight text-slate-900 dark:text-white">
                   Patente<span className="text-[#FB6C00]">Bangla</span>
                 </span>
