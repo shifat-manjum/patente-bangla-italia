@@ -21,6 +21,7 @@ interface QuizCardProps {
   showInstantResult?: boolean;
   isExamSubmitted?: boolean;
   hideAnswerButtons?: boolean;
+  hideAnswerButtonsOnMobile?: boolean;
 }
 
 export const QuizCard: React.FC<QuizCardProps> = ({
@@ -31,6 +32,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   showInstantResult = true,
   isExamSubmitted = false,
   hideAnswerButtons = false,
+  hideAnswerButtonsOnMobile = false,
 }) => {
   const [showBanglaTranslation, setShowBanglaTranslation] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -173,7 +175,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 
         {/* Big High-Contrast VERO / FALSO Buttons */}
         {!hideAnswerButtons && (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-1">
+          <div className={`${hideAnswerButtonsOnMobile ? 'hidden md:grid' : 'grid'} grid-cols-2 gap-3 sm:gap-4 pt-1`}>
             {/* VERO Button */}
             <button
               type="button"
