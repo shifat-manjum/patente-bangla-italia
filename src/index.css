@@ -164,6 +164,22 @@ body.dark,
   animation: neonDotsTrace 12s linear infinite;
 }
 
+/* Cross-browser scrollbar hiding utility */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar,
+[class*="overflow-x-auto"]::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.no-scrollbar,
+.scrollbar-none,
+[class*="overflow-x-auto"] {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
 /* Print Optimization for Official Course Invoices and Receipts */
 @media print {
   body {

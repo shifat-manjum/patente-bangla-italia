@@ -59,7 +59,10 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
       {/* Desktop & Tablet Top Tab Navigation Bar (Adaptive Cockpit Style) */}
       <nav className="hidden md:block bg-white/90 dark:bg-[#0D1117]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 sticky top-[80px] sm:top-[88px] z-30 shadow-xs dark:shadow-xl transition-colors">
         <div className="max-w-[1600px] mx-auto px-[15px] py-3 sm:py-4">
-          <div className="flex items-center justify-start xl:justify-center gap-2.5 lg:gap-4 overflow-x-auto no-scrollbar py-1 px-1">
+          <div 
+            className="flex items-center justify-start xl:justify-center gap-2.5 lg:gap-4 overflow-x-auto no-scrollbar scrollbar-none py-1 px-1"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = currentTab === tab.id;
@@ -93,20 +96,13 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
                       <Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5" style={{ color: isActive ? '#FFFFFF' : undefined }} />
                     </div>
 
-                    {/* Dual-Tier Text with Active LED indicator */}
+                    {/* Dual-Tier Text without dot light */}
                     <div className="text-left flex flex-col justify-center">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`text-xs sm:text-sm lg:text-base font-black tracking-tight whitespace-nowrap ${
-                          isActive ? 'text-white' : 'text-slate-900 dark:text-white'
-                        }`}>
-                          {tab.label}
-                        </span>
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full transition-all shrink-0 ${
-                            isActive ? 'animate-pulse bg-[#FB6C00] dark:bg-[#E52E2D]' : 'opacity-30 bg-slate-400 dark:bg-slate-500'
-                          }`}
-                        />
-                      </div>
+                      <span className={`text-xs sm:text-sm lg:text-base font-black tracking-tight whitespace-nowrap ${
+                        isActive ? 'text-white' : 'text-slate-900 dark:text-white'
+                      }`}>
+                        {tab.label}
+                      </span>
                       <span
                         className={`text-[9.5px] sm:text-[10px] lg:text-[11px] font-black tracking-wider uppercase whitespace-nowrap block mt-0.5 ${
                           isActive ? 'text-amber-300 dark:text-[#FB6C00]' : 'text-slate-500 dark:text-slate-400'

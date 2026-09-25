@@ -20,6 +20,8 @@ export interface StudentProfile {
   name: string;
   email: string;
   phone?: string;
+  address?: string;
+  city?: string;
   unlockedRound: number;
   totalQuestionsAnswered: number;
   completedRounds: Record<number, { errors: number; passed: boolean }>;

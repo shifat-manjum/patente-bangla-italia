@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ShieldCheck,
   Info,
@@ -7,7 +7,9 @@ import {
   LogIn,
   ChevronDown,
   Phone,
-  FileText
+  FileText,
+  User,
+  MapPin
 } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import type { ThemeMode } from './ThemeSwitcher';
@@ -29,6 +31,8 @@ interface HeaderProps {
   onLogout: () => void;
   onOpenAdmin: () => void;
   onOpenInvoice?: () => void;
+  onGoToCurriculum?: () => void;
+  onOpenStudentProfile?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -43,8 +47,26 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   onOpenAdmin,
   onOpenInvoice,
+  onGoToCurriculum,
+  onOpenStudentProfile,
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  // Close profile dropdown when clicking anywhere outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    if (isProfileOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileOpen]);
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 shadow-sm transition-colors">
       <div className="max-w-[1600px] mx-auto px-[15px] py-3.5 sm:py-5 space-y-3 sm:space-y-4">
@@ -83,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Student Auth / Profile Menu */}
             {currentUser ? (
-              <div className="relative">
+              <div ref={profileRef} className="relative">
                 <button
                   type="button"
                   onClick={() => setIsProfileOpen((prev) => !prev)}
@@ -101,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#12161F] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-4 space-y-3 z-50 animate-fadeIn text-left">
                     <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center text-sm font-black uppercase shadow-md shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-950 flex items-center justify-center text-sm font-black uppercase shadow-md shrink-0">
                         {currentUser.name.charAt(0)}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -122,6 +144,13 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                       )}
 
+                      {currentUser.address && (
+                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                          <MapPin className="w-3.5 h-3.5 text-[#FB6C00] shrink-0" />
+                          <span className="truncate">{currentUser.address}{currentUser.city ? `, ${currentUser.city}` : ''}</span>
+                        </div>
+                      )}
+
                       <div className="p-2.5 rounded-xl bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/60 dark:border-orange-900/40">
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Plan Status</span>
@@ -138,17 +167,30 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                     </div>
 
+                    {/* View & Edit Student Full Data Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        if (onOpenStudentProfile) onOpenStudentProfile();
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95"
+                    >
+                      <User className="w-3.5 h-3.5" />
+                      <span>আমার তথ্য ও প্রোফাইল (My Data)</span>
+                    </button>
+
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                      {isVip && onOpenInvoice && (
+                      {(isVip || currentUser.isVip) && onOpenInvoice && (
                         <button
                           type="button"
                           onClick={() => {
                             setIsProfileOpen(false);
                             onOpenInvoice();
                           }}
-                          className="w-full py-2 px-3 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer border border-blue-200 dark:border-blue-900/50"
+                          className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-900 dark:text-white font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer border border-slate-200 dark:border-white/15"
                         >
-                          <FileText className="w-3.5 h-3.5" />
+                          <FileText className="w-3.5 h-3.5 text-[#FB6C00]" />
                           <span>অফিসিয়াল ইনভয়েস (Fattura PDF)</span>
                         </button>
                       )}
@@ -221,25 +263,16 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 text-slate-900 dark:text-white text-xs sm:text-sm font-black">
-                  <ShieldCheck className="w-4 h-4 text-[#FB6C00] shrink-0" />
-                  <span className="hidden sm:inline">Enrolled Student (240 Rounds)</span>
-                  <span className="sm:hidden">Pro Pass</span>
-                </div>
-
-                {onOpenInvoice && (
-                  <button
-                    type="button"
-                    onClick={onOpenInvoice}
-                    className="py-2 px-2.5 sm:px-3 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-900 dark:text-white border border-slate-200 dark:border-white/20 text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    title="Scarica e Stampa Ricevuta Ufficiale (Download Invoice PDF)"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" />
-                    <span className="hidden md:inline">রসিদ / Fattura</span>
-                  </button>
-                )}
-              </div>
+              <button
+                type="button"
+                onClick={onGoToCurriculum}
+                className="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 border border-slate-200 dark:border-white/20 text-slate-900 dark:text-white text-xs sm:text-sm font-black transition cursor-pointer shadow-xs active:scale-95"
+                title="২৪০ রাউন্ডের সম্পূর্ণ সিলেবাস খুলুন"
+              >
+                <ShieldCheck className="w-4 h-4 text-[#FB6C00] shrink-0" />
+                <span className="hidden sm:inline">Enrolled Student (240 Rounds)</span>
+                <span className="sm:hidden">240 Rounds</span>
+              </button>
             )}
           </div>
         </div>

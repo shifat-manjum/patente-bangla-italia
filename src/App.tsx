@@ -21,6 +21,7 @@ import {
   syncStudentProgressToCloud,
 } from './services/studentService';
 import { PatenteChatbot } from './components/PatenteChatbot';
+import { StudentProfileModal } from './components/StudentProfileModal';
 import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
 import { AcademyEnrollmentPage } from './components/AcademyEnrollmentPage';
@@ -47,6 +48,7 @@ export function App() {
   const [appTab, setAppTab] = useState<AppTab | 'admin' | 'enrollment'>('dashboard');
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isStudentProfileOpen, setIsStudentProfileOpen] = useState(false);
 
   // Direct Online Payment & Invoicing State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -504,6 +506,8 @@ export function App() {
           }
         }}
         onOpenInvoice={handleOpenInvoice}
+        onGoToCurriculum={() => setAppTab('curriculum')}
+        onOpenStudentProfile={() => setIsStudentProfileOpen(true)}
       />
 
       {/* Floating Theme Switch Feedback Toast */}
@@ -683,6 +687,22 @@ export function App() {
           setCurrentUser(user);
         }}
         forcedMessage={authForcedMessage}
+      />
+
+      {/* Student Personal Profile & Data Modal */}
+      <StudentProfileModal
+        isOpen={isStudentProfileOpen}
+        onClose={() => setIsStudentProfileOpen(false)}
+        student={currentUser}
+        isVip={isVip}
+        onLogout={handleLogout}
+        onOpenInvoice={handleOpenInvoice}
+        onUpdateProfile={(updated) => {
+          setCurrentUser(updated);
+          try {
+            localStorage.setItem('patente_student_user', JSON.stringify(updated));
+          } catch {}
+        }}
       />
 
       {/* Official Driving Academy Enrollment Modal */}
