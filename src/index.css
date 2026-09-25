@@ -75,8 +75,10 @@ body.theme-sepia,
   background-color: #FAECD4 !important;
 }
 
-.theme-sepia [class*="bg-slate-900"],
-.theme-sepia [class*="bg-slate-950"] {
+.theme-sepia .bg-slate-900,
+.theme-sepia .bg-slate-950,
+.theme-sepia [class~="bg-slate-900"],
+.theme-sepia [class~="bg-slate-950"] {
   background-color: #45260E !important;
   color: #FCF8ED !important;
 }
