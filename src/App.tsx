@@ -61,7 +61,7 @@ export function App() {
         return saved;
       }
     } catch {}
-    return 'light';
+    return 'dark';
   });
 
   // Sync theme with HTML document class
@@ -422,25 +422,21 @@ export function App() {
         currentTheme === 'sepia'
           ? 'theme-sepia bg-[#F5EEDB] text-[#331E0D] selection:bg-[#B45309] selection:text-white'
           : currentTheme === 'dark'
-          ? 'dark bg-[#090D16] text-[#F1F5F9] selection:bg-[#FB6C00] selection:text-white'
-          : 'bg-[#F8FAFC] text-slate-800 selection:bg-[#FB6C00] selection:text-white'
+          ? 'dark bg-[#0D1117] text-[#F8FAFC] selection:bg-[#E52E2D] selection:text-white'
+          : 'bg-[#0D1117] text-[#F8FAFC] selection:bg-[#E52E2D] selection:text-white'
       }`}
     >
-      {/* Subtle theme-specific ambient accents */}
+      {/* Subtle theme-specific ambient accents (Adobe flowing mesh wave) */}
       {currentTheme === 'sepia' ? (
         <>
           <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
           <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
         </>
-      ) : currentTheme === 'dark' ? (
-        <>
-          <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-indigo-900/20 rounded-full blur-3xl pointer-events-none -z-10" />
-          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-900/15 rounded-full blur-3xl pointer-events-none -z-10" />
-        </>
       ) : (
         <>
-          <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
-          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-100/40 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="fixed top-0 left-1/4 w-[600px] h-[360px] bg-[#E52E2D]/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+          <div className="fixed top-20 right-1/4 w-[500px] h-[360px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+          <div className="fixed bottom-10 left-1/3 w-[500px] h-[300px] bg-orange-600/8 rounded-full blur-[100px] pointer-events-none -z-10" />
         </>
       )}
 
@@ -488,15 +484,15 @@ export function App() {
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-[15px] pt-4 sm:pt-6 pb-28 sm:pb-24 md:pb-12">
         {/* Unauthenticated Student Welcome Banner */}
         {!currentUser && (
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/10 border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-xs">
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-[#12161F] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-lg">
             <div className="space-y-1">
-              <span className="inline-block text-[10px] font-black uppercase tracking-wider text-blue-700 bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 rounded-md">
+              <span className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/15">
                 🔒 Free Student Sign-In
               </span>
-              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+              <h4 className="text-sm sm:text-base font-bold text-white">
                 Foundation Assessment (Rounds 1–20) • 600 Questions Free
               </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
+              <p className="text-xs text-slate-400">
                 Sign in to track your progress, practice with oral exam audio, and unlock your free rounds.
               </p>
             </div>
@@ -506,7 +502,7 @@ export function App() {
                 setAuthForcedMessage('২০টি ফ্রি রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।');
                 setIsAuthModalOpen(true);
               }}
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-md transition"
+              className="px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-xs shrink-0 cursor-pointer shadow-md transition active:scale-95"
             >
               Sign In / Register Free
             </button>

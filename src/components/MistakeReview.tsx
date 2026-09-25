@@ -60,15 +60,15 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
 
   if (mistakeQuestions.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto py-12 text-center space-y-6 bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-12 animate-fadeIn border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 mx-auto flex items-center justify-center">
-          <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+      <div className="max-w-3xl mx-auto py-12 text-center space-y-6 bg-[#12161F] rounded-3xl p-8 sm:p-12 animate-fadeIn border border-white/10 shadow-xl">
+        <div className="w-16 h-16 rounded-2xl bg-white/5 text-emerald-400 border border-white/10 mx-auto flex items-center justify-center">
+          <CheckCircle2 className="w-8 h-8 text-emerald-400" />
         </div>
         <div className="space-y-3">
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+          <h2 className="text-2xl font-black text-white">
             কোনো ভুল প্রশ্ন জমে নেই! 🎉
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 text-sm max-w-lg mx-auto leading-relaxed">
+          <p className="text-slate-400 text-sm max-w-lg mx-auto leading-relaxed">
             আপনি ১ থেকে ২৪০ রাউন্ডের যেকোনো পরীক্ষায় যে প্রশ্নগুলো ভুল করবেন, সেগুলো স্বয়ংক্রিয়ভাবে এখানে জমা থাকবে। আপনি বারবার পরীক্ষা দিয়ে পাশ করলেও পূর্বের ভুলগুলো এখানে সংরক্ষিত থাকবে যাতে পরীক্ষার আগে রিভিশন দিয়ে শতভাগ নিশ্চিত হতে পারেন।
           </p>
         </div>
@@ -76,7 +76,7 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
         <button
           type="button"
           onClick={onGoToTopics}
-          className="py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs transition hover:scale-105 cursor-pointer shadow-sm"
+          className="py-3 px-6 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-xs transition hover:scale-105 cursor-pointer shadow-md"
         >
           কুইজ প্র্যাকটিস শুরু করুন
         </button>
@@ -87,14 +87,14 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
   return (
     <div className="w-full max-w-5xl mx-auto space-y-8 animate-fadeIn">
       {/* Top Banner */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 space-y-4 relative overflow-hidden border border-rose-200 dark:border-rose-900/60 shadow-sm">
+      <div className="bg-[#12161F] rounded-3xl p-6 sm:p-8 space-y-4 relative overflow-hidden border border-white/10 shadow-xl">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 text-xs font-black text-rose-800 dark:text-rose-300">
-              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-black text-slate-300">
+              <AlertCircle className="w-4 h-4 text-[#E52E2D]" />
               <span>স্মার্ট ভুলের খাতা (Revisione Errori)</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               আপনার ভুল প্রশ্নগুলো রিভিশন দিন ({mistakeQuestions.length}টি প্রশ্ন)
             </h1>
             <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed max-w-xl">

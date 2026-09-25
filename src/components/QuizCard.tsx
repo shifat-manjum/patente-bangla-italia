@@ -58,22 +58,22 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-7 space-y-5 transition-all duration-200 relative overflow-hidden border shadow-sm min-h-[380px] flex flex-col justify-between ${
+      className={`bg-[#12161F] rounded-2xl p-5 sm:p-7 space-y-5 transition-all duration-200 relative overflow-hidden border shadow-sm min-h-[380px] flex flex-col justify-between ${
         shouldRevealOutcome
           ? isCorrect
-            ? 'border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-100 dark:ring-emerald-950 bg-emerald-50/30 dark:bg-emerald-950/20'
-            : 'border-rose-300 dark:border-rose-700 ring-2 ring-rose-100 dark:ring-rose-950 bg-rose-50/30 dark:bg-rose-950/20'
-          : 'border-slate-200 dark:border-slate-800'
+            ? 'border-emerald-500/50 ring-2 ring-emerald-950 bg-emerald-950/20'
+            : 'border-rose-500/50 ring-2 ring-rose-950 bg-rose-950/20'
+          : 'border-white/10'
       }`}
     >
       <div className="space-y-4">
         {/* Top Header: Question # and Category */}
-        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 text-xs border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 text-xs border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-md bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 font-black border border-blue-200 dark:border-blue-800 text-xs">
+            <span className="px-3 py-1 rounded-full bg-white/10 text-white font-black border border-white/15 text-xs">
               Question #{index + 1}
             </span>
-            <span className="text-slate-600 dark:text-slate-400 font-bold hidden md:inline truncate max-w-[200px]">
+            <span className="text-slate-400 font-bold hidden md:inline truncate max-w-[200px]">
               {question.chapterTitleIt}
             </span>
           </div>
@@ -83,7 +83,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             <button
               type="button"
               onClick={() => setSpeechRate(speechRate === 1.0 ? 0.85 : 1.0)}
-              className="px-2 sm:px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 rounded-lg border border-white/10 text-[11px] font-bold text-slate-300 bg-white/5 hover:bg-white/10 transition cursor-pointer"
               title="Speech Speed"
             >
               <span>{speechRate === 1.0 ? '1.0x (Regular)' : '0.85x (Slow)'}</span>
@@ -96,11 +96,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               title="Listen official Italian pronunciation (Oral Exam Mode)"
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold shadow-2xs ${
                 isSpeaking
-                  ? 'bg-blue-600 text-white border-blue-600 animate-pulse'
-                  : 'bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800'
+                  ? 'bg-white text-slate-950 border-white font-black animate-pulse'
+                  : 'bg-white/5 hover:bg-white/10 text-slate-200 border-white/10'
               }`}
             >
-              <Headphones className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <Headphones className="w-3.5 h-3.5 text-slate-300 shrink-0" />
               <span>{isSpeaking ? 'Playing...' : 'Audio'}</span>
             </button>
 
@@ -111,11 +111,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               title="Toggle Bengali Meaning"
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
                 showBanglaTranslation
-                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700'
-                  : 'bg-slate-50 dark:bg-slate-850 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800'
+                  ? 'bg-white/15 text-white border-white/20'
+                  : 'bg-white/5 text-slate-400 border-white/10'
               }`}
             >
-              <Languages className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 shrink-0" />
+              <Languages className="w-3.5 h-3.5 text-slate-300 shrink-0" />
               <span>{showBanglaTranslation ? 'বাংলা: ON' : 'বাংলা: OFF'}</span>
             </button>
           </div>
@@ -125,10 +125,10 @@ export const QuizCard: React.FC<QuizCardProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch min-h-[160px]">
           {/* Road Sign Graphic (if present) */}
           {(question.signCode || question.image) && (
-            <div className="md:col-span-4 flex flex-col items-center justify-center p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 shadow-inner">
+            <div className="md:col-span-4 flex flex-col items-center justify-center p-3.5 rounded-xl bg-white/5 border border-white/10 shadow-inner">
               <RoadSign code={question.signCode || String(question.image)} size={110} />
               {question.signSymbol && (
-                <span className="mt-2 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 px-3 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-xs">
+                <span className="mt-2 text-[11px] font-bold text-slate-300 bg-white/10 px-3 py-0.5 rounded-full border border-white/15 shadow-xs">
                   {question.signSymbol}
                 </span>
               )}
@@ -138,10 +138,10 @@ export const QuizCard: React.FC<QuizCardProps> = ({
           {/* Question Text Area */}
           <div className={`${(question.signCode || question.image) ? 'md:col-span-8' : 'md:col-span-12'} flex flex-col justify-between gap-3`}>
             {/* Official Italian Question Box */}
-            <div className="p-4 sm:p-5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2 flex-1">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-700/80 pb-2">
+            <div className="p-4 sm:p-5 rounded-xl bg-white/5 border border-white/10 space-y-2 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black px-2.5 py-1 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-600 shadow-xs flex items-center gap-1.5">
+                  <span className="text-xs font-black px-2.5 py-1 rounded-md bg-white/10 text-white border border-white/15 shadow-xs flex items-center gap-1.5">
                     <span>🇮🇹</span>
                     <span>Official Ministerial Question</span>
                   </span>
@@ -151,21 +151,21 @@ export const QuizCard: React.FC<QuizCardProps> = ({
                 <button
                   type="button"
                   onClick={() => speakItalian(question.questionIt)}
-                  className="flex items-center gap-1 text-xs font-bold text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 cursor-pointer"
+                  className="flex items-center gap-1 text-xs font-bold text-slate-300 hover:text-white cursor-pointer"
                 >
                   <Volume2 className="w-3.5 h-3.5" />
                   <span>{isSpeaking ? 'Stop Audio' : 'Listen with Headphones'}</span>
                 </button>
               </div>
-              <p className="text-base sm:text-xl font-black text-slate-900 dark:text-white leading-relaxed tracking-wide pt-1">
+              <p className="text-base sm:text-xl font-black text-white leading-relaxed tracking-wide pt-1">
                 "{question.questionIt}"
               </p>
             </div>
 
             {/* Prominent Bangla Translation Box */}
             {showBanglaTranslation && (
-              <div className="p-4 sm:p-5 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50">
-                <p className="text-base sm:text-xl font-bold text-slate-800 dark:text-amber-100 leading-relaxed">
+              <div className="p-4 sm:p-5 rounded-xl bg-white/5 border border-white/10">
+                <p className="text-base sm:text-xl font-bold text-slate-200 leading-relaxed">
                   {getBanglaTranslation(question.questionIt, question.questionBn)}
                 </p>
               </div>

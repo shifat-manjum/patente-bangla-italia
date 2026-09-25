@@ -10,18 +10,18 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpenAdmin }) => {
   return (
-    <footer className="mt-20 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
+    <footer className="mt-20 border-t border-white/10 bg-[#0D1117] transition-colors">
       <div className="max-w-[1600px] mx-auto px-[15px] py-10 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand & Purpose */}
           <div className="space-y-2 md:col-span-2">
             <div className="flex items-center gap-2.5">
               <CarLogo size="sm" />
-              <span className="font-black text-lg text-slate-900 dark:text-white">
+              <span className="font-black text-lg text-white">
                 Patente<span className="text-[#FB6C00]">Bangla</span> Italia
               </span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
+            <p className="text-xs text-slate-400 leading-relaxed max-w-xl">
               ইতালিতে বসবাসরত সকল ভাই ও বোনেদের জন্য ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) এর প্রথম পূর্ণাঙ্গ বাংলা সহায়িকা।
               অফিশিয়াল কুইজের সহজ বাংলা অনুবাদ, কঠিন শব্দের উচ্চারণ এবং কেন সত্য বা মিথ্যা তার যৌক্তিক ব্যাখ্যা।
             </p>
@@ -29,15 +29,15 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
 
           {/* Quick Links */}
           <div className="space-y-2">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+            <h4 className="text-xs font-black uppercase tracking-wider text-white">
               দ্রুত লিঙ্ক (Navigazione)
             </h4>
-            <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+            <ul className="space-y-1.5 text-xs text-slate-400">
               <li>
                 <button
                   type="button"
                   onClick={onOpenAbout}
-                  className="hover:text-[#FB6C00] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer flex items-center gap-1.5"
+                  className="hover:text-white font-bold text-slate-300 transition cursor-pointer flex items-center gap-1.5"
                 >
                   ℹ️ আমাদের সম্পর্কে (Chi Siamo)
                 </button>
@@ -46,7 +46,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
                 <button
                   type="button"
                   onClick={() => setActiveTab('hotshot')}
-                  className="hover:text-orange-700 text-[#FB6C00] font-bold transition cursor-pointer flex items-center gap-1.5"
+                  className="hover:text-white text-[#FB6C00] font-bold transition cursor-pointer flex items-center gap-1.5"
                 >
                   🔥 হটশট ফাঁদ প্রশ্ন (Trabocchetti)
                 </button>
@@ -55,7 +55,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
                 <button
                   type="button"
                   onClick={() => setActiveTab('exam')}
-                  className="hover:text-[#FB6C00] text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                  className="hover:text-white text-slate-300 transition cursor-pointer"
                 >
                   🎯 সিমুলেশন পরীক্ষা (Simulazione Esame)
                 </button>
@@ -64,7 +64,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
                 <button
                   type="button"
                   onClick={() => setActiveTab('topics')}
-                  className="hover:text-[#FB6C00] text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                  className="hover:text-white text-slate-300 transition cursor-pointer"
                 >
                   📚 অধ্যায়ভিত্তিক কুইজ (Quiz per Capitolo)
                 </button>
@@ -73,7 +73,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
                 <button
                   type="button"
                   onClick={() => setActiveTab('vocab')}
-                  className="hover:text-[#FB6C00] text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                  className="hover:text-white text-slate-300 transition cursor-pointer"
                 >
                   📖 শব্দকোষ ও উচ্চারণ (Dizionario)
                 </button>
@@ -82,7 +82,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
                 <button
                   type="button"
                   onClick={() => setActiveTab('mistakes')}
-                  className="hover:text-[#FB6C00] text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                  className="hover:text-white text-slate-300 transition cursor-pointer"
                 >
                   ❌ ভুল প্রশ্ন রিভিশন (I Miei Errori)
                 </button>
@@ -97,7 +97,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
                       setActiveTab('admin');
                     }
                   }}
-                  className="hover:text-[#FB6C00] text-slate-500 dark:text-slate-400 font-bold transition cursor-pointer flex items-center gap-1.5"
+                  className="hover:text-white text-slate-400 font-bold transition cursor-pointer flex items-center gap-1.5"
                 >
                   🔒 অ্যাডমিন CRM ও কন্ট্রোল প্যানেল (Admin CRM)
                 </button>
@@ -107,8 +107,8 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
         </div>
 
         {/* Legal Disclaimer Box */}
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
-          <p className="font-bold text-slate-700 dark:text-slate-200">
+        <div className="p-4 rounded-xl bg-[#12161F] border border-white/10 text-[11px] text-slate-400 space-y-1">
+          <p className="font-bold text-slate-200">
             ⚠️ Disclaimer Legale &amp; Trasparenza (আইনি তথ্য):
           </p>
           <p className="leading-relaxed">
@@ -116,15 +116,15 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
           </p>
         </div>
 
-        <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
             © {new Date().getFullYear()} PatenteBangla Italia. All Rights Reserved • সর্বস্বত্ব সংরক্ষিত।
           </div>
-          <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-3 text-slate-400">
             <button
               type="button"
               onClick={onOpenAbout}
-              className="hover:text-[#FB6C00] underline transition cursor-pointer font-medium text-slate-700 dark:text-slate-300"
+              className="hover:text-white underline transition cursor-pointer font-medium text-slate-300"
             >
               Shifat Manjum (Zentixx)
             </button>
