@@ -79,9 +79,9 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
   return (
     <div className="space-y-6 pb-24 md:pb-12">
       {/* Top Academic Banner (Adobe Mesh Ambient Style) */}
-      <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#121625] rounded-3xl p-6 sm:p-8 text-white border border-white/10 shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#18110E] rounded-3xl p-6 sm:p-8 text-white border border-white/10 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-[#E52E2D]/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-60 h-60 bg-indigo-600/15 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-10 w-60 h-60 bg-[#FB6C00]/12 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
         
         <div className="relative z-10 max-w-3xl space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-slate-200">

@@ -14,6 +14,7 @@ import type { QuizQuestion } from '../data/quizData';
 import { getQuestionsForRound, ALL_200_QUESTIONS, shuffleQuestions } from '../data/roundQuestions';
 import { getRoundTopic } from '../data/roundCurriculumData';
 import { QuizCard } from './QuizCard';
+import { trackExamStart, trackExamSubmit } from '../services/analytics';
 
 interface ExamSimulatorProps {
   onSaveMistakes: (questionIds: string[], roundId?: number | null) => void;
@@ -69,6 +70,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
     setTimeLeftSeconds(20 * 60);
     setIsSubmitted(false);
     setIsStarted(true);
+    trackExamStart(roundId || undefined);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -111,7 +113,11 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
     onSaveMistakes(mistakeIds, roundId);
 
     const errorCount = mistakeIds.length;
-    if (errorCount <= 3) {
+    const passed = errorCount <= 3;
+    const scorePct = Math.round(((questions.length - errorCount) / (questions.length || 30)) * 100);
+    trackExamSubmit(roundId || undefined, scorePct, passed, errorCount);
+
+    if (passed) {
       confetti({
         particleCount: 120,
         spread: 80,
@@ -258,7 +264,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
             <button
               type="button"
               onClick={onBackToRounds}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
               title="রাউন্ড তালিকায় ফিরে যান"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -267,10 +273,10 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           )}
 
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-full bg-white/10 text-[#FB6C00] font-black text-xs border border-white/15 shrink-0">
+            <span className="px-2.5 py-1 rounded-full bg-orange-50 dark:bg-white/10 text-[#FB6C00] font-black text-xs border border-orange-200 dark:border-white/15 shrink-0">
               {roundId ? `রাউন্ড #${roundId}` : 'মডেল টেস্ট'}
             </span>
-            <span className="text-xs text-slate-300 font-bold hidden md:inline truncate max-w-[320px]">
+            <span className="text-xs text-slate-700 dark:text-slate-300 font-bold hidden md:inline truncate max-w-[320px]">
               {currentRoundTopic
                 ? `${currentRoundTopic.titleBn} (${currentRoundTopic.titleIt})`
                 : (roundId ? `লেভেল ${roundId} পরীক্ষা` : '৩০টি অফিসিয়াল প্রশ্ন')}
@@ -286,15 +292,15 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
                 ? 'bg-rose-950/70 text-rose-300 border-rose-800 animate-pulse'
                 : timeLeftSeconds < 360
                 ? 'bg-[#FB6C00]/20 text-[#FB6C00] border-[#FB6C00]/40'
-                : 'bg-white/5 text-slate-200 border-white/10'
+                : 'bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-white/10'
             }`}
           >
             <Clock className="w-3.5 h-3.5 text-[#FB6C00]" />
             <span className="text-sm tracking-wider font-mono">{timeFormatted}</span>
           </div>
 
-          <span className="text-xs text-slate-400 hidden sm:inline">
-            উত্তর: <strong className="text-white">{totalAnswered} / {questions.length}</strong>
+          <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
+            উত্তর: <strong className="text-slate-900 dark:text-white">{totalAnswered} / {questions.length}</strong>
           </span>
         </div>
 
@@ -303,7 +309,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           <button
             type="button"
             onClick={handleSubmitExam}
-            className="py-2 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-xs shadow-md hover:scale-105 active:scale-95 transition cursor-pointer"
+            className="py-2 px-4 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-xs shadow-md hover:scale-105 active:scale-95 transition cursor-pointer"
           >
             পরীক্ষা জমা দিন (Consegna)
           </button>
@@ -311,7 +317,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           <button
             type="button"
             onClick={startNewExam}
-            className="py-2 px-4 rounded-full bg-white/10 hover:bg-white/15 text-white font-black text-xs flex items-center gap-2 border border-white/20 transition cursor-pointer"
+            className="py-2 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white font-black text-xs flex items-center gap-2 border border-slate-200 dark:border-white/20 transition cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>নতুন পরীক্ষা</span>
@@ -403,17 +409,17 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
             </div>
 
             {/* 3. Accuracy Percentage */}
-            <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border-2 border-blue-400 dark:border-blue-700/60 shadow-xs flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs font-bold text-blue-800 dark:text-blue-300">
+            <div className="p-4 rounded-2xl bg-orange-50 dark:bg-white/5 border-2 border-orange-300 dark:border-white/15 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs font-bold text-orange-800 dark:text-orange-300">
                 <span>অর্জিত স্কোর</span>
-                <Award className="w-4 h-4 text-blue-600" />
+                <Award className="w-4 h-4 text-[#FB6C00]" />
               </div>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-3xl sm:text-4xl font-black text-blue-600 dark:text-blue-400">
+                <span className="text-3xl sm:text-4xl font-black text-[#FB6C00]">
                   {scorePercentage}%
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 mt-1">
+              <span className="text-[11px] font-bold text-orange-700 dark:text-orange-300 mt-1">
                 সঠিকতার হার
               </span>
             </div>
@@ -456,7 +462,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectRound(roundId + 1)}
-                className="py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs sm:text-sm transition cursor-pointer flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95"
+                className="py-3 px-6 rounded-xl bg-[#FB6C00] hover:bg-[#e05f00] text-white font-black text-xs sm:text-sm transition cursor-pointer flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95 shadow-[#FB6C00]/25"
               >
                 <span>পরবর্তী রাউন্ড #{roundId + 1} শুরু করুন</span>
                 <ArrowRight className="w-4 h-4" />
@@ -524,7 +530,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
         <button
           type="button"
           onClick={() => setShowFullGrid(!showFullGrid)}
-          className="px-2.5 py-1.5 rounded-xl border border-white/10 text-[11px] font-bold text-slate-300 hover:bg-white/10 hover:text-white shrink-0 cursor-pointer flex items-center gap-1"
+          className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-950 dark:hover:text-white shrink-0 cursor-pointer flex items-center gap-1"
           title="Toggle 30 questions grid"
         >
           <LayoutGrid className="w-3 h-3" />
@@ -556,7 +562,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
                     setShowFullGrid(false);
                   }}
                   className={`h-9 rounded-xl font-black text-xs flex items-center justify-center transition-all cursor-pointer ${
-                    isCurrent ? 'ring-2 ring-blue-500 scale-105' : ''
+                    isCurrent ? 'ring-2 ring-[#FB6C00] scale-105' : ''
                   } ${
                     isSubmitted
                       ? isUserRight
@@ -625,7 +631,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
             type="button"
             disabled={currentIdx === questions.length - 1}
             onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-            className="py-2.5 sm:py-3 px-6 sm:px-8 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
+            className="py-2.5 sm:py-3 px-6 sm:px-8 rounded-xl bg-[#FB6C00] hover:bg-[#e05f00] active:scale-95 text-white font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 shadow-md shadow-[#FB6C00]/25 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
           >
             <span>Next (পরবর্তী)</span>
             <ArrowRight className="w-4 h-4 shrink-0" />
@@ -724,7 +730,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
               type="button"
               disabled={currentIdx === questions.length - 1}
               onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-              className="py-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-blue-500/20 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
+              className="py-2 px-3.5 rounded-xl bg-[#FB6C00] hover:bg-[#e05f00] active:scale-95 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-[#FB6C00]/25 transition cursor-pointer disabled:opacity-30 disabled:pointer-events-none shrink-0"
             >
               <span>পরবর্তী</span>
               <ArrowRight className="w-4 h-4 shrink-0" />

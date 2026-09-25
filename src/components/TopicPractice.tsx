@@ -36,9 +36,9 @@ export const TopicPractice: React.FC<TopicPracticeProps> = ({ onRecordMistake })
       case 'AlertTriangle':
         return <AlertTriangle className="w-5 h-5 text-amber-400" />;
       case 'Gauge':
-        return <Gauge className="w-5 h-5 text-blue-400" />;
+        return <Gauge className="w-5 h-5 text-[#FB6C00]" />;
       case 'SquareParking':
-        return <SquareParking className="w-5 h-5 text-indigo-400" />;
+        return <SquareParking className="w-5 h-5 text-amber-500" />;
       case 'ChevronsRight':
         return <ChevronsRight className="w-5 h-5 text-rose-400" />;
       default:

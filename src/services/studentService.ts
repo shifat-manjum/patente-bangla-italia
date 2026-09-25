@@ -285,10 +285,14 @@ export const syncStudentProgressToCloud = async (
   if (isFirebaseConfigured && db && uid) {
     try {
       const docRef = doc(db, 'students', uid);
-      await updateDoc(docRef, {
-        ...progress,
-        lastUpdated: serverTimestamp(),
-      });
+      await setDoc(
+        docRef,
+        {
+          ...progress,
+          lastUpdated: serverTimestamp(),
+        },
+        { merge: true }
+      );
     } catch (err) {
       console.warn('Firestore sync error:', err);
     }

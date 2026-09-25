@@ -214,6 +214,18 @@ export const polishBengaliTranslation = (text: string): string => {
 };
 
 /**
+ * Normalizes text by removing typographic quotes, extra spaces, and standardizing casing
+ */
+const normalizeItalian = (text: string): string => {
+  return (text || '')
+    .replace(/[\u2018\u2019`']/g, "'")
+    .replace(/[\u201C\u201D"]/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+};
+
+/**
  * Returns clean, guaranteed Bangla translation for any Patente Italian question
  */
 export const getBanglaTranslation = (questionIt: string, rawQuestionBn?: string): string => {
@@ -224,17 +236,17 @@ export const getBanglaTranslation = (questionIt: string, rawQuestionBn?: string)
     return polishBengaliTranslation(PATENTE_TRANSLATIONS_BN[cleanIt]);
   }
 
-  // 2. Normalize punctuation / quotes and check dictionary again
-  const normalizedIt = cleanIt.replace(/['']/g, "'").replace(/[ÀÁ]/g, 'A').replace(/[ÈÉ]/g, 'E');
-  for (const [dictIt, dictBn] of Object.entries(PATENTE_TRANSLATIONS_BN)) {
-    if (dictIt.trim() === normalizedIt || dictIt.trim().toLowerCase() === cleanIt.toLowerCase()) {
-      return polishBengaliTranslation(dictBn);
-    }
-  }
-
-  // 3. If rawQuestionBn has authentic Bengali and is not raw Italian, return it
+  // 2. If rawQuestionBn has authentic Bengali and is not raw Italian, return it directly
   if (rawQuestionBn && containsBengali(rawQuestionBn) && rawQuestionBn.trim() !== cleanIt) {
     return polishBengaliTranslation(rawQuestionBn.trim());
+  }
+
+  // 3. Normalize punctuation / typographic quotes / whitespace and check dictionary again
+  const normalizedTarget = normalizeItalian(cleanIt);
+  for (const [dictIt, dictBn] of Object.entries(PATENTE_TRANSLATIONS_BN)) {
+    if (normalizeItalian(dictIt) === normalizedTarget) {
+      return polishBengaliTranslation(dictBn);
+    }
   }
 
   // 4. Pattern Match fallback for new dynamic questions

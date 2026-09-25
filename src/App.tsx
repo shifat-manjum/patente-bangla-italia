@@ -34,6 +34,7 @@ import {
   saveInvoice 
 } from './services/paymentService';
 import type { InvoiceRecord } from './services/paymentService';
+import { trackPageView, trackThemeChange } from './services/analytics';
 
 // Calculate true sequential progress: a student can only reach Round N if rounds 1..N-1 are passed
 export const getSequentialUnlockedRound = (completed: Record<number, { passed: boolean }>): number => {
@@ -71,6 +72,7 @@ export function App() {
 
   const handleThemeChange = (newTheme: ThemeMode) => {
     setCurrentTheme(newTheme);
+    trackThemeChange(newTheme);
     if (newTheme === 'light') {
       setThemeToast({
         message: 'Daytime Light Mode',
@@ -91,6 +93,10 @@ export function App() {
       });
     }
   };
+
+  useEffect(() => {
+    trackPageView(appTab);
+  }, [appTab]);
 
   useEffect(() => {
     if (themeToast) {
@@ -474,13 +480,13 @@ export function App() {
       ) : currentTheme === 'dark' ? (
         <>
           <div className="fixed top-0 left-1/4 w-[600px] h-[360px] bg-[#E52E2D]/10 rounded-full blur-[100px] pointer-events-none -z-10" />
-          <div className="fixed top-20 right-1/4 w-[500px] h-[360px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none -z-10" />
-          <div className="fixed bottom-10 left-1/3 w-[500px] h-[300px] bg-orange-600/8 rounded-full blur-[100px] pointer-events-none -z-10" />
+          <div className="fixed top-20 right-1/4 w-[500px] h-[360px] bg-[#FB6C00]/8 rounded-full blur-[100px] pointer-events-none -z-10" />
+          <div className="fixed bottom-10 left-1/3 w-[500px] h-[300px] bg-[#FB6C00]/6 rounded-full blur-[100px] pointer-events-none -z-10" />
         </>
       ) : (
         <>
           <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-100/60 rounded-full blur-3xl pointer-events-none -z-10" />
-          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-blue-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
         </>
       )}
 
@@ -649,8 +655,8 @@ export function App() {
               }}
             />
           ) : (
-            <div className="max-w-md mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl text-center space-y-5">
-              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-600 flex items-center justify-center mx-auto text-3xl">
+            <div className="max-w-md mx-auto my-12 p-8 bg-white dark:bg-[#12161F] rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl text-center space-y-5">
+              <div className="w-16 h-16 rounded-2xl bg-[#FB6C00]/10 border border-[#FB6C00]/20 text-[#FB6C00] flex items-center justify-center mx-auto text-3xl">
                 🔒
               </div>
               <div className="space-y-1">
@@ -662,7 +668,7 @@ export function App() {
               <button
                 type="button"
                 onClick={() => setIsAdminLoginOpen(true)}
-                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm shadow-lg shadow-blue-500/25 transition cursor-pointer"
+                className="w-full py-3 rounded-xl bg-[#FB6C00] hover:bg-[#e05f00] text-white font-black text-sm shadow-lg shadow-[#FB6C00]/25 transition cursor-pointer"
               >
                 Log In as Admin
               </button>

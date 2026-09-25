@@ -61,7 +61,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
       titleIt: 'Accesso Garantito Fino al Conseguimento della Patente',
       titleBn: 'এককালীন পেমেন্ট • লাইসেন্স পাস করার আগ পর্যন্ত সম্পূর্ণ এক্সেস',
       desc: 'কোনো মাসিক সাবস্ক্রিপশন বা রিনিউ ফি নেই। একবার এনরোল করলেই ড্রাইভিং লাইসেন্স (Patente B) পরীক্ষায় পাস করে লাইসেন্স পাওয়ার আগ পর্যন্ত ১০০% আনলিমিটেড সাপোর্ট ও কুইজ এক্সেস।',
-      color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-900',
+      color: 'text-[#FB6C00] bg-orange-50 dark:bg-orange-950/60 border-orange-200 dark:border-orange-900',
     },
     {
       icon: Award,
@@ -91,12 +91,12 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
       </div>
 
       {/* Hero Enrollment Showcase Banner */}
-      <div className="bg-gradient-to-br from-blue-950 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden border border-blue-900/60">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+      <div className="bg-gradient-to-br from-[#170E18] via-[#0D1117] to-[#18110E] rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden border border-white/10">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FB6C00]/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
         
         <div className="relative z-10 space-y-5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-600/40 border border-blue-400/40 text-xs sm:text-sm font-black text-blue-200">
-            <GraduationCap className="w-4 h-4 text-emerald-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs sm:text-sm font-black text-slate-200">
+            <GraduationCap className="w-4 h-4 text-[#FB6C00]" />
             <span>অফিসিয়াল একাডেমি এনরোলমেন্ট (পাস করা পর্যন্ত সম্পূর্ণ এক্সেস)</span>
           </div>
 
@@ -104,7 +104,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
               প্রথমবারেই ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) পাসের পূর্ণাঙ্গ কোর্স
             </h1>
-            <p className="text-sm sm:text-base text-blue-100/90 leading-relaxed max-w-3xl">
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-3xl">
               আপনি বর্তমানে ১ থেকে ২০টি ফ্রি ফাউন্ডেশন রাউন্ডে প্র্যাকটিস করছেন। সরাসরি অনলাইনে পেমেন্ট করে তাৎক্ষণিকভাবে আনলক করুন বাকি ২২০টি প্রো রাউন্ড, অফিসিয়াল অডিও সিমুলেশন এবং সাথে সাথে ডাউনলোড করুন আপনার অফিসিয়াল ইনভয়েস রসিদ।
             </p>
           </div>
@@ -207,7 +207,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
-            <span className="w-8 h-8 rounded-full bg-indigo-600 text-white font-black text-sm flex items-center justify-center mx-auto sm:mx-0">
+            <span className="w-8 h-8 rounded-full bg-[#FB6C00] text-white font-black text-sm flex items-center justify-center mx-auto sm:mx-0">
               ২
             </span>
             <h4 className="font-black text-sm text-slate-900 dark:text-white">

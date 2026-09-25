@@ -52,7 +52,7 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, onTh
         }`}
         title="Dark Night Theme (রাতের ডার্ক মুড)"
       >
-        <Moon className="w-3.5 h-3.5 text-indigo-400" />
+        <Moon className="w-3.5 h-3.5 text-amber-400" />
         <span className="hidden md:inline">Dark</span>
       </button>
     </div>

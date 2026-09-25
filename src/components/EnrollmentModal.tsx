@@ -61,7 +61,7 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full my-auto overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all max-h-[90vh] flex flex-col">
         
         {/* Fixed Header Banner with Always-Visible Close Button */}
-        <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 p-5 sm:p-6 text-white relative shrink-0">
+        <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#18110E] p-5 sm:p-6 text-white relative shrink-0 border-b border-white/10">
           <button
             type="button"
             onClick={onClose}
@@ -74,14 +74,14 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
           </button>
 
           <div className="space-y-2 pr-16 sm:pr-20">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-700/70 border border-blue-400/40 text-[11px] font-black text-blue-200">
-              <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-black text-slate-200">
+              <GraduationCap className="w-3.5 h-3.5 text-[#FB6C00]" />
               <span>Official Driving Academy Enrollment</span>
             </div>
             <h2 className="text-lg sm:text-xl font-black tracking-tight leading-snug">
               Complete Syllabus & Full Academy Access
             </h2>
-            <p className="text-xs sm:text-[13px] text-blue-100/90 leading-relaxed">
+            <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed">
               ফাউন্ডেশন রাউন্ড (১–২০) সফলভাবে মূল্যায়নের পর সম্পূর্ণ কোর্স অ্যাক্টিভ করুন (€৪৯ এককালীন কোর্স ফি • পাস করা পর্যন্ত এক্সেস)।
             </p>
           </div>

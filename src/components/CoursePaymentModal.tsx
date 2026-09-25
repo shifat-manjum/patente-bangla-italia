@@ -175,7 +175,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full my-auto overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all max-h-[92vh] flex flex-col text-slate-800 dark:text-slate-100 text-left">
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 p-5 sm:p-6 text-white relative shrink-0 border-b border-blue-900/60">
+        <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#18110E] p-5 sm:p-6 text-white relative shrink-0 border-b border-white/10">
           <button
             type="button"
             onClick={onClose}
@@ -187,14 +187,14 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
           </button>
 
           <div className="space-y-1.5 pr-12">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600/40 border border-blue-400/40 text-[11px] font-black text-blue-200">
-              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-black text-slate-200">
+              <Lock className="w-3.5 h-3.5 text-[#FB6C00]" />
               <span>Checkout Sicuro SSL 256-bit • Ricevuta Fiscale Immediata</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
               অনলাইন কোর্স এনরোলমেন্ট ও পেমেন্ট (€৪৯)
             </h2>
-            <p className="text-xs sm:text-[13px] text-blue-100/90 leading-relaxed">
+            <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed">
               পাস করা পর্যন্ত এককালীন এক্সেস (Una Tantum) • Round #{attemptedRound} থেকে ২৪০ রাউন্ড এবং সাথে সাথে অফিসিয়াল ইনভয়েস রসিদ
             </p>
           </div>
@@ -281,11 +281,11 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                 onClick={() => setSelectedMethod('paypal')}
                 className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
                   selectedMethod === 'paypal'
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-black shadow-xs ring-2 ring-indigo-500/20'
+                    ? 'border-[#FB6C00] bg-orange-50 dark:bg-white/5 text-[#FB6C00] dark:text-[#FB6C00] font-black shadow-xs ring-2 ring-[#FB6C00]/20'
                     : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300'
                 }`}
               >
-                <span className="text-sm font-black text-blue-600 dark:text-blue-400">🅿️ PayPal</span>
+                <span className="text-sm font-black text-[#FB6C00]">🅿️ PayPal</span>
                 <span className="text-xs font-bold leading-tight">PayPal</span>
                 <span className="text-[9px] text-slate-500 dark:text-slate-400">Express Pay</span>
               </button>
@@ -458,8 +458,8 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
           {/* PayPal Gateway View */}
           {selectedMethod === 'paypal' && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 space-y-3 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 border border-indigo-100 dark:border-indigo-800 mx-auto flex items-center justify-center text-xl shadow-xs">
+            <div className="p-4 sm:p-5 rounded-2xl bg-orange-50/60 dark:bg-white/5 border border-orange-200 dark:border-white/10 space-y-3 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 border border-orange-100 dark:border-white/10 mx-auto flex items-center justify-center text-xl shadow-xs">
                 🅿️
               </div>
               <h4 className="text-sm font-black text-slate-900 dark:text-white">
@@ -468,8 +468,8 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
               <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
                 আপনার পেপ্যাল অ্যাকাউন্ট বা পেপ্যাল লিংক করা যেকোনো কার্ড থেকে মাত্র ১-ক্লিকে নিরাপদ পেমেন্ট সম্পন্ন হবে।
               </p>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-200 text-[11px] font-bold">
-                <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 dark:bg-white/10 text-[#FB6C00] dark:text-orange-200 text-[11px] font-bold">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#FB6C00]" />
                 <span>Protezione Acquisti PayPal al 100%</span>
               </div>
             </div>
