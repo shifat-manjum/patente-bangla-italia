@@ -64,17 +64,54 @@ export function App() {
     return 'dark';
   });
 
+  // Theme switch feedback notification
+  const [themeToast, setThemeToast] = useState<{ message: string; subtext: string; icon: string } | null>(null);
+
+  const handleThemeChange = (newTheme: ThemeMode) => {
+    setCurrentTheme(newTheme);
+    if (newTheme === 'light') {
+      setThemeToast({
+        message: 'Daytime Light Mode',
+        subtext: 'উজ্জ্বল আলো ও হাই-কন্ট্রাস্ট মোড চালু হয়েছে',
+        icon: '☀️',
+      });
+    } else if (newTheme === 'sepia') {
+      setThemeToast({
+        message: 'Reader Eye-Comfort Mode',
+        subtext: 'চোখের সুরক্ষায় উষ্ণ বই পড়ার সেপিয়া মোড চালু হয়েছে',
+        icon: '📖',
+      });
+    } else {
+      setThemeToast({
+        message: 'Adobe Dark Night Mode',
+        subtext: 'রাতের নির্ঝঞ্ঝাট প্রফেশনাল ব্ল্যাক মোড চালু হয়েছে',
+        icon: '🌙',
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (themeToast) {
+      const timer = setTimeout(() => {
+        setThemeToast(null);
+      }, 2600);
+      return () => clearTimeout(timer);
+    }
+  }, [themeToast]);
+
   // Sync theme with HTML document class
   useEffect(() => {
     try {
       localStorage.setItem('patente_bangla_theme', currentTheme);
     } catch {}
     const root = document.documentElement;
-    root.classList.remove('dark', 'theme-sepia');
+    root.classList.remove('dark', 'theme-sepia', 'theme-light');
     if (currentTheme === 'dark') {
       root.classList.add('dark');
     } else if (currentTheme === 'sepia') {
       root.classList.add('theme-sepia');
+    } else {
+      root.classList.add('theme-light');
     }
   }, [currentTheme]);
 
@@ -420,23 +457,28 @@ export function App() {
     <div
       className={`min-h-screen flex flex-col transition-colors duration-300 font-sans relative overflow-x-hidden ${
         currentTheme === 'sepia'
-          ? 'theme-sepia bg-[#F5EEDB] text-[#331E0D] selection:bg-[#B45309] selection:text-white'
+          ? 'theme-sepia bg-[#F5EEDB] text-[#2F1B0B] selection:bg-[#B45309] selection:text-white'
           : currentTheme === 'dark'
           ? 'dark bg-[#0D1117] text-[#F8FAFC] selection:bg-[#E52E2D] selection:text-white'
-          : 'bg-[#0D1117] text-[#F8FAFC] selection:bg-[#E52E2D] selection:text-white'
+          : 'theme-light bg-[#F8FAFC] text-slate-900 selection:bg-[#FB6C00] selection:text-white'
       }`}
     >
-      {/* Subtle theme-specific ambient accents (Adobe flowing mesh wave) */}
+      {/* Subtle theme-specific ambient accents */}
       {currentTheme === 'sepia' ? (
         <>
           <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
           <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
         </>
-      ) : (
+      ) : currentTheme === 'dark' ? (
         <>
           <div className="fixed top-0 left-1/4 w-[600px] h-[360px] bg-[#E52E2D]/10 rounded-full blur-[100px] pointer-events-none -z-10" />
           <div className="fixed top-20 right-1/4 w-[500px] h-[360px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none -z-10" />
           <div className="fixed bottom-10 left-1/3 w-[500px] h-[300px] bg-orange-600/8 rounded-full blur-[100px] pointer-events-none -z-10" />
+        </>
+      ) : (
+        <>
+          <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-100/60 rounded-full blur-3xl pointer-events-none -z-10" />
+          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-blue-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
         </>
       )}
 
@@ -447,7 +489,7 @@ export function App() {
         onOpenPaywall={() => setAppTab('enrollment')}
         onOpenAbout={() => setIsAboutOpen(true)}
         currentTheme={currentTheme}
-        onThemeChange={setCurrentTheme}
+        onThemeChange={handleThemeChange}
         currentUser={currentUser}
         onOpenAuth={() => {
           setAuthForcedMessage('');
@@ -463,6 +505,19 @@ export function App() {
         }}
         onOpenInvoice={handleOpenInvoice}
       />
+
+      {/* Floating Theme Switch Feedback Toast */}
+      {themeToast && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] animate-fadeIn pointer-events-none">
+          <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-slate-900/95 dark:bg-white/95 text-white dark:text-slate-950 shadow-2xl backdrop-blur-md border border-white/20 dark:border-slate-800 text-xs font-bold transition-all transform scale-100">
+            <span className="text-lg shrink-0">{themeToast.icon}</span>
+            <div className="text-left">
+              <div className="font-black text-xs leading-tight tracking-wide">{themeToast.message}</div>
+              <div className="text-[10.5px] opacity-80 mt-0.5 leading-tight">{themeToast.subtext}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 5-Tab Educational Navigation */}
       <AppNavigation
@@ -484,15 +539,15 @@ export function App() {
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-[15px] pt-4 sm:pt-6 pb-28 sm:pb-24 md:pb-12">
         {/* Unauthenticated Student Welcome Banner */}
         {!currentUser && (
-          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-[#12161F] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-lg">
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#12161F] border border-slate-200 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-sm">
             <div className="space-y-1">
-              <span className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/15">
+              <span className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-white/10 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-white/15">
                 🔒 Free Student Sign-In
               </span>
-              <h4 className="text-sm sm:text-base font-bold text-white">
+              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 Foundation Assessment (Rounds 1–20) • 600 Questions Free
               </h4>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Sign in to track your progress, practice with oral exam audio, and unlock your free rounds.
               </p>
             </div>
@@ -502,7 +557,7 @@ export function App() {
                 setAuthForcedMessage('২০টি ফ্রি রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।');
                 setIsAuthModalOpen(true);
               }}
-              className="px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-xs shrink-0 cursor-pointer shadow-md transition active:scale-95"
+              className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-xs shrink-0 cursor-pointer shadow-md transition active:scale-95"
             >
               Sign In / Register Free
             </button>

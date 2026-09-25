@@ -4,44 +4,40 @@
 
 @layer base {
   body {
-    @apply bg-[#0D1117] text-slate-100 font-sans antialiased min-h-screen selection:bg-[#E52E2D] selection:text-white;
-    background-color: #0D1117;
-    background-image: 
-      radial-gradient(ellipse at 15% 10%, rgba(229, 46, 45, 0.14) 0px, transparent 55%),
-      radial-gradient(ellipse at 85% 15%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-      radial-gradient(ellipse at 50% 90%, rgba(217, 83, 30, 0.10) 0px, transparent 55%);
+    @apply font-sans antialiased min-h-screen selection:bg-[#FB6C00] selection:text-white transition-colors duration-200;
     background-attachment: fixed;
   }
 }
 
-.school-card {
-  background: #12161F;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.2);
+/* Light Theme Mode - Daytime Clean High-Contrast Palette */
+html.theme-light,
+body.theme-light,
+html:not(.dark):not(.theme-sepia),
+body:not(.dark):not(.theme-sepia) {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+  background-image: 
+    radial-gradient(ellipse at 15% 10%, rgba(251, 108, 0, 0.04) 0px, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
+    radial-gradient(ellipse at 50% 90%, rgba(245, 158, 11, 0.03) 0px, transparent 55%) !important;
+  background-attachment: fixed !important;
 }
 
-.school-card:hover {
-  border-color: rgba(255, 255, 255, 0.22);
+html:not(.dark):not(.theme-sepia) .school-card,
+html:not(.dark):not(.theme-sepia) .glass-box {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
 }
 
-.glass-box {
-  background: #12161F;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 2px 6px -1px rgba(0, 0, 0, 0.2);
-}
-
-.glass-box:hover {
-  border-color: rgba(255, 255, 255, 0.22);
-}
-
-/* Sepia Reader Theme Mode - Warm Parchment / Book Reading Vibe */
+/* Sepia Reader Theme Mode - Warm Parchment / Eye-Comfort Reading Palette */
 html.theme-sepia,
 body.theme-sepia,
 .theme-sepia {
   background-color: #F5EEDB !important;
-  color: #331E0D !important;
+  color: #2F1B0B !important;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(180, 83, 9, 0.06) 0px, transparent 50%),
+    radial-gradient(at 0% 0%, rgba(180, 83, 9, 0.07) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(217, 119, 6, 0.05) 0px, transparent 50%) !important;
   background-attachment: fixed !important;
 }
@@ -79,7 +75,17 @@ body.theme-sepia,
   background-color: #FAECD4 !important;
 }
 
-/* Adobe Dark Theme Mode - Deep Obsidian Ambient Vibe */
+.theme-sepia [class*="bg-slate-900"],
+.theme-sepia [class*="bg-slate-950"] {
+  background-color: #45260E !important;
+  color: #FCF8ED !important;
+}
+
+.theme-sepia [class*="border-slate-300"] {
+  border-color: #DFCEAC !important;
+}
+
+/* Adobe Dark Theme Mode - Deep Obsidian Ambient Palette */
 html.dark,
 body.dark,
 .dark {

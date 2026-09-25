@@ -188,20 +188,20 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
 
   if (!isStarted) {
     return (
-      <div className="max-w-2xl mx-auto bg-[#12161F] rounded-3xl p-8 sm:p-10 text-center space-y-6 animate-fadeIn border border-white/10 shadow-xl">
-        <div className="w-16 h-16 rounded-2xl bg-white/5 text-[#FB6C00] border border-white/10 flex items-center justify-center mx-auto shadow-sm">
+      <div className="max-w-2xl mx-auto bg-white dark:bg-[#12161F] rounded-3xl p-8 sm:p-10 text-center space-y-6 animate-fadeIn border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-xl">
+        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 text-[#FB6C00] border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto shadow-xs">
           <Award className="w-8 h-8" />
         </div>
 
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-black text-slate-300">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-black text-slate-700 dark:text-slate-300">
             <span>
               {currentRoundTopic
                 ? `${currentRoundTopic.badgeBn} • ${currentRoundTopic.badgeIt}`
                 : 'Official Ministerial Simulation • Simulazione Esame Ufficiale'}
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             {currentRoundTopic
               ? `রাউন্ড #${roundId}: ${currentRoundTopic.titleBn}`
               : roundId ? `রাউন্ড #${roundId} এর ৩০টি কুইজ পরীক্ষা` : 'সরকারি ড্রাইভিং লাইসেন্স সিমুলেশন পরীক্ষা'}
@@ -211,36 +211,36 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
               {currentRoundTopic.titleIt}
             </p>
           )}
-          <p className="text-slate-300 text-sm max-w-md mx-auto leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-300 text-sm max-w-md mx-auto leading-relaxed">
             ইতালির পরিবহন মন্ত্রণালয়ের (Ministero dei Trasporti) অফিসিয়াল নিয়মে ৩০টি প্রশ্ন এবং ২০ মিনিট সময়।
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-3 max-w-md mx-auto text-left">
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
-            <span className="text-xs text-slate-400 font-bold block">মোট প্রশ্ন:</span>
-            <span className="text-lg font-black text-white">৩০টি কুইজ</span>
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold block">মোট প্রশ্ন:</span>
+            <span className="text-lg font-black text-slate-900 dark:text-white">৩০টি কুইজ</span>
           </div>
 
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
-            <span className="text-xs text-slate-400 font-bold block">সময় সীমা:</span>
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold block">সময় সীমা:</span>
             <span className="text-lg font-black text-[#FB6C00]">২০ মিনিট</span>
           </div>
 
-          <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1">
-            <span className="text-xs text-slate-400 font-bold block">পাস করার শর্ত:</span>
-            <span className="text-lg font-black text-emerald-400">সর্বোচ্চ ৩ ভুল</span>
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-bold block">পাস করার শর্ত:</span>
+            <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">সর্বোচ্চ ৩ ভুল</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-white/5 border border-white/10 max-w-xl mx-auto text-xs text-slate-300 text-left">
+        <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 max-w-xl mx-auto text-xs text-slate-700 dark:text-slate-300 text-left">
           💡 <strong>আমাদের বিশেষ সুবিধা:</strong> পরীক্ষার সময় বা পরীক্ষা শেষে প্রতিটি প্রশ্নের নিচে <strong>[বাংলা অর্থ ও বিস্তারিত ব্যাখ্যা]</strong> দেখতে পারবেন, যাতে বুঝতে পারেন কেন ভুল হলো।
         </div>
 
         <button
           type="button"
           onClick={startNewExam}
-          className="py-3.5 px-8 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-base shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          className="py-3.5 px-8 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-base shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
         >
           পরীক্ষা শুরু করুন (Inizia Esame) 🚀
         </button>
@@ -251,7 +251,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   return (
     <div className="w-full max-w-5xl mx-auto space-y-4 animate-fadeIn">
       {/* Top Status Bar: Timer + Progress */}
-      <div className="bg-[#12161F] rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3 border border-white/10 shadow-sm transition-colors">
+      <div className="bg-white dark:bg-[#12161F] rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3 border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm transition-colors">
         {/* Round or Mock Test Label */}
         <div className="flex items-center gap-2.5">
           {onBackToRounds && (
@@ -485,8 +485,8 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
       )}
 
       {/* Sleek, Compact Single-Row Question Ribbon (Only 42px tall, saves 200px vertical space!) */}
-      <div className="bg-[#12161F] rounded-2xl p-2 sm:p-2.5 border border-white/10 shadow-sm flex items-center gap-2">
-        <span className="text-[11px] font-bold text-slate-400 shrink-0 pl-1 hidden sm:inline">
+      <div className="bg-white dark:bg-[#12161F] rounded-2xl p-2 sm:p-2.5 border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm flex items-center gap-2">
+        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0 pl-1 hidden sm:inline">
           Questions:
         </span>
         <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none flex-1">
@@ -503,14 +503,14 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
                 onClick={() => setCurrentIdx(idx)}
                 className={`w-8 h-8 sm:w-8 sm:h-8 rounded-xl font-black text-xs shrink-0 flex items-center justify-center transition-all cursor-pointer ${
                   isCurrent
-                    ? 'bg-white text-slate-950 shadow-md ring-2 ring-white/30 scale-105'
+                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-md ring-2 ring-slate-900/20 dark:ring-white/30 scale-105'
                     : isSubmitted
                     ? isUserRight
                       ? 'bg-emerald-600 text-white'
                       : 'bg-rose-600 text-white'
                     : hasAnswered
-                    ? 'bg-white/15 text-white font-bold'
-                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                    ? 'bg-slate-200 text-slate-900 dark:bg-white/15 dark:text-white font-bold'
+                    : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title={`Question ${idx + 1}${hasAnswered ? ' (Answered)' : ''}`}
               >

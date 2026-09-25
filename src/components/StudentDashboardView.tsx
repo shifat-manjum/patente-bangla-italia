@@ -156,28 +156,28 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 4 Quick Stat Cards (Fully Dynamic & Interactive in Clean Obsidian) */}
+      {/* 4 Quick Stat Cards (Fully Dynamic & Interactive in Clean Obsidian / Daytime Crisp) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* 1. Solved Questions (Clickable to Curriculum) */}
         <div
           onClick={onGoToCurriculum}
-          className="bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-white/10 shadow-sm space-y-1.5 cursor-pointer hover:border-white/25 hover:bg-[#151B27] transition-all active:scale-[0.98] group"
+          className="bg-white dark:bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5 cursor-pointer hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition-all active:scale-[0.98] group"
           title="কুইজ প্র্যাকটিস করতে ক্লিক করুন"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400">Solved Questions</span>
-            <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-white group-hover:scale-110 transition-transform">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Solved Questions</span>
+            <div className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white group-hover:scale-110 transition-transform">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-white">
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {totalQuestionsSolved}
           </p>
           <div className="flex items-center justify-between text-[11px] pt-0.5">
-            <span className="text-slate-300 group-hover:text-white font-bold group-hover:underline">
+            <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white font-bold group-hover:underline">
               অনুশীলন করুন ➔
             </span>
-            <span className="text-slate-500 text-[10px]">
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">
               {Math.floor(totalQuestionsSolved / 30)} সেট কুইজ
             </span>
           </div>
@@ -186,23 +186,23 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* 2. Completed Rounds (Clickable to Curriculum) */}
         <div
           onClick={onGoToCurriculum}
-          className="bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-white/10 shadow-sm space-y-1.5 cursor-pointer hover:border-white/25 hover:bg-[#151B27] transition-all active:scale-[0.98] group"
+          className="bg-white dark:bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5 cursor-pointer hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition-all active:scale-[0.98] group"
           title="রাউন্ড কারিকুলাম দেখতে ক্লিক করুন"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400">Completed Rounds</span>
-            <div className="p-2 rounded-xl bg-white/5 border border-white/10 text-white group-hover:scale-110 transition-transform">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Completed Rounds</span>
+            <div className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white group-hover:scale-110 transition-transform">
               <Award className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-white">
-            {completedRoundsCount} <span className="text-sm font-bold text-slate-500">/ {maxRounds}</span>
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+            {completedRoundsCount} <span className="text-sm font-bold text-slate-400 dark:text-slate-500">/ {maxRounds}</span>
           </p>
           <div className="flex items-center justify-between text-[11px] pt-0.5">
-            <span className="text-slate-300 group-hover:text-white font-bold group-hover:underline">
+            <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white font-bold group-hover:underline">
               সিলেবাস খুলুন ➔
             </span>
-            <span className="text-slate-500 text-[10px]">
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">
               {isVip ? '২৪০ একাডেমি' : 'ফাউন্ডেশন'}
             </span>
           </div>
@@ -211,23 +211,23 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* 3. Errors to Review (Clickable to Mistakes) */}
         <div 
           onClick={onGoToErrors}
-          className="bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-white/10 shadow-sm space-y-1.5 cursor-pointer hover:border-white/25 hover:bg-[#151B27] transition-all active:scale-[0.98] group"
+          className="bg-white dark:bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5 cursor-pointer hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition-all active:scale-[0.98] group"
           title="ভুলের খাতা দেখতে ক্লিক করুন"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400">Error Review</span>
-            <div className="p-2 rounded-xl bg-[#E52E2D]/15 border border-[#E52E2D]/30 text-[#E52E2D] group-hover:scale-110 transition-transform">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Error Review</span>
+            <div className="p-2 rounded-xl bg-[#E52E2D]/10 dark:bg-[#E52E2D]/15 border border-[#E52E2D]/20 dark:border-[#E52E2D]/30 text-[#E52E2D] group-hover:scale-110 transition-transform">
               <AlertCircle className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-white">
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {errorCount}
           </p>
           <div className="flex items-center justify-between text-[11px] pt-0.5">
-            <span className="text-slate-300 group-hover:text-white font-bold group-hover:underline">
+            <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white font-bold group-hover:underline">
               {errorCount > 0 ? 'ভুলগুলো শুধরান ➔' : 'কোনো ভুল নেই ✅'}
             </span>
-            <span className="text-slate-500 text-[10px]">
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">
               ভুলের খাতা
             </span>
           </div>
@@ -236,48 +236,48 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* 4. Daily Streak (Clickable to Continue Round) */}
         <div
           onClick={() => onContinueRound(activeRound)}
-          className="bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-white/10 shadow-sm space-y-1.5 cursor-pointer hover:border-white/25 hover:bg-[#151B27] transition-all active:scale-[0.98] group"
+          className="bg-white dark:bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5 cursor-pointer hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition-all active:scale-[0.98] group"
           title="ধারাবাহিক অনুশীলন করতে ক্লিক করুন"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400">Study Streak</span>
-            <div className="p-2 rounded-xl bg-[#FB6C00]/15 border border-[#FB6C00]/30 text-[#FB6C00] group-hover:scale-110 transition-transform">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Study Streak</span>
+            <div className="p-2 rounded-xl bg-[#FB6C00]/10 dark:bg-[#FB6C00]/15 border border-[#FB6C00]/20 dark:border-[#FB6C00]/30 text-[#FB6C00] group-hover:scale-110 transition-transform">
               <Flame className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-white">
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {dynamicStreak} {dynamicStreak === 1 ? 'Day' : 'Days'} 🔥
           </p>
           <div className="flex items-center justify-between text-[11px] pt-0.5">
-            <span className="text-slate-300 group-hover:text-white font-bold group-hover:underline">
+            <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white font-bold group-hover:underline">
               রাউন্ড #{activeRound} শুরু ➔
             </span>
-            <span className="text-slate-500 text-[10px]">
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">
               দৈনিক টার্গেট
             </span>
           </div>
         </div>
       </div>
 
-      {/* Feature Navigation Cards (App Hub in Clean Obsidian) */}
+      {/* Feature Navigation Cards (App Hub in Adaptive Style) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Card 1: 240 Rounds */}
         <div 
           onClick={onGoToCurriculum}
-          className="bg-[#12161F] rounded-2xl p-5 border border-white/10 hover:border-white/25 hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group"
+          className="bg-white dark:bg-[#12161F] rounded-2xl p-5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group shadow-xs dark:shadow-sm"
         >
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white flex items-center justify-center">
               <BookOpen className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-black text-white group-hover:text-slate-200 transition">
+            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition">
               240 Rounds Course Syllabus
             </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Foundation Assessment (Rounds 1–20) and complete chapter-by-chapter curriculum according to the Italian Highway Code.
             </p>
           </div>
-          <div className="pt-4 flex items-center text-xs font-black text-slate-300 group-hover:text-white gap-1">
+          <div className="pt-4 flex items-center text-xs font-black text-slate-700 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white gap-1">
             <span>Explore Syllabus</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -286,20 +286,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* Card 2: Theory Summaries */}
         <div 
           onClick={onGoToTheory}
-          className="bg-[#12161F] rounded-2xl p-5 border border-white/10 hover:border-white/25 hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group"
+          className="bg-white dark:bg-[#12161F] rounded-2xl p-5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group shadow-xs dark:shadow-sm"
         >
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white flex items-center justify-center">
               <GraduationCap className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-black text-white group-hover:text-slate-200 transition">
+            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition">
               Theory Summaries (25 Chapters)
             </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               3 Golden Rules per chapter in Italian and Bengali + common exam trap keywords. Master rules in 90 seconds.
             </p>
           </div>
-          <div className="pt-4 flex items-center text-xs font-black text-slate-300 group-hover:text-white gap-1">
+          <div className="pt-4 flex items-center text-xs font-black text-slate-700 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white gap-1">
             <span>Read Cheat Sheets</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
@@ -308,20 +308,20 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         {/* Card 3: Oral Audio Exam Mode */}
         <div 
           onClick={onGoToExam}
-          className="bg-[#12161F] rounded-2xl p-5 border border-white/10 hover:border-white/25 hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group"
+          className="bg-white dark:bg-[#12161F] rounded-2xl p-5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group shadow-xs dark:shadow-sm"
         >
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white flex items-center justify-center">
               <Headphones className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-black text-white group-hover:text-slate-200 transition">
+            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition">
               Official Oral Exam Simulation
             </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Exact replica of the Motorizzazione Civile test with headphone audio pronunciation (30 questions, 20 mins, max 3 errors).
             </p>
           </div>
-          <div className="pt-4 flex items-center text-xs font-black text-slate-300 group-hover:text-white gap-1">
+          <div className="pt-4 flex items-center text-xs font-black text-slate-700 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white gap-1">
             <span>Launch Simulation</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
