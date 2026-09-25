@@ -123,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#12161F] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-4 space-y-3 z-50 animate-fadeIn text-left">
                     <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-950 flex items-center justify-center text-sm font-black uppercase shadow-md shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E52E2D] to-[#FB6C00] text-white flex items-center justify-center text-sm font-black uppercase shadow-md shrink-0">
                         {currentUser.name.charAt(0)}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -174,9 +174,9 @@ export const Header: React.FC<HeaderProps> = ({
                         setIsProfileOpen(false);
                         if (onOpenStudentProfile) onOpenStudentProfile();
                       }}
-                      className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95"
+                      className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#FB6C00]/25 active:scale-95"
                     >
-                      <User className="w-3.5 h-3.5" />
+                      <User className="w-3.5 h-3.5 text-white" />
                       <span>আমার তথ্য ও প্রোফাইল (My Data)</span>
                     </button>
 
@@ -256,9 +256,9 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onOpenPaywall}
-                  className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-xs sm:text-sm shadow-md hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0"
+                  className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm shadow-md shadow-[#FB6C00]/25 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0"
                 >
-                  <GraduationCap className="w-4 h-4 text-white dark:text-slate-950 shrink-0" />
+                  <GraduationCap className="w-4 h-4 text-white shrink-0" />
                   <span>Academy Enrollment</span>
                 </button>
               </div>

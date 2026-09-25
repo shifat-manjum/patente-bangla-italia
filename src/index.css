@@ -100,55 +100,57 @@ body.dark,
   background-attachment: fixed !important;
 }
 
-.dark .bg-white,
+/* Card & Surface Dark Backgrounds (Excludes buttons, links, and components with explicit dark:bg-) */
 .dark .school-card,
-.dark .glass-box {
+.dark .glass-box,
+.dark div.bg-white:not([class*="dark:bg-"]),
+.dark section.bg-white:not([class*="dark:bg-"]),
+.dark main.bg-white:not([class*="dark:bg-"]) {
   background-color: #12161F !important;
   border-color: #1E2638 !important;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3) !important;
 }
 
-.dark [class*="bg-slate-50"],
-.dark [class*="bg-slate-100"] {
+/* Fallback card backgrounds for unmigrated light containers */
+.dark div.bg-slate-50:not([class*="dark:bg-"]):not(button):not(a),
+.dark div.bg-slate-100:not([class*="dark:bg-"]):not(button):not(a) {
   background-color: #0F131D !important;
 }
 
-.dark [class*="border-slate-200"],
-.dark [class*="border-slate-100"] {
+.dark div[class~="border-slate-200"]:not([class*="dark:border-"]),
+.dark div[class~="border-slate-100"]:not([class*="dark:border-"]) {
   border-color: #1E2638 !important;
 }
 
-.dark .text-slate-900,
-.dark .text-slate-800 {
+/* Fallback text colors (Only when no explicit dark:text- is present) */
+.dark .text-slate-900:not([class*="dark:text-"]):not(button):not(a),
+.dark .text-slate-800:not([class*="dark:text-"]):not(button):not(a) {
   color: #F8FAFC !important;
 }
 
-.dark .text-slate-700,
-.dark .text-slate-600 {
+.dark .text-slate-700:not([class*="dark:text-"]):not(button):not(a),
+.dark .text-slate-600:not([class*="dark:text-"]):not(button):not(a) {
   color: #CBD5E1 !important;
 }
 
-.dark .text-slate-500,
-.dark .text-slate-400 {
+.dark .text-slate-500:not([class*="dark:text-"]):not(button):not(a),
+.dark .text-slate-400:not([class*="dark:text-"]):not(button):not(a) {
   color: #94A3B8 !important;
 }
 
-.dark .bg-orange-50 {
+.dark .bg-orange-50:not([class*="dark:bg-"]) {
   background-color: rgba(251, 108, 0, 0.12) !important;
 }
 
-.dark .bg-blue-50,
-.dark [class*="bg-blue-50"] {
+.dark .bg-blue-50:not([class*="dark:bg-"]) {
   background-color: rgba(37, 99, 235, 0.15) !important;
 }
 
-.dark .bg-emerald-50,
-.dark [class*="bg-emerald-50"] {
+.dark .bg-emerald-50:not([class*="dark:bg-"]) {
   background-color: rgba(16, 185, 129, 0.15) !important;
 }
 
-.dark .bg-amber-50,
-.dark [class*="bg-amber-50"] {
+.dark .bg-amber-50:not([class*="dark:bg-"]) {
   background-color: rgba(245, 158, 11, 0.12) !important;
 }
 

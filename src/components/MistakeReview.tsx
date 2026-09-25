@@ -76,7 +76,7 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
         <button
           type="button"
           onClick={onGoToTopics}
-          className="py-3 px-6 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-xs transition hover:scale-105 cursor-pointer shadow-md"
+          className="py-3 px-6 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs transition hover:scale-105 cursor-pointer shadow-md shadow-[#FB6C00]/25"
         >
           কুইজ প্র্যাকটিস শুরু করুন
         </button>

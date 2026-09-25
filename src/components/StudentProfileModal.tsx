@@ -102,7 +102,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
         {/* Modal Top Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-950 flex items-center justify-center text-sm font-black uppercase shadow-xs">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#E52E2D] to-[#FB6C00] text-white flex items-center justify-center text-sm font-black uppercase shadow-md shadow-[#FB6C00]/20">
               {student.name.charAt(0)}
             </div>
             <div>
@@ -260,9 +260,9 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:text-slate-950 text-xs font-black flex items-center gap-1.5 transition cursor-pointer shadow-md"
+                  className="px-5 py-2 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white text-xs font-black flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-[#FB6C00]/25"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-3.5 h-3.5 text-white" />
                   <span>তথ্য সংরক্ষণ করুন</span>
                 </button>
               </div>

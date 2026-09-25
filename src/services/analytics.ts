@@ -105,3 +105,4 @@ export const trackStudentRegistration = (method: 'firebase' | 'local' = 'firebas
     method,
   });
 };
+

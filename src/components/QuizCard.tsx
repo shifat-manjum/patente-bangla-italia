@@ -96,11 +96,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               title="Listen official Italian pronunciation (Oral Exam Mode)"
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold shadow-2xs ${
                 isSpeaking
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950 border-slate-900 dark:border-white font-black animate-pulse'
+                  ? 'bg-[#FB6C00] text-white border-[#FB6C00] font-black animate-pulse shadow-md shadow-[#FB6C00]/25'
                   : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-white/10'
               }`}
             >
-              <Headphones className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300 shrink-0" />
+              <Headphones className={`w-3.5 h-3.5 shrink-0 ${isSpeaking ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`} />
               <span>{isSpeaking ? 'Playing...' : 'Audio'}</span>
             </button>
 
@@ -111,11 +111,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               title="Toggle Bengali Meaning"
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
                 showBanglaTranslation
-                  ? 'bg-slate-900 text-white dark:bg-white/15 dark:text-white border-slate-900 dark:border-white/20'
-                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-white/10'
+                  ? 'bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] text-white border-transparent shadow-sm shadow-[#FB6C00]/20'
+                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10'
               }`}
             >
-              <Languages className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300 shrink-0" />
+              <Languages className={`w-3.5 h-3.5 shrink-0 ${showBanglaTranslation ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`} />
               <span>{showBanglaTranslation ? 'বাংলা: ON' : 'বাংলা: OFF'}</span>
             </button>
           </div>

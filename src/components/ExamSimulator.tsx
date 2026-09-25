@@ -246,7 +246,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
         <button
           type="button"
           onClick={startNewExam}
-          className="py-3.5 px-8 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-base shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          className="py-3.5 px-8 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-base shadow-lg shadow-[#FB6C00]/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
         >
           পরীক্ষা শুরু করুন (Inizia Esame) 🚀
         </button>
@@ -309,7 +309,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           <button
             type="button"
             onClick={handleSubmitExam}
-            className="py-2 px-4 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-xs shadow-md hover:scale-105 active:scale-95 transition cursor-pointer"
+            className="py-2 px-4 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs shadow-md shadow-[#FB6C00]/20 hover:scale-105 active:scale-95 transition cursor-pointer"
           >
             পরীক্ষা জমা দিন (Consegna)
           </button>
@@ -509,7 +509,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
                 onClick={() => setCurrentIdx(idx)}
                 className={`w-8 h-8 sm:w-8 sm:h-8 rounded-xl font-black text-xs shrink-0 flex items-center justify-center transition-all cursor-pointer ${
                   isCurrent
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-md ring-2 ring-slate-900/20 dark:ring-white/30 scale-105'
+                    ? 'bg-[#FB6C00] text-white shadow-md shadow-[#FB6C00]/30 ring-2 ring-[#FB6C00]/30 scale-105'
                     : isSubmitted
                     ? isUserRight
                       ? 'bg-emerald-600 text-white'

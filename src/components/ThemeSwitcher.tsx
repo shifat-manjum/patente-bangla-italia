@@ -47,12 +47,12 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, onTh
         onClick={() => onThemeChange('dark')}
         className={`px-2.5 sm:px-3 py-1.5 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
           currentTheme === 'dark'
-            ? 'bg-white text-slate-950 shadow-xs font-black ring-1 ring-white/30'
+            ? 'bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] text-white shadow-xs font-black ring-1 ring-[#FB6C00]/40'
             : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
         }`}
         title="Dark Night Theme (রাতের ডার্ক মুড)"
       >
-        <Moon className="w-3.5 h-3.5 text-amber-400" />
+        <Moon className={`w-3.5 h-3.5 ${currentTheme === 'dark' ? 'text-white' : 'text-amber-400'}`} />
         <span className="hidden md:inline">Dark</span>
       </button>
     </div>

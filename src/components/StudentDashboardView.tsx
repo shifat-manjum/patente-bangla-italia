@@ -102,9 +102,9 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <button
                 type="button"
                 onClick={() => onContinueRound(activeRound)}
-                className="py-3 px-6 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-sm flex items-center gap-2 transition cursor-pointer shadow-lg active:scale-95"
+                className="py-3 px-6 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-sm flex items-center gap-2 transition cursor-pointer shadow-lg shadow-[#FB6C00]/25 active:scale-95"
               >
-                <Play className="w-4 h-4 fill-current text-slate-950" />
+                <Play className="w-4 h-4 fill-current text-white" />
                 <span>Continue Round #{activeRound}</span>
               </button>
 
