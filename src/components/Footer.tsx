@@ -16,10 +16,10 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
           {/* Brand & Purpose */}
           <div className="space-y-2 md:col-span-2">
             <div className="flex items-center gap-2.5">
-              <CarLogo size="sm" />
               <span className="font-black text-lg text-slate-900 dark:text-white">
                 Patente<span className="text-[#FB6C00]">Bangla</span> Italia
               </span>
+              <CarLogo size="sm" />
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
               ইতালিতে বসবাসরত সকল ভাই ও বোনেদের জন্য ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) এর প্রথম পূর্ণাঙ্গ বাংলা সহায়িকা।

@@ -135,3 +135,4 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
 
   return getAppSettings();
 };
+

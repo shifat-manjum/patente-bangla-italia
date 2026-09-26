@@ -78,14 +78,13 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Top Line: Brand & VIP Upgrade Action */}
         <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-3 sm:gap-4">
-            {/* Transparent Supercar Brand Logo */}
-            <CarLogo size="xl" className="shrink-0 drop-shadow-md" />
-
             <div>
-              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+              <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                 <span className="font-black text-xl sm:text-3xl tracking-tight text-slate-900 dark:text-white">
                   Patente<span className="text-[#FB6C00]">Bangla</span>
                 </span>
+                {/* Official Patente Guru Badge (Positioned where user marked red box) */}
+                <CarLogo size="lg" className="shrink-0 drop-shadow-md" />
               </div>
               <p className="text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block mt-0.5">
                 ইতালিয়ান ড্রাইভিং লাইসেন্স স্কুল কুইজ • সহজ বাংলা ব্যাখ্যা ও অডিও
