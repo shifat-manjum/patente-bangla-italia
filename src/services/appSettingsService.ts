@@ -121,17 +121,20 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
     } catch {}
   }
 
-  // Try local server
+  // Try server API (MongoDB Atlas)
   try {
     const res = await fetch('/api/settings');
-    if (res.ok) {
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
       if (data && typeof data.freeRoundsLimit === 'number') {
         saveAppSettings(data);
         return data;
       }
     }
-  } catch {}
+  } catch (err) {
+    console.warn('Settings API fetch notice:', err);
+  }
 
   return getAppSettings();
 };

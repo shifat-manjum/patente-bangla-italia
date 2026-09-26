@@ -166,17 +166,18 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       setIsLoading(false);
     }
 
-    // 2. Fetch from local network API (/api/students backed by students_db.json)
+    // 2. Fetch from MongoDB Atlas serverless API (/api/students)
     try {
       const res = await fetch('/api/students');
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           serverStudents = data;
         }
       }
     } catch (e) {
-      console.warn('Server JSON database fetch notice:', e);
+      console.warn('MongoDB Atlas database fetch notice:', e);
     }
 
     // 3. Query Cloud Firestore with a 2.5-second race timeout (guarantees UI never freezes)

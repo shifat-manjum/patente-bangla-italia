@@ -34,17 +34,21 @@ export interface StudentProfile {
 const LOCAL_STORAGE_KEY = 'patente_student_user';
 const LOCAL_STUDENTS_LIST_KEY = 'patente_registered_students';
 
-// Helper to sync student to server-side JSON DB for multi-device cross sync (mobile & desktop)
-export const syncStudentToServerDb = (student: StudentProfile) => {
+// Helper to sync student to MongoDB Atlas (/api/students) for robust multi-device cross sync
+export const syncStudentToServerDb = async (student: StudentProfile): Promise<boolean> => {
   try {
     if (typeof window !== 'undefined') {
-      fetch('/api/students', {
+      const res = await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(student),
-      }).catch(() => {});
+      });
+      return res.ok;
     }
-  } catch {}
+  } catch (err) {
+    console.warn('MongoDB Atlas sync notice:', err);
+  }
+  return false;
 };
 
 // Helper to get local mock user
@@ -117,9 +121,15 @@ export const registerStudent = async (
         const filtered = all.filter((s: any) => s.email?.toLowerCase() !== cleanEmail);
         filtered.unshift(clientProfile);
         localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(filtered));
-        syncStudentToServerDb(clientProfile);
       } catch (storageErr) {
         console.warn('Local student list update error:', storageErr);
+      }
+
+      // Immediately persist to MongoDB Atlas pipeline
+      try {
+        await syncStudentToServerDb(clientProfile);
+      } catch (syncErr) {
+        console.warn('MongoDB Atlas registration sync error:', syncErr);
       }
 
       return clientProfile;
@@ -149,7 +159,10 @@ export const registerStudent = async (
     const all = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
     all.push(fallbackProfile);
     localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(all));
-    syncStudentToServerDb(fallbackProfile);
+  } catch {}
+
+  try {
+    await syncStudentToServerDb(fallbackProfile);
   } catch {}
 
   return fallbackProfile;
@@ -267,17 +280,19 @@ export const logoutStudent = async (): Promise<void> => {
   } catch {}
 };
 
-// Sync student progress to Cloud Firestore
+// Sync student progress to Cloud Firestore & MongoDB Atlas
 export const syncStudentProgressToCloud = async (
   uid: string,
   progress: Partial<StudentProfile>
 ): Promise<void> => {
+  let updatedStudent: StudentProfile | null = null;
   // Update local storage first
   try {
     const current = getCachedStudent();
     if (current && current.uid === uid) {
-      const updated = { ...current, ...progress };
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+      updatedStudent = { ...current, ...progress };
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedStudent));
+      syncStudentToServerDb(updatedStudent);
     }
   } catch {}
 

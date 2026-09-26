@@ -1,0 +1,130 @@
+import { getCollection } from './_db.js';
+
+function setCors(res) {
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+}
+
+async function parseBody(req) {
+  if (req.body && typeof req.body === 'object') {
+    return req.body;
+  }
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return null;
+    }
+  }
+  // If req.body is undefined, read stream
+  try {
+    const buffers = [];
+    for await (const chunk of req) {
+      buffers.push(chunk);
+    }
+    const raw = Buffer.concat(buffers).toString();
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return null;
+  }
+}
+
+export default async function handler(req, res) {
+  setCors(res);
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  try {
+    const col = await getCollection('students');
+
+    if (req.method === 'GET') {
+      const docs = await col
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+
+      const students = docs.map((doc) => {
+        const { _id, ...rest } = doc;
+        return {
+          ...rest,
+          _id: _id.toString(),
+        };
+      });
+
+      return res.status(200).json(students);
+    }
+
+    if (req.method === 'POST') {
+      const data = await parseBody(req);
+      if (!data) {
+        return res.status(400).json({ error: 'Invalid or missing JSON payload' });
+      }
+
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          const email = item.email ? item.email.trim().toLowerCase() : null;
+          const uid = item.uid ? String(item.uid) : null;
+          if (!email && !uid) continue;
+
+          const filter = email ? { email } : { uid };
+          const { createdAt, _id, ...rest } = item;
+          if (email) rest.email = email;
+
+          await col.updateOne(
+            filter,
+            {
+              $set: {
+                ...rest,
+                updatedAt: new Date().toISOString(),
+              },
+              $setOnInsert: {
+                createdAt: createdAt || new Date().toISOString(),
+              },
+            },
+            { upsert: true }
+          );
+        }
+        return res.status(200).json({ success: true, count: data.length });
+      }
+
+      const email = data.email ? data.email.trim().toLowerCase() : null;
+      const uid = data.uid ? String(data.uid) : null;
+
+      if (!email && !uid) {
+        return res.status(400).json({ error: 'Email or UID is required' });
+      }
+
+      const filter = email ? { email } : { uid };
+      const { createdAt, _id, ...rest } = data;
+      if (email) rest.email = email;
+
+      await col.updateOne(
+        filter,
+        {
+          $set: {
+            ...rest,
+            updatedAt: new Date().toISOString(),
+          },
+          $setOnInsert: {
+            createdAt: createdAt || new Date().toISOString(),
+          },
+        },
+        { upsert: true }
+      );
+
+      return res.status(200).json({ success: true, student: { ...rest, createdAt: createdAt || new Date().toISOString() } });
+    }
+
+    return res.status(405).json({ error: `Method ${req.method} not allowed` });
+  } catch (err) {
+    console.error('API /api/students error:', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+}
