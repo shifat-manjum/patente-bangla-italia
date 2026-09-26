@@ -15,9 +15,12 @@ import {
   GraduationCap,
   Eye,
   EyeOff,
+  MessageCircle,
 } from 'lucide-react';
 import { registerStudent, loginStudent } from '../services/studentService';
 import type { StudentProfile } from '../services/studentService';
+import { WHATSAPP_GROUP_URL } from '../config/constants';
+import { trackWhatsAppJoin } from '../services/analytics';
 
 export type StudentUser = StudentProfile;
 
@@ -167,6 +170,11 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       const student = await registerStudent(name.trim(), email.trim(), cleanPhone, password);
       setIsLoading(false);
       setRegisteredStudent(student);
+      // Auto-trigger WhatsApp group join in a new window/tab
+      try {
+        window.open(WHATSAPP_GROUP_URL, '_blank', 'noopener,noreferrer');
+        trackWhatsAppJoin('auto_popup_on_register');
+      } catch {}
     } catch (err: any) {
       setIsLoading(false);
       setError(getFirebaseErrorMessage(err));
@@ -270,10 +278,38 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
               </ul>
             </div>
 
+            {/* Official WhatsApp Group Invite Card */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300/80 dark:border-emerald-600/40 text-left space-y-2.5 shadow-sm">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#25D366]/30">
+                  <MessageCircle className="w-5 h-5 fill-current" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-tight">
+                    অফিসিয়াল WhatsApp স্টুডেন্ট গ্রুপ 📢
+                  </h4>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 pt-0.5 leading-tight">
+                    সকল নতুন নোটিশ, লাইভ ক্লাস আপডেট ও জরুরি নোটিফিকেশন পেতে যুক্ত হোন
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href={WHATSAPP_GROUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackWhatsAppJoin('registration_success_modal')}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#25D366]/25 active:scale-95"
+              >
+                <MessageCircle className="w-4 h-4 fill-current" />
+                <span>গ্রুপে যুক্ত হোন (Join WhatsApp Group)</span>
+              </a>
+            </div>
+
             <button
               type="button"
               onClick={handleWelcomeContinue}
-              className="w-full py-3 px-4 rounded-2xl bg-[#FB6C00] hover:bg-orange-600 text-white font-black text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-98"
+              className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#FB6C00]/25 active:scale-98"
             >
               <span>Start Free Round 1 (প্রথম রাউন্ড শুরু করুন)</span>
               <ArrowRight className="w-4 h-4" />

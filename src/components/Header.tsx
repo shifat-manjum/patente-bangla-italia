@@ -9,13 +9,16 @@ import {
   Phone,
   FileText,
   User,
-  MapPin
+  MapPin,
+  MessageCircle
 } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import type { ThemeMode } from './ThemeSwitcher';
 import { StudyMusicPlayer } from './StudyMusicPlayer';
 import type { StudentUser } from './StudentAuthModal';
 import { CarLogo } from './CarLogo';
+import { WHATSAPP_GROUP_URL } from '../config/constants';
+import { trackWhatsAppJoin } from '../services/analytics';
 
 export type NavTab = 'rounds' | 'exam' | 'hotshot' | 'topics' | 'vocab' | 'mistakes' | 'admin';
 
@@ -179,6 +182,21 @@ export const Header: React.FC<HeaderProps> = ({
                       <User className="w-3.5 h-3.5 text-white" />
                       <span>আমার তথ্য ও প্রোফাইল (My Data)</span>
                     </button>
+
+                    {/* WhatsApp Student Group Shortcut */}
+                    <a
+                      href={WHATSAPP_GROUP_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        trackWhatsAppJoin('header_profile_dropdown');
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#128C7E] dark:text-[#25D366] font-black text-xs transition flex items-center justify-center gap-2 cursor-pointer border border-[#25D366]/30 active:scale-95"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 fill-current text-[#25D366]" />
+                      <span>WhatsApp স্টুডেন্ট গ্রুপ (Join Group)</span>
+                    </a>
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
                       {(isVip || currentUser.isVip) && onOpenInvoice && (

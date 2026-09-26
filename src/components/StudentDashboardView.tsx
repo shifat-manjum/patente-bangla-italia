@@ -9,9 +9,12 @@ import {
   Flame, 
   GraduationCap, 
   ArrowRight,
-  Headphones
+  Headphones,
+  MessageCircle,
 } from 'lucide-react';
 import type { StudentProfile } from '../services/studentService';
+import { WHATSAPP_GROUP_URL } from '../config/constants';
+import { trackWhatsAppJoin } from '../services/analytics';
 
 const getDynamicStreak = (): number => {
   try {
@@ -86,9 +89,22 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-slate-200">
-              <GraduationCap className="w-4 h-4 text-white" />
-              <span>Official Italian Patente B Academy</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-slate-200">
+                <GraduationCap className="w-4 h-4 text-white" />
+                <span>Official Italian Patente B Academy</span>
+              </div>
+              <a
+                href={WHATSAPP_GROUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackWhatsAppJoin('dashboard_badge')}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/40 text-xs font-black text-emerald-300 transition cursor-pointer"
+                title="Join official student WhatsApp group for instant exam notices"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-[#25D366] fill-current" />
+                <span>WhatsApp Group • Updates</span>
+              </a>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
@@ -116,6 +132,18 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 <Clock className="w-4 h-4 text-slate-300" />
                 <span>Start Official Exam Simulation</span>
               </button>
+
+              <a
+                href={WHATSAPP_GROUP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackWhatsAppJoin('dashboard_hero_button')}
+                className="py-3 px-5 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-[#25D366]/40 transition cursor-pointer"
+                title="WhatsApp স্টুডেন্ট কমিউনিটি গ্রুপে যুক্ত হোন"
+              >
+                <MessageCircle className="w-4 h-4 text-[#25D366] fill-current" />
+                <span>WhatsApp Group</span>
+              </a>
             </div>
           </div>
 

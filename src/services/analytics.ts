@@ -106,3 +106,13 @@ export const trackStudentRegistration = (method: 'firebase' | 'local' = 'firebas
   });
 };
 
+/**
+ * Track WhatsApp student group join click
+ */
+export const trackWhatsAppJoin = (source: string = 'registration_modal') => {
+  trackEvent('whatsapp_group_join', {
+    source,
+    group_link: 'https://chat.whatsapp.com/ByoJ9BxIbRvF7Bu5LykErV?mode=gi_t',
+  });
+};
+
