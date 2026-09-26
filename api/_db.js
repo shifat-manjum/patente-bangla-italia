@@ -40,3 +40,4 @@ export async function getCollection(name) {
   const db = await getDb();
   return db.collection(name);
 }
+

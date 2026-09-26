@@ -477,6 +477,39 @@ export function App() {
     } catch {}
   };
 
+  // Auto-detect and handle Stripe Checkout return (?payment_success=true&session_id=...)
+  useEffect(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSuccess = urlParams.get('payment_success') === 'true';
+      const sessionId = urlParams.get('session_id');
+
+      if (isSuccess && sessionId) {
+        // Clean URL query parameters smoothly
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        // Verify session status with Stripe backend
+        fetch(`/api/verify-payment?session_id=${encodeURIComponent(sessionId)}`)
+          .then((res) => {
+            const ct = res.headers.get('content-type') || '';
+            if (res.ok && ct.includes('application/json')) {
+              return res.json();
+            }
+            return null;
+          })
+          .then((data) => {
+            if (data?.success && data?.paid && data?.invoice) {
+              handlePaymentSuccess(data.invoice);
+            }
+          })
+          .catch((err) => {
+            console.warn('Stripe payment verification notice:', err);
+          });
+      }
+    } catch {}
+  }, []);
+
   const handleOpenInvoice = () => {
     let inv = activeInvoice || getLatestInvoice(currentUser?.email);
     if (!inv) {

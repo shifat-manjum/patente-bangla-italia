@@ -85,35 +85,13 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Format Card Number (XXXX XXXX XXXX XXXX)
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
-    const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
-    setFormData((prev) => ({ ...prev, cardNumber: formatted }));
-  };
-
-  // Format Expiry (MM/YY)
-  const handleCardExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let raw = e.target.value.replace(/\D/g, '').slice(0, 4);
-    if (raw.length >= 3) {
-      raw = `${raw.slice(0, 2)}/${raw.slice(2)}`;
-    }
-    setFormData((prev) => ({ ...prev, cardExpiry: raw }));
-  };
-
-  // Format CVV (3-4 digits)
-  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
-    setFormData((prev) => ({ ...prev, cardCvv: raw }));
-  };
-
   const handleCopyIban = (iban: string) => {
     navigator.clipboard.writeText(iban);
     setCopiedIban(true);
     setTimeout(() => setCopiedIban(false), 2500);
   };
 
-  const handleSubmitPayment = (e: React.FormEvent) => {
+  const handleSubmitPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -128,42 +106,52 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
       return;
     }
 
-    if (selectedMethod === 'card' || selectedMethod === 'postepay') {
-      const cleanNum = (formData.cardNumber || '').replace(/\s/g, '');
-      if (cleanNum.length < 15) {
-        setErrorMessage('দয়া করে আপনার ১৬ সংখ্যার কার্ড বা PostePay নম্বর সঠিকভাবে দিন।');
-        return;
-      }
-      if (!formData.cardExpiry || formData.cardExpiry.length < 5) {
-        setErrorMessage('কার্ডের মেয়াদ (MM/YY) সঠিকভাবে দিন।');
-        return;
-      }
-      if (!formData.cardCvv || formData.cardCvv.length < 3) {
-        setErrorMessage('কার্ডের পেছনের ৩ সংখ্যার CVV কোড দিন।');
-        return;
-      }
-    }
-
     setIsProcessing(true);
 
-    // Realistic payment processing handshake & verification (1.8 seconds)
-    setTimeout(() => {
+    // If Bonifico Bancario, complete local invoice workflow
+    if (selectedMethod === 'bonifico') {
       try {
         const payload: PaymentFormData = {
           ...formData,
           paymentMethod: selectedMethod,
         };
-
         const invoice = createInvoiceRecord(payload);
         saveInvoice(invoice);
-
         setIsProcessing(false);
         onSuccess(invoice);
       } catch (err: any) {
         setIsProcessing(false);
-        setErrorMessage(err?.message || 'পেমেন্ট প্রসেস করতে সাময়িক সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+        setErrorMessage(err?.message || 'পেমেন্ট প্রসেস করতে সাময়িক সমস্যা হয়েছে।');
       }
-    }, 1800);
+      return;
+    }
+
+    // Real Stripe Checkout for Card, PostePay, Apple Pay, Google Pay, and PayPal
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentName: formData.studentName.trim(),
+          studentEmail: formData.studentEmail.trim().toLowerCase(),
+          studentPhone: formData.studentPhone.trim(),
+          codiceFiscale: formData.codiceFiscale.trim(),
+          address: formData.address.trim(),
+          city: formData.city.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || 'Stripe পেমেন্ট গেটওয়েতে সংযোগ করতে সমস্যা হয়েছে।');
+      }
+
+      // Redirect student to Stripe's official 256-bit SSL encrypted 3D-Secure checkout
+      window.location.href = data.url;
+    } catch (err: any) {
+      setIsProcessing(false);
+      setErrorMessage(err?.message || 'পেমেন্ট গেটওয়েতে সংযোগ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+    }
   };
 
   return (
@@ -392,66 +380,37 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
             </div>
           </div>
 
-          {/* Conditional Method Form Fields */}
+          {/* Stripe Card & PostePay Gateway View */}
           {(selectedMethod === 'card' || selectedMethod === 'postepay') && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 space-y-3">
+            <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 space-y-3.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <CreditCard className="w-4 h-4 text-blue-600" />
-                  <span>Dettagli Carta / PostePay Evolution</span>
+                  <span>Stripe Official Checkout (3D-Secure 256-bit)</span>
                 </span>
-                <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-500">
-                  <span className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border">VISA</span>
-                  <span className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border">Mastercard</span>
-                  <span className="px-1.5 py-0.5 rounded bg-amber-400 text-slate-900 font-bold">PostePay</span>
+                <div className="flex items-center gap-1 text-[10px] font-black text-slate-600 dark:text-slate-300">
+                  <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border">VISA</span>
+                  <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border">Mastercard</span>
+                  <span className="px-2 py-0.5 rounded-md bg-amber-400 text-slate-900 font-bold">PostePay</span>
+                  <span className="px-2 py-0.5 rounded-md bg-black text-white font-bold"> Pay</span>
                 </div>
               </div>
 
-              <div>
-                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1">
-                  Numero Carta (১৬ সংখ্যার কার্ড নম্বর) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoComplete="cc-number"
-                  placeholder="4023 6000 0000 0000"
-                  value={formData.cardNumber}
-                  onChange={handleCardNumberChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1">
-                    Scadenza (MM/YY) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    autoComplete="cc-exp"
-                    placeholder="12/28"
-                    value={formData.cardExpiry}
-                    onChange={handleCardExpiryChange}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-mono text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1">
-                    Codice CVV (৩ সংখ্যা) *
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    autoComplete="cc-csc"
-                    placeholder="•••"
-                    value={formData.cardCvv}
-                    onChange={handleCvvChange}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+              <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/60 space-y-2 text-xs">
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  নিচের <strong>"Paga Ora €49,00 con Stripe"</strong> বাটনে ক্লিক করলে আপনাকে Stripe-এর অফিসিয়াল <strong>256-bit SSL নিরাপদ চেকআউট</strong> পেজে নিয়ে যাওয়া হবে।
+                </p>
+                <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-400">
+                  <li className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
+                    ✓ PostePay Evolution, Visa, Mastercard, Apple Pay ও Google Pay সাপোর্টেড
+                  </li>
+                  <li className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
+                    ✓ আপনার ব্যাংকের PosteID / 3D-Secure SMS ওটিপি দিয়ে সম্পূর্ণ সুরক্ষিত
+                  </li>
+                  <li className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold">
+                    ✓ পেমেন্ট সম্পন্ন হওয়ামাত্রই স্বয়ংক্রিয়ভাবে সব ২৪০টি রাউন্ড ওপেন হবে এবং অফিশিয়াল ইনভয়েস পাবেন
+                  </li>
+                </ul>
               </div>
             </div>
           )}
@@ -552,13 +511,18 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
               {isProcessing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>পেমেন্ট প্রসেসিং ও ইনভয়েস তৈরি হচ্ছে...</span>
+                  <span>Stripe সুরক্ষিত পেমেন্ট পেজে রিডাইরেক্ট হচ্ছে...</span>
+                </>
+              ) : selectedMethod === 'bonifico' ? (
+                <>
+                  <Building2 className="w-4.5 h-4.5" />
+                  <span>বোনিফিকো তথ্য নিশ্চিত করুন • Conferma Bonifico €49,00</span>
                 </>
               ) : (
                 <>
                   <Lock className="w-4.5 h-4.5" />
                   <span>
-                    নিরাপদে পেমেন্ট সম্পন্ন করুন (€৪৯) • Paga Ora €49,00
+                    নিরাপদে পেমেন্ট সম্পন্ন করুন (€৪৯) • Paga Ora €49,00 con Stripe
                   </span>
                 </>
               )}

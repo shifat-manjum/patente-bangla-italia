@@ -8,7 +8,12 @@ function apiHandlerPlugin(): Plugin {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0]
 
-        if (url === '/api/students' || url === '/api/settings') {
+        if (
+          url === '/api/students' ||
+          url === '/api/settings' ||
+          url === '/api/create-checkout-session' ||
+          url === '/api/verify-payment'
+        ) {
           const wrappedRes = res as any
           if (!wrappedRes.status) {
             wrappedRes.status = (code: number) => {
@@ -34,6 +39,18 @@ function apiHandlerPlugin(): Plugin {
               // @ts-ignore
               const { default: settingsHandler } = await import('./api/settings.js')
               await settingsHandler(req as any, wrappedRes)
+              return
+            }
+            if (url === '/api/create-checkout-session') {
+              // @ts-ignore
+              const { default: checkoutHandler } = await import('./api/create-checkout-session.js')
+              await checkoutHandler(req as any, wrappedRes)
+              return
+            }
+            if (url === '/api/verify-payment') {
+              // @ts-ignore
+              const { default: verifyHandler } = await import('./api/verify-payment.js')
+              await verifyHandler(req as any, wrappedRes)
               return
             }
           } catch (err: any) {
