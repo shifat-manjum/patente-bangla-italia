@@ -8,7 +8,8 @@ import {
   XCircle,
   ArrowRight,
   ArrowLeft,
-  LayoutGrid
+  LayoutGrid,
+  GraduationCap
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
 import { getQuestionsForRound, ALL_200_QUESTIONS, shuffleQuestions } from '../data/roundQuestions';
@@ -22,6 +23,8 @@ interface ExamSimulatorProps {
   roundId?: number | null;
   onBackToRounds?: () => void;
   onSelectRound?: (roundId: number) => void;
+  isVip?: boolean;
+  onOpenEnrollment?: () => void;
 }
 
 export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
@@ -29,7 +32,9 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   onGoToTopics,
   roundId,
   onBackToRounds,
-  onSelectRound
+  onSelectRound,
+  isVip = false,
+  onOpenEnrollment,
 }) => {
   // Select questions based on round or general mock test (randomized order on every attempt)
   const currentRoundTopic = roundId ? getRoundTopic(roundId) : null;
@@ -446,6 +451,34 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Strategic Post-Exam Pro Academy Upgrade CTA for Unpaid Students */}
+          {!isVip && onOpenEnrollment && (
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/15 via-amber-500/10 to-red-500/15 border border-orange-500/30 text-left flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm animate-fadeIn">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#E52E2D] to-[#FB6C00] flex items-center justify-center text-white shrink-0 shadow-md">
+                  <GraduationCap className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+                    সম্পূর্ণ ২৪০টি রাউন্ডের অফিশিয়াল কুইজ প্র্যাকটিস করতে চান?
+                  </h4>
+                  <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300">
+                    একাডেমি প্রো মেম্বারশিপে (€৪৯) লাইফটাইম এক্সেস ও পাস করা পর্যন্ত আনলিমিটেড মক টেস্ট পান।
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={onOpenEnrollment}
+                className="w-full sm:w-auto py-2.5 px-5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs shrink-0 shadow-md shadow-[#FB6C00]/25 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-white" />
+                <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+              </button>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">

@@ -5,6 +5,7 @@ import path from 'path'
 
 function studentDbPlugin(): Plugin {
   const dbFile = path.resolve(process.cwd(), 'students_db.json')
+  const settingsFile = path.resolve(process.cwd(), 'settings_db.json')
 
   const getStudents = () => {
     try {
@@ -25,11 +26,58 @@ function studentDbPlugin(): Plugin {
     }
   }
 
+  const getSettings = () => {
+    try {
+      if (!fs.existsSync(settingsFile)) {
+        fs.writeFileSync(settingsFile, JSON.stringify({ freeRoundsLimit: 20, academyPriceEur: 49 }, null, 2))
+      }
+      return JSON.parse(fs.readFileSync(settingsFile, 'utf-8'))
+    } catch {
+      return { freeRoundsLimit: 20, academyPriceEur: 49 }
+    }
+  }
+
+  const saveSettings = (data: any) => {
+    try {
+      fs.writeFileSync(settingsFile, JSON.stringify(data, null, 2))
+    } catch (e) {
+      console.error('Failed to save settings:', e)
+    }
+  }
+
   return {
     name: 'student-db-api',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split('?')[0]
+
+        if (url === '/api/settings' && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json')
+          res.setHeader('Access-Control-Allow-Origin', '*')
+          res.end(JSON.stringify(getSettings()))
+          return
+        }
+
+        if (url === '/api/settings' && req.method === 'POST') {
+          let body = ''
+          req.on('data', chunk => { body += chunk })
+          req.on('end', () => {
+            try {
+              const newSettings = JSON.parse(body)
+              const existing = getSettings()
+              const merged = { ...existing, ...newSettings }
+              saveSettings(merged)
+              res.setHeader('Content-Type', 'application/json')
+              res.setHeader('Access-Control-Allow-Origin', '*')
+              res.end(JSON.stringify({ success: true, settings: merged }))
+            } catch (err: any) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ error: err.message }))
+            }
+          })
+          return
+        }
+
         if (url === '/api/students' && req.method === 'GET') {
           res.setHeader('Content-Type', 'application/json')
           res.setHeader('Access-Control-Allow-Origin', '*')

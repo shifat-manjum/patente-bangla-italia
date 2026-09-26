@@ -6,7 +6,8 @@ import {
   AlertTriangle, 
   ArrowRight, 
   Volume2, 
-  CheckCircle2
+  CheckCircle2,
+  GraduationCap
 } from 'lucide-react';
 import { THEORY_CHAPTERS, type TheoryChapter } from '../data/theoryData';
 import { speakItalian as playItalianFemaleVoice, stopSpeech } from '../utils/italianSpeech';
@@ -14,10 +15,14 @@ import { speakItalian as playItalianFemaleVoice, stopSpeech } from '../utils/ita
 interface TheorySummaryViewProps {
   onStartRound: (roundId: number) => void;
   onOpenExamSim?: () => void;
+  isVip?: boolean;
+  onOpenEnrollment?: () => void;
 }
 
 export const TheorySummaryView: React.FC<TheorySummaryViewProps> = ({
   onStartRound,
+  isVip = false,
+  onOpenEnrollment,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -237,6 +242,38 @@ export const TheorySummaryView: React.FC<TheorySummaryViewProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Strategic Bottom Academy Enrollment Banner for Theory Readers */}
+      {!isVip && onOpenEnrollment && (
+        <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#1A1215] via-[#12161F] to-[#1D130E] border border-orange-500/30 text-white shadow-xl relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6 animate-fadeIn mt-6">
+          <div className="space-y-2 max-w-2xl text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-xs font-black text-orange-400">
+              <GraduationCap className="w-4 h-4 text-orange-400" />
+              <span>Patente Bangla Academy Pro Pass • এককালীন মাত্র €৪৯</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              থিওরি রিভিশন শেষ? এবার ২৪০ রাউন্ডের কুইজ দিয়ে ১০০% প্রস্তুতি নিন
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              শুধুমাত্র নিয়ম মুখস্থ নয়, ইতালির অফিসিয়াল ২০২৬ পরিবহন মন্ত্রণালয়ের সব ৭,১৬৫টি কুইজ বাংলায় বুঝে বুঝে সমাধান করতে আজই একাডেমিতে ভর্তি হন।
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={onOpenEnrollment}
+              className="w-full sm:w-auto py-3 px-8 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-sm shadow-xl shadow-[#FB6C00]/30 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2 text-center"
+            >
+              <GraduationCap className="w-4 h-4 text-white" />
+              <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+            </button>
+            <span className="text-[11px] text-slate-400 font-semibold text-center">
+              লাইফটাইম এক্সেস • একবার ফি দিয়ে পাস করা পর্যন্ত
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -12,6 +12,7 @@ interface RoundsCurriculumViewProps {
   currentRoundId: number;
   unlockedRound?: number;
   isVip?: boolean;
+  freeRoundsLimit?: number;
   onSelectRound: (roundId: number) => void;
   onTriggerEnrollment: (roundId: number) => void;
   completedRounds?: Record<number, { errors: number; passed: boolean }>;
@@ -21,12 +22,16 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
   currentRoundId: _currentRoundId,
   unlockedRound: _unlockedRound,
   isVip = false,
+  freeRoundsLimit = 20,
   onSelectRound,
   onTriggerEnrollment,
   completedRounds = {},
 }) => {
   const [filterTab, setFilterTab] = useState<'all' | 'free' | 'pro' | 'passed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Dynamic Free Rounds Limit (sanitized between 0 and 240)
+  const effectiveFreeLimit = Math.min(240, Math.max(0, freeRoundsLimit));
 
   // Total 240 rounds
   const totalRounds = 240;
@@ -40,7 +45,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
 
   const rounds = Array.from({ length: totalRounds }, (_, i) => {
     const id = i + 1;
-    const isFree = id <= 20;
+    const isFree = id <= effectiveFreeLimit;
     const result = safeCompleted[id];
     
     // Resolve unique official Italian and Bangla topic for every round 1 to 240
@@ -74,7 +79,8 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
     return true;
   });
 
-  const freeRoundsCount = 20;
+  const freeRoundsCount = effectiveFreeLimit;
+  const proRoundsCount = Math.max(0, totalRounds - effectiveFreeLimit);
   const passedCount = Object.values(safeCompleted).filter(r => r?.passed).length;
 
   return (
@@ -93,22 +99,65 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
             ২৪০ রাউন্ডের সম্পূর্ণ সিলেবাস (240 Schede Quiz)
           </h1>
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-            ধারাবাহিক অগ্রগতি: প্রতিটি রাউন্ড পাস করলে (সর্বোচ্চ ৩টি ভুল) পরবর্তী রাউন্ড স্বয়ংক্রিয়ভাবে আনলক হবে। ১ থেকে ২০ রাউন্ড সবার জন্য সম্পূর্ণ ফ্রি।
+            {effectiveFreeLimit === 0
+              ? 'ধারাবাহিক অগ্রগতি: প্রতিটি রাউন্ড পাস করলে (সর্বোচ্চ ৩টি ভুল) পরবর্তী রাউন্ড স্বয়ংক্রিয়ভাবে আনলক হবে। একাডেমি মেম্বারশিপে সম্পূর্ণ ২৪০টি রাউন্ড আনলক থাকে।'
+              : effectiveFreeLimit >= 240
+              ? 'ধারাবাহিক অগ্রগতি: প্রতিটি রাউন্ড পাস করলে (সর্বোচ্চ ৩টি ভুল) পরবর্তী রাউন্ড স্বয়ংক্রিয়ভাবে আনলক হবে। সব ২৪০ রাউন্ড সবার জন্য উন্মুক্ত।'
+              : `ধারাবাহিক অগ্রগতি: প্রতিটি রাউন্ড পাস করলে (সর্বোচ্চ ৩টি ভুল) পরবর্তী রাউন্ড স্বয়ংক্রিয়ভাবে আনলক হবে। ১ থেকে ${effectiveFreeLimit} রাউন্ড সবার জন্য সম্পূর্ণ ফ্রি।`}
           </p>
 
           <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-bold">
             <div className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-slate-200">
               🟢 বর্তমান আনলক: <span className="text-white font-black">রাউন্ড #{effectiveUnlocked}</span>
             </div>
-            <div className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-slate-200">
-              🎓 একাডেমি প্রো: <span className="text-slate-100 font-black">রাউন্ড ২১–২৪০ (€৪৯ • পাস করা পর্যন্ত এক্সেস)</span>
-            </div>
+            {effectiveFreeLimit < 240 && (
+              <div className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-slate-200">
+                🎓 একাডেমি প্রো: <span className="text-slate-100 font-black">রাউন্ড {effectiveFreeLimit + 1}–২৪০ (€৪৯ • পাস করা পর্যন্ত এক্সেস)</span>
+              </div>
+            )}
             <div className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-slate-200">
               ✅ পাস করা রাউন্ড: <span className="text-white font-black">{passedCount} / ২৪০</span>
             </div>
+            {!isVip && (
+              <button
+                type="button"
+                onClick={() => onTriggerEnrollment(Math.max(effectiveUnlocked, effectiveFreeLimit + 1))}
+                className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs shadow-md shadow-[#FB6C00]/25 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1.5"
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-white" />
+                <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Strategic Pro Academy Enrollment Banner for Non-VIP students */}
+      {!isVip && effectiveFreeLimit < 240 && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-red-500/10 border border-orange-500/30 text-slate-900 dark:text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm animate-fadeIn">
+          <div className="flex items-center gap-3.5 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#E52E2D] to-[#FB6C00] flex items-center justify-center text-white shrink-0 shadow-md">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                সম্পূর্ণ ২৪০টি রাউন্ড আনলক করতে চান?
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                অফিসিয়াল একাডেমি প্রো মেম্বারশিপে লাইফটাইম এক্সেস, ৭,১৬৫টি কুইজ, অডিও উচ্চারণ ও আনলিমিটেড মক টেস্ট সুবিধা পান।
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onTriggerEnrollment(effectiveFreeLimit + 1)}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm shadow-md shadow-[#FB6C00]/25 hover:scale-105 active:scale-95 transition shrink-0 cursor-pointer flex items-center justify-center gap-2"
+          >
+            <GraduationCap className="w-4 h-4 text-white" />
+            <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+          </button>
+        </div>
+      )}
 
       {/* Filter Tabs and Search Bar */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
@@ -129,7 +178,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
           {[
             { id: 'all', label: `সব রাউন্ড (${totalRounds})` },
             { id: 'free', label: `ফ্রি ফাউন্ডেশন (${freeRoundsCount})` },
-            { id: 'pro', label: `একাডেমি প্রো (২২০)` },
+            { id: 'pro', label: `একাডেমি প্রো (${proRoundsCount})` },
             { id: 'passed', label: `পাস হয়েছে (${passedCount})` },
           ].map((tab) => (
             <button
@@ -155,7 +204,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
           // A round is accessible only if it is at or below the student's highest reached unlocked round
           const isUnlocked = round.id <= effectiveUnlocked;
           const isCurrent = round.id === effectiveUnlocked;
-          const isPaidSyllabus = round.id > 20 && !isVip;
+          const isPaidSyllabus = round.id > effectiveFreeLimit && !isVip;
 
           return (
             <div

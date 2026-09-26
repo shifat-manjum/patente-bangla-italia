@@ -51,6 +51,7 @@ interface StudentDashboardViewProps {
   totalQuestionsSolved: number;
   errorCount: number;
   isVip?: boolean;
+  freeRoundsLimit?: number;
   onContinueRound: (roundId: number) => void;
   onGoToCurriculum: () => void;
   onGoToTheory: () => void;
@@ -66,14 +67,16 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   totalQuestionsSolved,
   errorCount,
   isVip = false,
+  freeRoundsLimit = 20,
   onContinueRound,
   onGoToCurriculum,
   onGoToTheory,
   onGoToExam,
   onGoToErrors,
+  onOpenEnrollment,
 }) => {
   const dynamicStreak = getDynamicStreak();
-  const maxRounds = isVip ? 240 : 20;
+  const maxRounds = isVip ? 240 : Math.min(240, Math.max(0, freeRoundsLimit));
   // Readiness score estimation based on actual progress
   const roundRatio = Math.min(1, completedRoundsCount / maxRounds);
   const questionsRatio = Math.min(1, totalQuestionsSolved / 150);
@@ -132,6 +135,17 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                 <Clock className="w-4 h-4 text-slate-300" />
                 <span>Start Official Exam Simulation</span>
               </button>
+
+              {!isVip && (
+                <button
+                  type="button"
+                  onClick={onOpenEnrollment}
+                  className="py-3 px-5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-[#FB6C00]/25 transition hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <GraduationCap className="w-4 h-4 text-white" />
+                  <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+                </button>
+              )}
 
               <a
                 href={WHATSAPP_GROUP_URL}
@@ -286,6 +300,56 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* High-Converting Academy Pro Pass Upgrade Card for Unpaid Students */}
+      {!isVip && (
+        <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#1A1215] via-[#12161F] to-[#1D130E] border border-orange-500/30 text-white shadow-xl relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-xs font-black text-orange-400">
+              <GraduationCap className="w-4 h-4 text-orange-400" />
+              <span>Patente Bangla Academy Pro Pass • এককালীন মাত্র €৪৯</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              ২৪০টি সম্পূর্ণ রাউন্ড ও পাস করা পর্যন্ত আনলিমিটেড প্রস্তুতি
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              ইতালির অফিশিয়াল ২০২৬ কুইজ সিলেবাসের সব ৭,১৬৫টি প্রশ্ন, নির্ভুল বাংলা অনুবাদ, অডিও উচ্চারণ এবং অফিসিয়াল মক টেস্ট আনলক করুন।
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-slate-200 pt-1">
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400">✓</span>
+                <span>২৪০টি রাউন্ডের সম্পূর্ণ আনলক</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400">✓</span>
+                <span>প্রতিটি প্রশ্নের বাংলা অর্থ ও অডিও</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400">✓</span>
+                <span>আনলিমিটেড অফিসিয়াল মক টেস্ট</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-emerald-400">✓</span>
+                <span>ইতালি ভ্যাট ইনভয়েস (Fattura Fiscale PDF)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={onOpenEnrollment}
+              className="w-full sm:w-auto lg:w-full py-3.5 px-8 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-sm shadow-xl shadow-[#FB6C00]/30 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2 text-center"
+            >
+              <GraduationCap className="w-4 h-4 text-white" />
+              <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+            </button>
+            <span className="text-[11px] text-slate-400 font-semibold text-center">
+              লাইফটাইম এক্সেস • কোনো মাসিক সাবস্ক্রিপশন নেই
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Feature Navigation Cards (App Hub in Adaptive Style) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -25,6 +25,7 @@ export type NavTab = 'rounds' | 'exam' | 'hotshot' | 'topics' | 'vocab' | 'mista
 interface HeaderProps {
   totalQuestionsAnswered: number;
   isVip: boolean;
+  freeRoundsLimit?: number;
   onOpenPaywall: () => void;
   onOpenAbout: () => void;
   currentTheme: ThemeMode;
@@ -41,6 +42,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   totalQuestionsAnswered,
   isVip,
+  freeRoundsLimit = 20,
   onOpenPaywall,
   onOpenAbout,
   currentTheme,
@@ -266,9 +268,13 @@ export const Header: React.FC<HeaderProps> = ({
             {!isVip ? (
               <div className="flex items-center gap-2 sm:gap-2.5">
                 <div className="text-right hidden sm:block">
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">Foundation Access</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">
+                    {freeRoundsLimit === 0 ? 'Academy Access' : 'Foundation Access'}
+                  </span>
                   <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-200">
-                    {Math.min(600, totalQuestionsAnswered)} / 600 Qs
+                    {freeRoundsLimit === 0
+                      ? 'একাডেমি প্রো'
+                      : `${Math.min(freeRoundsLimit * 30, totalQuestionsAnswered)} / ${freeRoundsLimit * 30} Qs`}
                   </span>
                 </div>
                 <button

@@ -11,7 +11,9 @@ import {
   Sparkles,
   Database,
   ExternalLink,
-  FileText
+  FileText,
+  Sliders,
+  Check
 } from 'lucide-react';
 import { db, isFirebaseConfigured } from '../lib/firebase';
 import { collection, getDocs, doc, updateDoc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -24,6 +26,12 @@ import {
   saveInvoice 
 } from '../services/paymentService';
 import type { InvoiceRecord } from '../services/paymentService';
+import { 
+  getAppSettings, 
+  saveAppSettings, 
+  fetchRemoteAppSettings 
+} from '../services/appSettingsService';
+import type { AppSettings } from '../services/appSettingsService';
 
 interface AdminCrmDashboardProps {
   adminEmail: string;
@@ -104,6 +112,27 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const [newStudentPhone, setNewStudentPhone] = useState('');
   const [newStudentIsVip, setNewStudentIsVip] = useState(false);
   const [viewInvoice, setViewInvoice] = useState<InvoiceRecord | null>(null);
+
+  // Marketing & Free Rounds Policy Settings
+  const [settings, setSettings] = useState<AppSettings>(() => getAppSettings());
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsSaveMsg, setSettingsSaveMsg] = useState<string | null>(null);
+
+  const handleUpdateFreeRoundsLimit = async (limit: number) => {
+    const validLimit = Math.min(240, Math.max(0, limit));
+    setIsSavingSettings(true);
+    setSettings((prev) => ({ ...prev, freeRoundsLimit: validLimit }));
+    try {
+      const updated = await saveAppSettings({ freeRoundsLimit: validLimit });
+      setSettings(updated);
+      setSettingsSaveMsg(`সফলভাবে আপডেট হয়েছে: বর্তমানে ${validLimit}টি রাউন্ড ফ্রি`);
+      setTimeout(() => setSettingsSaveMsg(null), 3500);
+    } catch (e) {
+      console.error('Settings update error:', e);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
 
   const handleOpenStudentInvoice = (student: StudentProfile) => {
     const list = getInvoices(student.email);
@@ -211,6 +240,9 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
 
   useEffect(() => {
     fetchStudents();
+    fetchRemoteAppSettings().then((s) => {
+      if (s) setSettings(s);
+    });
 
     // Listen to real-time updates if Firestore is active with error tolerance
     if (isFirebaseConfigured && db) {
@@ -274,12 +306,12 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
     return { total, phoneLeads, proPasses, totalRevenue, totalQuestions };
   }, [students]);
 
-  // Toggle Pro Student Pass for a student directly from CRM
+  // Toggle Pro Student Pass for a student directly from CRM (all 240 rounds free for closest ones)
   const handleToggleProPass = async (student: StudentProfile) => {
     const newStatus = !student.isVip;
     const confirmMsg = newStatus
-      ? `আপনি কি ${student.name}-কে একাডেমি Pro Student Pass (€49 • পাস করা পর্যন্ত এক্সেস) প্রদান করতে চান?`
-      : `আপনি কি ${student.name}-এর Pro Student Pass প্রত্যাহার করতে চান?`;
+      ? `আপনি কি ${student.name}-কে আজীবনের জন্য সব ২৪০ রাউন্ড সম্পূর্ণ ফ্রি এক্সেস (VIP Pass) দিতে চান?\n\n(আপনার ঘনিষ্ঠ বন্ধু, পরিবার বা প্রিমিয়াম শিক্ষার্থীদের জন্য এটি তাৎক্ষণিকভাবে সব ২৪০টি রাউন্ড সম্পূর্ণ ফ্রি আনলক করবে)`
+      : `আপনি কি ${student.name}-এর ২৪০ রাউন্ড ফ্রি VIP Pass প্রত্যাহার করতে চান?`;
 
     if (!window.confirm(confirmMsg)) return;
 
@@ -485,6 +517,144 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
 
       {activeTab === 'crm' ? (
         <div className="space-y-6">
+          {/* Dynamic Marketing & Free Rounds Policy Control Panel */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-slate-900 via-[#131B2E] to-slate-900 text-white border border-slate-700/80 shadow-2xl space-y-5">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#E52E2D] to-[#FB6C00] flex items-center justify-center text-white shadow-md">
+                    <Sliders className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black tracking-tight text-white">
+                    মার্কেটিং ও ফ্রি রাউন্ড পলিসি (Free Rounds Access Policy)
+                  </h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                    Live Dynamic
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                  মার্কেটিং অফার অনুযায়ী সাধারণ স্টুডেন্টদের জন্য ফ্রি রাউন্ড সংখ্যা নির্ধারণ করুন (০ থেকে ২৪০)। এখানে পরিবর্তন করলেই পুরো ওয়েবসাইটে সাথে সাথে কার্যকর হবে। এছাড়া নিচের টেবিল থেকে আপনার ঘনিষ্ঠ বা বিশেষ শিক্ষার্থীদের আলাদাভাবে <strong>"সব ২৪০ রাউন্ড ফ্রি (VIP Pass)"</strong> দিতে পারবেন।
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="px-3.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-right">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">বর্তমান সক্রিয় লিমিট</span>
+                  <span className="text-base font-black text-[#FB6C00]">
+                    {settings.freeRoundsLimit} রাউন্ড ফ্রি
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Presets Buttons */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                <span>দ্রুত নির্বাচন করুন (Quick Presets):</span>
+                {isSavingSettings && (
+                  <span className="text-xs font-bold text-[#FB6C00] animate-pulse">
+                    সংরক্ষণ ও ক্লাউড সিঙ্ক হচ্ছে...
+                  </span>
+                )}
+                {settingsSaveMsg && (
+                  <span className="text-xs font-black text-emerald-400 flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>{settingsSaveMsg}</span>
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                {[
+                  { value: 0, label: '০ ফ্রি (Full Paid)', desc: 'সম্পূর্ণ পেইড • কোনো ফ্রি নেই' },
+                  { value: 5, label: '৫ রাউন্ড ফ্রি', desc: '১৫০টি কুইজ ফ্রি' },
+                  { value: 10, label: '১০ রাউন্ড ফ্রি', desc: '৩০০টি কুইজ ফ্রি' },
+                  { value: 20, label: '২০ রাউন্ড ফ্রি (স্ট্যান্ডার্ড)', desc: '৬০০টি কুইজ ফ্রি' },
+                  { value: 240, label: '২৪০ রাউন্ড ফ্রি (সব ফ্রি)', desc: '১০০% উন্মুক্ত সিলেবাস' },
+                ].map((preset) => {
+                  const isActive = settings.freeRoundsLimit === preset.value;
+                  return (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      disabled={isSavingSettings}
+                      onClick={() => handleUpdateFreeRoundsLimit(preset.value)}
+                      className={`p-3 rounded-2xl text-left border transition-all cursor-pointer relative overflow-hidden group ${
+                        isActive
+                          ? 'bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] border-transparent text-white shadow-lg shadow-[#FB6C00]/25 ring-2 ring-white/20'
+                          : 'bg-slate-800/80 hover:bg-slate-800 border-slate-700 text-slate-300 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black">{preset.label}</span>
+                        {isActive && <Check className="w-3.5 h-3.5 text-white" />}
+                      </div>
+                      <span className={`text-[10px] block pt-1 ${isActive ? 'text-white/90' : 'text-slate-400'}`}>
+                        {preset.desc}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom Slider & Number Input */}
+            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex-1 space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                  <span>কাস্টম সংখ্যা স্লাইডার (০ থেকে ২৪০):</span>
+                  <span className="font-mono text-orange-400 font-black">{settings.freeRoundsLimit} / ২৪০ রাউন্ড</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="240"
+                  value={settings.freeRoundsLimit}
+                  onChange={(e) => handleUpdateFreeRoundsLimit(parseInt(e.target.value, 10) || 0)}
+                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#FB6C00]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-bold text-slate-400">সরাসরি ইনপুট:</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="240"
+                  value={settings.freeRoundsLimit}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (!isNaN(val)) handleUpdateFreeRoundsLimit(val);
+                  }}
+                  className="w-20 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-black text-center text-xs focus:ring-2 focus:ring-[#FB6C00] focus:outline-none"
+                />
+                <span className="text-xs text-slate-400">রাউন্ড</span>
+              </div>
+            </div>
+
+            {/* Live Explanation Callout */}
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-300 flex items-start gap-2.5">
+              <span className="text-base shrink-0 mt-0.5">
+                {settings.freeRoundsLimit === 0 ? '🚫' : settings.freeRoundsLimit === 240 ? '🎉' : '💡'}
+              </span>
+              <p className="leading-relaxed">
+                {settings.freeRoundsLimit === 0 ? (
+                  <>
+                    <strong className="text-white">সম্পূর্ণ পেইড পলিসি সক্রিয়:</strong> ওয়েবসাইটে কোনো ফ্রি রাউন্ড নেই। সাধারণ শিক্ষার্থীদের ১ম রাউন্ড থেকেই একাডেমি মেম্বারশিপ (€৪৯) নিতে হবে। তবে আপনার বিশেষ বা ঘনিষ্ঠ শিক্ষার্থীদের নিচের তালিকা থেকে <strong className="text-emerald-400">"🎁 সব ২৪০ রাউন্ড ফ্রি (VIP Pass)"</strong> বাটনে ক্লিক করে সব রাউন্ড ফ্রি করে দিতে পারবেন।
+                  </>
+                ) : settings.freeRoundsLimit === 240 ? (
+                  <>
+                    <strong className="text-white">সম্পূর্ণ উন্মুক্ত পলিসি সক্রিয়:</strong> ওয়েবসাইটের সকল ২৪০টি রাউন্ড ও ৭,১৬৫টি কুইজ প্রতিটি সাধারণ শিক্ষার্থীর জন্য সম্পূর্ণ ফ্রি ও উন্মুক্ত।
+                  </>
+                ) : (
+                  <>
+                    <strong className="text-white">বর্তমান পলিসি অনুযায়ী:</strong> সাধারণ শিক্ষার্থীরা প্রথম <strong className="text-emerald-400">{settings.freeRoundsLimit}টি রাউন্ড ({settings.freeRoundsLimit * 30}টি প্রশ্ন)</strong> ফ্রিতে অনুশীলন করতে পারবে। রাউন্ড <strong className="text-orange-400">{settings.freeRoundsLimit + 1} থেকে ২৪০</strong> একাডেমি প্রো মেম্বারশিপে লক থাকবে (যদি না আপনি কোনো শিক্ষার্থীকে আলাদাভাবে VIP Pass প্রদান করেন)।
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+
           {/* Executive CRM Metrics Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
             {/* Total Students */}
@@ -712,13 +882,17 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                           {/* Membership Status */}
                           <td className="py-3.5 px-4">
                             {student.isVip ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-950/50 text-[#FB6C00] font-black text-[10px] border border-orange-200 dark:border-orange-800">
-                                <Sparkles className="w-3 h-3 fill-current" />
-                                <span>PRO PASS (€49)</span>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-orange-500/15 to-amber-500/15 text-[#FB6C00] font-black text-[10px] border border-orange-300 dark:border-orange-700/60 shadow-xs">
+                                <Sparkles className="w-3 h-3 fill-current text-[#FB6C00]" />
+                                <span>PRO VIP (২৪০ রাউন্ড ফ্রি)</span>
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold text-[10px] border border-slate-200 dark:border-slate-700">
-                                <span>Free Trial (20 Rnds)</span>
+                                <span>
+                                  {settings.freeRoundsLimit === 0
+                                    ? 'পেইড স্টুডেন্ট (০ ফ্রি)'
+                                    : `ফ্রি ট্রায়াল (${settings.freeRoundsLimit} রাউন্ড)`}
+                                </span>
                               </span>
                             )}
                           </td>
@@ -741,13 +915,24 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleToggleProPass(student)}
-                                className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition cursor-pointer border ${
+                                className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition cursor-pointer border flex items-center gap-1 ${
                                   student.isVip
                                     ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                                    : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                                    : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 shadow-sm'
                                 }`}
+                                title={
+                                  student.isVip
+                                    ? 'VIP এক্সেস প্রত্যাহার করুন'
+                                    : 'ঘনিষ্ঠদের জন্য সব ২৪০ রাউন্ড সম্পূর্ণ ফ্রি করে দিন'
+                                }
                               >
-                                {student.isVip ? 'Revoke Pro' : 'Grant Pro Pass'}
+                                {student.isVip ? (
+                                  <span>Revoke VIP</span>
+                                ) : (
+                                  <>
+                                    <span>🎁 সব ২৪০ রাউন্ড ফ্রি (VIP Pass)</span>
+                                  </>
+                                )}
                               </button>
                             </div>
                           </td>

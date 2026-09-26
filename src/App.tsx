@@ -35,6 +35,12 @@ import {
 } from './services/paymentService';
 import type { InvoiceRecord } from './services/paymentService';
 import { trackPageView, trackThemeChange } from './services/analytics';
+import { 
+  getAppSettings, 
+  fetchRemoteAppSettings, 
+  SETTINGS_CHANGE_EVENT 
+} from './services/appSettingsService';
+import type { AppSettings } from './services/appSettingsService';
 
 // Calculate true sequential progress: a student can only reach Round N if rounds 1..N-1 are passed
 export const getSequentialUnlockedRound = (completed?: Record<number, { passed: boolean }> | null): number => {
@@ -123,6 +129,24 @@ export function App() {
       root.classList.add('theme-light');
     }
   }, [currentTheme]);
+
+  // Dynamic App Policy & Marketing Settings (free rounds limit, promo banners, etc.)
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => getAppSettings());
+
+  useEffect(() => {
+    fetchRemoteAppSettings().then((s) => {
+      if (s) setAppSettings(s);
+    });
+
+    const handleSettingsChanged = (e: any) => {
+      if (e?.detail) {
+        setAppSettings(e.detail);
+      }
+    };
+
+    window.addEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+    return () => window.removeEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+  }, []);
 
   // Current Student User State (Mandatory login system + Firebase Backend)
   const [currentUser, setCurrentUser] = useState<StudentUser | null>(() => {
@@ -332,8 +356,9 @@ export function App() {
 
     setTotalQuestionsAnswered((prev) => {
       const updated = prev + amount;
-      // If student hits 600 questions and is not VIP, trigger paywall!
-      if (!isVip && prev < 600 && updated >= 600) {
+      // If student hits dynamic free questions limit and is not VIP, trigger paywall!
+      const freeQuestionsLimit = appSettings.freeRoundsLimit * 30;
+      if (!isVip && freeQuestionsLimit > 0 && prev < freeQuestionsLimit && updated >= freeQuestionsLimit) {
         setIsPaywallOpen(true);
       }
       // Prompt registration after first 60 questions (round 2) if not registered yet
@@ -368,8 +393,8 @@ export function App() {
         setUnlockedRound((prev) => {
           const nextRound = activeRoundNum + 1;
           const newHighest = Math.max(prev, nextRound);
-          // If student passed round 20, prompt the €49 lifetime paywall for round 21!
-          if (activeRoundNum === 20 && !isVip) {
+          // If student passed the dynamic free round limit, prompt the €49 lifetime paywall for next round!
+          if (activeRoundNum === appSettings.freeRoundsLimit && !isVip && appSettings.freeRoundsLimit < 240) {
             setTimeout(() => {
               setIsPaywallOpen(true);
             }, 1800);
@@ -387,8 +412,8 @@ export function App() {
     if (!requireLogin('রাউন্ড শুরু করতে')) {
       return;
     }
-    // If round is not free (round > 20) and user is not VIP, show paywall!
-    if (roundId > 20 && !isVip) {
+    // If round is not free (round > dynamic freeRoundsLimit) and user is not VIP, show paywall!
+    if (roundId > appSettings.freeRoundsLimit && !isVip) {
       setIsPaywallOpen(true);
       return;
     }
@@ -503,6 +528,7 @@ export function App() {
       <Header
         totalQuestionsAnswered={totalQuestionsAnswered}
         isVip={isVip}
+        freeRoundsLimit={appSettings.freeRoundsLimit}
         onOpenPaywall={() => setAppTab('enrollment')}
         onOpenAbout={() => setIsAboutOpen(true)}
         currentTheme={currentTheme}
@@ -564,7 +590,11 @@ export function App() {
                 🔒 Free Student Sign-In
               </span>
               <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                Foundation Assessment (Rounds 1–20) • 600 Questions Free
+                {appSettings.freeRoundsLimit === 0
+                  ? 'Official Academy Curriculum • 240 Rounds'
+                  : appSettings.freeRoundsLimit >= 240
+                  ? 'Open Curriculum (Rounds 1–240) • 7,165 Questions Free'
+                  : `Foundation Assessment (Rounds 1–${appSettings.freeRoundsLimit}) • ${appSettings.freeRoundsLimit * 30} Questions Free`}
               </h4>
               <p className="text-xs text-slate-600 dark:text-slate-400">
                 Sign in to track your progress, practice with oral exam audio, and unlock your free rounds.
@@ -573,7 +603,11 @@ export function App() {
             <button
               type="button"
               onClick={() => {
-                setAuthForcedMessage('২০টি ফ্রি রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।');
+                setAuthForcedMessage(
+                  appSettings.freeRoundsLimit === 0
+                    ? 'কুইজ ও রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।'
+                    : `${appSettings.freeRoundsLimit}টি ফ্রি রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।`
+                );
                 setIsAuthModalOpen(true);
               }}
               className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs shrink-0 cursor-pointer shadow-md shadow-[#FB6C00]/25 transition active:scale-95"
@@ -591,6 +625,7 @@ export function App() {
             totalQuestionsSolved={totalQuestionsAnswered}
             errorCount={mistakeIds.length}
             isVip={isVip}
+            freeRoundsLimit={appSettings.freeRoundsLimit}
             onContinueRound={(r) => handleStartRound(r)}
             onGoToCurriculum={() => setAppTab('curriculum')}
             onGoToTheory={() => setAppTab('theory')}
@@ -612,6 +647,7 @@ export function App() {
             currentRoundId={effectiveUnlockedRound}
             unlockedRound={effectiveUnlockedRound}
             isVip={isVip}
+            freeRoundsLimit={appSettings.freeRoundsLimit}
             onSelectRound={handleStartRound}
             onTriggerEnrollment={(_r) => setAppTab('enrollment')}
             completedRounds={completedRounds}
@@ -621,6 +657,8 @@ export function App() {
         {appTab === 'theory' && (
           <TheorySummaryView
             onStartRound={handleStartRound}
+            isVip={isVip}
+            onOpenEnrollment={() => setAppTab('enrollment')}
             onOpenExamSim={() => {
               if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
               setCurrentRoundId(null);
@@ -632,6 +670,8 @@ export function App() {
         {appTab === 'exam' && (
           <ExamSimulator
             roundId={currentRoundId}
+            isVip={isVip}
+            onOpenEnrollment={() => setAppTab('enrollment')}
             onBackToRounds={() => {
               setCurrentRoundId(null);
               setAppTab('curriculum');
