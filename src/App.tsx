@@ -37,7 +37,8 @@ import type { InvoiceRecord } from './services/paymentService';
 import { trackPageView, trackThemeChange } from './services/analytics';
 
 // Calculate true sequential progress: a student can only reach Round N if rounds 1..N-1 are passed
-export const getSequentialUnlockedRound = (completed: Record<number, { passed: boolean }>): number => {
+export const getSequentialUnlockedRound = (completed?: Record<number, { passed: boolean }> | null): number => {
+  if (!completed || typeof completed !== 'object') return 1;
   let r = 1;
   while (completed[r]?.passed === true && r < 240) {
     r++;
@@ -138,23 +139,27 @@ export function App() {
   // Subscribe to real-time Firebase Authentication & Firestore Profile
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges((profile) => {
-      if (profile) {
-        setCurrentUser(profile);
-        if (profile.unlockedRound) {
-          setUnlockedRound((prev) => Math.max(prev, profile.unlockedRound));
+      try {
+        if (profile) {
+          setCurrentUser(profile);
+          if (profile.unlockedRound && Number.isFinite(profile.unlockedRound)) {
+            setUnlockedRound((prev) => Math.max(prev || 1, profile.unlockedRound));
+          }
+          if (profile.totalQuestionsAnswered && Number.isFinite(profile.totalQuestionsAnswered)) {
+            setTotalQuestionsAnswered((prev) => Math.max(prev || 0, profile.totalQuestionsAnswered));
+          }
+          if (profile.completedRounds && typeof profile.completedRounds === 'object' && !Array.isArray(profile.completedRounds)) {
+            setCompletedRounds((prev) => ({ ...(prev || {}), ...profile.completedRounds }));
+          }
+          if (Array.isArray(profile.mistakeIds)) {
+            setMistakeIds((prev) => Array.from(new Set([...(prev || []), ...profile.mistakeIds])));
+          }
+          if (profile.isVip) {
+            setIsVip(true);
+          }
         }
-        if (profile.totalQuestionsAnswered) {
-          setTotalQuestionsAnswered((prev) => Math.max(prev, profile.totalQuestionsAnswered));
-        }
-        if (profile.completedRounds && Object.keys(profile.completedRounds).length > 0) {
-          setCompletedRounds((prev) => ({ ...prev, ...profile.completedRounds }));
-        }
-        if (profile.mistakeIds && profile.mistakeIds.length > 0) {
-          setMistakeIds((prev) => Array.from(new Set([...prev, ...profile.mistakeIds])));
-        }
-        if (profile.isVip) {
-          setIsVip(true);
-        }
+      } catch (err) {
+        console.warn('Error in auth change handler:', err);
       }
     });
 
@@ -225,7 +230,8 @@ export function App() {
   const [totalQuestionsAnswered, setTotalQuestionsAnswered] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('patente_bangla_answered_count');
-      return saved ? parseInt(saved, 10) : 0;
+      const val = saved ? parseInt(saved, 10) : 0;
+      return Number.isFinite(val) && val >= 0 ? val : 0;
     } catch {
       return 0;
     }
@@ -235,7 +241,8 @@ export function App() {
   const [unlockedRound, setUnlockedRound] = useState<number>(() => {
     try {
       const saved = localStorage.getItem('patente_bangla_unlocked_round');
-      return saved ? parseInt(saved, 10) : 1;
+      const val = saved ? parseInt(saved, 10) : 1;
+      return Number.isFinite(val) && val >= 1 ? val : 1;
     } catch {
       return 1;
     }
@@ -245,7 +252,8 @@ export function App() {
   const [completedRounds, setCompletedRounds] = useState<Record<number, { errors: number; passed: boolean }>>(() => {
     try {
       const saved = localStorage.getItem('patente_bangla_completed_rounds');
-      return saved ? JSON.parse(saved) : {};
+      const val = saved ? JSON.parse(saved) : {};
+      return val && typeof val === 'object' && !Array.isArray(val) ? val : {};
     } catch {
       return {};
     }
@@ -255,7 +263,8 @@ export function App() {
   const [mistakeIds, setMistakeIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('patente_bangla_mistakes');
-      return saved ? JSON.parse(saved) : [];
+      const val = saved ? JSON.parse(saved) : [];
+      return Array.isArray(val) ? val : [];
     } catch {
       return [];
     }
@@ -567,7 +576,7 @@ export function App() {
                 setAuthForcedMessage('২০টি ফ্রি রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।');
                 setIsAuthModalOpen(true);
               }}
-              className="px-5 py-2.5 rounded-full bg-slate-900 hover:bg-black text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 font-black text-xs shrink-0 cursor-pointer shadow-md transition active:scale-95"
+              className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs shrink-0 cursor-pointer shadow-md shadow-[#FB6C00]/25 transition active:scale-95"
             >
               Sign In / Register Free
             </button>
@@ -578,7 +587,7 @@ export function App() {
           <StudentDashboardView
             student={currentUser}
             activeRound={effectiveUnlockedRound}
-            completedRoundsCount={Object.values(completedRounds).filter(r => r.passed).length}
+            completedRoundsCount={Object.values(completedRounds || {}).filter(r => r?.passed).length}
             totalQuestionsSolved={totalQuestionsAnswered}
             errorCount={mistakeIds.length}
             isVip={isVip}

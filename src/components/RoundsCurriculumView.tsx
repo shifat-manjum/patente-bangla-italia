@@ -31,8 +31,9 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
   // Total 240 rounds
   const totalRounds = 240;
   // Strict sequential unlock: round N+1 is unlocked only if rounds 1..N have been completed and passed.
+  const safeCompleted = completedRounds || {};
   let sequentialUnlocked = 1;
-  while (completedRounds[sequentialUnlocked]?.passed === true && sequentialUnlocked < totalRounds) {
+  while (safeCompleted[sequentialUnlocked]?.passed === true && sequentialUnlocked < totalRounds) {
     sequentialUnlocked++;
   }
   const effectiveUnlocked = sequentialUnlocked;
@@ -40,7 +41,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
   const rounds = Array.from({ length: totalRounds }, (_, i) => {
     const id = i + 1;
     const isFree = id <= 20;
-    const result = completedRounds[id];
+    const result = safeCompleted[id];
     
     // Resolve unique official Italian and Bangla topic for every round 1 to 240
     const topic = getRoundTopic(id);
@@ -74,7 +75,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
   });
 
   const freeRoundsCount = 20;
-  const passedCount = Object.values(completedRounds).filter(r => r.passed).length;
+  const passedCount = Object.values(safeCompleted).filter(r => r?.passed).length;
 
   return (
     <div className="space-y-6 pb-24 md:pb-12">
