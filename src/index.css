@@ -186,27 +186,45 @@ body.dark,
 
 /* Print Optimization for Official Course Invoices and Receipts */
 @media print {
-  body {
+  html, body {
     background: #ffffff !important;
     color: #0f172a !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
-  .no-print, header, nav, footer, aside, button, .custom-chatbot {
+  .no-print, header, nav, footer, aside, button, .custom-chatbot, #root > div > *:not([role="dialog"]) {
     display: none !important;
   }
+  [role="dialog"] {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+    box-shadow: none !important;
+  }
+  [role="dialog"] > div {
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+  }
   #printable-invoice {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: auto;
-    margin: 0;
-    padding: 24px;
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: #ffffff !important;
     color: #0f172a !important;
     box-shadow: none !important;
     border: none !important;
     overflow: visible !important;
-    z-index: 999999;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }

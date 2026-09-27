@@ -11,6 +11,7 @@ import {
   Globe
 } from 'lucide-react';
 import type { InvoiceRecord } from '../services/paymentService';
+import { printInvoiceDocument } from '../utils/invoicePrinter';
 
 interface CourseInvoiceModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export const CourseInvoiceModal: React.FC<CourseInvoiceModalProps> = ({
   if (!isOpen || !invoice) return null;
 
   const handlePrint = () => {
-    window.print();
+    printInvoiceDocument(invoice);
   };
 
   return (
