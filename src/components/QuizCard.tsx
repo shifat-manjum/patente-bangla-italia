@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Volume2,
   CheckCircle2,
@@ -61,6 +61,14 @@ export const QuizCard: React.FC<QuizCardProps> = ({
       setIsCopied(false);
     }
   };
+
+  // Stop any playing speech whenever the active question changes or card unmounts
+  useEffect(() => {
+    setIsSpeaking(false);
+    return () => {
+      stopSpeech();
+    };
+  }, [question.id, question.questionIt]);
 
   // Audio pronunciation using natural Italian female voice at regular speed
   const speakItalian = (text: string) => {
