@@ -129,7 +129,7 @@ export const getInvoices = (studentEmail?: string): InvoiceRecord[] => {
     const list: InvoiceRecord[] = JSON.parse(raw);
     if (studentEmail) {
       const clean = studentEmail.trim().toLowerCase();
-      return list.filter((inv) => inv.studentEmail.toLowerCase() === clean);
+      return list.filter((inv) => (inv?.studentEmail || '').toLowerCase() === clean);
     }
     return list;
   } catch {

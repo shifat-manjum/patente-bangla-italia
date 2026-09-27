@@ -55,7 +55,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     {
       id: 'welcome',
       sender: 'ai',
-      text: `Ciao ${currentUser ? currentUser.name.split(' ')[0] : 'Student'}! Sono Marco e il team di Patente Bangla. 👋\n\nআমরা সার্বক্ষণিক WhatsApp টিউটর সাপোর্টে লাইভ আছি। কুইজ অনুশীলনের সময় যে কোনো ইতালিয়ান প্রশ্ন না বুঝলে এখানে কপি করে পেস্ট করুন।\n\n১ মিনিটের মধ্যে আমি বলে দেব এটি **VERO (সত্য)** নাকি **FALSO (মিথ্যা)** এবং এর পেছনের ট্রাফিক আইন ও কঠিন শব্দের অর্থ সহজ বাংলায় বুঝিয়ে দেব! 🚗🇮🇹`,
+      text: `Ciao ${currentUser ? (currentUser.name || currentUser.email || 'Student').split(' ')[0] : 'Student'}! Sono Marco e il team di Patente Bangla. 👋\n\nআমরা সার্বক্ষণিক WhatsApp টিউটর সাপোর্টে লাইভ আছি। কুইজ অনুশীলনের সময় যে কোনো ইতালিয়ান প্রশ্ন না বুঝলে এখানে কপি করে পেস্ট করুন।\n\n১ মিনিটের মধ্যে আমি বলে দেব এটি **VERO (সত্য)** নাকি **FALSO (মিথ্যা)** এবং এর পেছনের ট্রাফিক আইন ও কঠিন শব্দের অর্থ সহজ বাংলায় বুঝিয়ে দেব! 🚗🇮🇹`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);

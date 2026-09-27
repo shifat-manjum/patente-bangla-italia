@@ -31,6 +31,54 @@ export interface StudentProfile {
   lastLoginAt?: any;
 }
 
+export const sanitizeStudentProfile = (raw: any): StudentProfile => {
+  if (!raw || typeof raw !== 'object') {
+    return {
+      uid: 'std_' + Date.now(),
+      name: 'Student',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      unlockedRound: 1,
+      totalQuestionsAnswered: 0,
+      completedRounds: {},
+      mistakeIds: [],
+      isVip: false,
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    };
+  }
+
+  const email = (typeof raw.email === 'string' ? raw.email : '').trim().toLowerCase();
+  let name = (typeof raw.name === 'string' ? raw.name : '').trim();
+  if (!name && typeof raw.displayName === 'string' && raw.displayName.trim()) {
+    name = raw.displayName.trim();
+  }
+  if (!name && email) {
+    name = email.split('@')[0];
+  }
+  if (!name) {
+    name = 'Student';
+  }
+
+  return {
+    uid: String(raw.uid || raw.id || 'std_' + Date.now()),
+    name,
+    email,
+    phone: typeof raw.phone === 'string' ? raw.phone : '',
+    address: typeof raw.address === 'string' ? raw.address : '',
+    city: typeof raw.city === 'string' ? raw.city : '',
+    unlockedRound: Number.isFinite(raw.unlockedRound) ? Math.max(1, raw.unlockedRound) : 1,
+    totalQuestionsAnswered: Number.isFinite(raw.totalQuestionsAnswered) ? Math.max(0, raw.totalQuestionsAnswered) : 0,
+    completedRounds: (raw.completedRounds && typeof raw.completedRounds === 'object' && !Array.isArray(raw.completedRounds)) ? raw.completedRounds : {},
+    mistakeIds: Array.isArray(raw.mistakeIds) ? raw.mistakeIds : [],
+    isVip: Boolean(raw.isVip),
+    createdAt: raw.createdAt || new Date().toISOString(),
+    lastLoginAt: raw.lastLoginAt || new Date().toISOString(),
+  };
+};
+
 const LOCAL_STORAGE_KEY = 'patente_student_user';
 const LOCAL_STUDENTS_LIST_KEY = 'patente_registered_students';
 
@@ -55,7 +103,8 @@ export const syncStudentToServerDb = async (student: StudentProfile): Promise<bo
 export const getCachedStudent = (): StudentProfile | null => {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    return sanitizeStudentProfile(JSON.parse(raw));
   } catch {
     return null;
   }
@@ -114,12 +163,14 @@ export const registerStudent = async (
         console.warn('Firestore setDoc notice:', dbErr);
       }
 
+      const safeProfile = sanitizeStudentProfile(clientProfile);
+
       // Cache locally and permanently log to registered students directory
       try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clientProfile));
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeProfile));
         const all = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
         const filtered = all.filter((s: any) => s.email?.toLowerCase() !== cleanEmail);
-        filtered.unshift(clientProfile);
+        filtered.unshift(safeProfile);
         localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(filtered));
       } catch (storageErr) {
         console.warn('Local student list update error:', storageErr);
@@ -127,12 +178,12 @@ export const registerStudent = async (
 
       // Immediately persist to MongoDB Atlas pipeline
       try {
-        await syncStudentToServerDb(clientProfile);
+        await syncStudentToServerDb(safeProfile);
       } catch (syncErr) {
         console.warn('MongoDB Atlas registration sync error:', syncErr);
       }
 
-      return clientProfile;
+      return safeProfile;
     } catch (err: any) {
       console.error('Firebase registration error:', err);
       throw err;
@@ -140,7 +191,7 @@ export const registerStudent = async (
   }
 
   // Graceful local-first fallback if Firebase credentials are not yet entered
-  const fallbackProfile: StudentProfile = {
+  const fallbackProfile: StudentProfile = sanitizeStudentProfile({
     uid: 'std_' + Date.now(),
     name: cleanName,
     email: cleanEmail,
@@ -152,7 +203,7 @@ export const registerStudent = async (
     isVip: false,
     createdAt: new Date().toISOString(),
     lastLoginAt: new Date().toISOString(),
-  };
+  });
 
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fallbackProfile));
@@ -224,8 +275,15 @@ export const loginStudent = async (
         };
       }
 
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(profile));
-      return profile;
+      const safeProfile = sanitizeStudentProfile({
+        ...profile,
+        uid: firebaseUser.uid,
+        email: cleanEmail,
+        displayName: firebaseUser.displayName,
+      });
+
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeProfile));
+      return safeProfile;
     } catch (err: any) {
       console.warn('Firebase login attempt notice:', err);
 
@@ -234,8 +292,9 @@ export const loginStudent = async (
         const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
         const localFound = all.find((s) => s.email?.toLowerCase() === cleanEmail);
         if (localFound) {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localFound));
-          return localFound;
+          const safeFound = sanitizeStudentProfile(localFound);
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeFound));
+          return safeFound;
         }
       } catch {}
 
@@ -250,7 +309,7 @@ export const loginStudent = async (
     existingProfile = all.find((s) => s.email === cleanEmail) || null;
   } catch {}
 
-  const localProfile: StudentProfile = existingProfile || {
+  const localProfile: StudentProfile = sanitizeStudentProfile(existingProfile || {
     uid: 'std_' + Date.now(),
     name: cleanEmail.split('@')[0],
     email: cleanEmail,
@@ -260,7 +319,7 @@ export const loginStudent = async (
     mistakeIds: [],
     isVip: false,
     lastLoginAt: new Date().toISOString(),
-  };
+  });
 
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localProfile));
   return localProfile;
@@ -325,7 +384,13 @@ export const subscribeToAuthChanges = (
         try {
           const studentDocSnap = await getDoc(doc(currentDb, 'students', firebaseUser.uid));
           if (studentDocSnap.exists()) {
-            const data = studentDocSnap.data() as StudentProfile;
+            const rawData = studentDocSnap.data() || {};
+            const data = sanitizeStudentProfile({
+              ...rawData,
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || rawData.email,
+              displayName: firebaseUser.displayName,
+            });
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
             callback(data);
             return;
@@ -335,7 +400,7 @@ export const subscribeToAuthChanges = (
         }
 
         // Default user if no doc yet
-        const defaultProfile: StudentProfile = {
+        const defaultProfile: StudentProfile = sanitizeStudentProfile({
           uid: firebaseUser.uid,
           name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Student',
           email: firebaseUser.email || '',
@@ -344,7 +409,8 @@ export const subscribeToAuthChanges = (
           completedRounds: {},
           mistakeIds: [],
           isVip: false,
-        };
+        });
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultProfile));
         callback(defaultProfile);
       } else {
         callback(null);

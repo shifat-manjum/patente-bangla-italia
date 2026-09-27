@@ -19,6 +19,7 @@ import {
   subscribeToAuthChanges,
   logoutStudent,
   syncStudentProgressToCloud,
+  sanitizeStudentProfile,
 } from './services/studentService';
 import { PatenteChatbot } from './components/PatenteChatbot';
 import { StudentProfileModal } from './components/StudentProfileModal';
@@ -152,7 +153,7 @@ export function App() {
   const [currentUser, setCurrentUser] = useState<StudentUser | null>(() => {
     try {
       const saved = localStorage.getItem('patente_student_user');
-      return saved ? JSON.parse(saved) : null;
+      return saved ? sanitizeStudentProfile(JSON.parse(saved)) : null;
     } catch {
       return null;
     }
@@ -165,7 +166,8 @@ export function App() {
     const unsubscribe = subscribeToAuthChanges((profile) => {
       try {
         if (profile) {
-          setCurrentUser(profile);
+          const safe = sanitizeStudentProfile(profile);
+          setCurrentUser(safe);
           if (profile.unlockedRound && Number.isFinite(profile.unlockedRound)) {
             setUnlockedRound((prev) => Math.max(prev || 1, profile.unlockedRound));
           }
@@ -772,7 +774,8 @@ export function App() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onLoginSuccess={(user) => {
-          setCurrentUser(user);
+          const safe = sanitizeStudentProfile(user);
+          setCurrentUser(safe);
         }}
         forcedMessage={authForcedMessage}
       />
@@ -786,9 +789,10 @@ export function App() {
         onLogout={handleLogout}
         onOpenInvoice={handleOpenInvoice}
         onUpdateProfile={(updated) => {
-          setCurrentUser(updated);
+          const safe = sanitizeStudentProfile(updated);
+          setCurrentUser(safe);
           try {
-            localStorage.setItem('patente_student_user', JSON.stringify(updated));
+            localStorage.setItem('patente_student_user', JSON.stringify(safe));
           } catch {}
         }}
       />

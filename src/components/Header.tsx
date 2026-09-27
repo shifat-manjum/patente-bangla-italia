@@ -117,9 +117,9 @@ export const Header: React.FC<HeaderProps> = ({
                   title="Your Student Profile"
                 >
                   <div className="w-6 h-6 rounded-full bg-[#FB6C00] text-white flex items-center justify-center text-xs font-black uppercase shadow-xs">
-                    {currentUser.name.charAt(0)}
+                    {(currentUser.name || currentUser.email || 'S').charAt(0).toUpperCase()}
                   </div>
-                  <span className="max-w-[90px] sm:max-w-[130px] truncate">{currentUser.name}</span>
+                  <span className="max-w-[90px] sm:max-w-[130px] truncate">{currentUser.name || currentUser.email?.split('@')[0] || 'Student'}</span>
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -128,14 +128,14 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#12161F] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-4 space-y-3 z-50 animate-fadeIn text-left">
                     <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E52E2D] to-[#FB6C00] text-white flex items-center justify-center text-sm font-black uppercase shadow-md shrink-0">
-                        {currentUser.name.charAt(0)}
+                        {(currentUser.name || currentUser.email || 'S').charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                          {currentUser.name}
+                          {currentUser.name || currentUser.email?.split('@')[0] || 'Student'}
                         </h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                          {currentUser.email}
+                          {currentUser.email || ''}
                         </p>
                       </div>
                     </div>

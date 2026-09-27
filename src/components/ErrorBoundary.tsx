@@ -28,6 +28,24 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReload = () => {
+    try {
+      const user = localStorage.getItem('patente_student_user');
+      if (user) {
+        const parsed = JSON.parse(user);
+        if (!parsed || !parsed.name || typeof parsed.name !== 'string' || !parsed.name.trim()) {
+          if (parsed?.email && typeof parsed.email === 'string') {
+            parsed.name = parsed.email.split('@')[0] || 'Student';
+            localStorage.setItem('patente_student_user', JSON.stringify(parsed));
+          } else {
+            localStorage.removeItem('patente_student_user');
+          }
+        }
+      }
+    } catch {
+      try {
+        localStorage.removeItem('patente_student_user');
+      } catch {}
+    }
     window.location.reload();
   };
 

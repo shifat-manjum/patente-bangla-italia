@@ -831,7 +831,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-2.5">
                               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FB6C00] to-amber-400 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                                {(student.name || student.email)[0].toUpperCase()}
+                                {(student.name || student.email || 'S')[0]?.toUpperCase() || 'S'}
                               </div>
                               <div>
                                 <div className="font-bold text-slate-900 dark:text-white">

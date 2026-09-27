@@ -103,11 +103,11 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#E52E2D] to-[#FB6C00] text-white flex items-center justify-center text-sm font-black uppercase shadow-md shadow-[#FB6C00]/20">
-              {student.name.charAt(0)}
+              {(student.name || student.email || 'S').charAt(0).toUpperCase()}
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-tight">
-                শিক্ষার্থী প্রোফাইল ও তথ্য
+                {student.name || student.email || 'শিক্ষার্থী প্রোফাইল'}
               </h2>
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 Student Profile &amp; Data
