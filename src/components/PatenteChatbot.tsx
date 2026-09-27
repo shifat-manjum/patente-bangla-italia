@@ -275,7 +275,39 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     };
   };
 
-  const handleSendMessage = (textToSend?: string) => {
+  // Clean text/markdown renderer for WhatsApp-style chat bubbles
+  const renderFormattedText = (text: string) => {
+    const lines = text.split('\n');
+    return lines.map((line, lIdx) => {
+      if (line.startsWith('### ')) {
+        return (
+          <h4 key={lIdx} className="font-black text-xs sm:text-sm text-[#075E54] dark:text-emerald-400 mt-2 mb-0.5">
+            {line.replace('### ', '')}
+          </h4>
+        );
+      }
+      if (line.trim() === '---') {
+        return <hr key={lIdx} className="my-1.5 border-slate-200 dark:border-slate-700" />;
+      }
+      const boldParts = line.split(/(\*\*[^*]+\*\*)/g);
+      return (
+        <p key={lIdx} className={`min-h-[1.1rem] leading-relaxed ${line.startsWith('* ') || line.startsWith('• ') ? 'pl-2' : ''}`}>
+          {boldParts.map((part, pIdx) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return (
+                <strong key={pIdx} className="font-black text-slate-900 dark:text-white">
+                  {part.slice(2, -2)}
+                </strong>
+              );
+            }
+            return part;
+          })}
+        </p>
+      );
+    });
+  };
+
+  const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
     if (!text) return;
 
@@ -286,24 +318,70 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
+    const currentHistory = messages.map((m) => ({
+      role: m.sender,
+      text: m.text,
+    }));
+
     setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) setInputText('');
     setIsTyping(true);
 
-    // Guaranteed fast human-like response under 600ms
-    setTimeout(() => {
-      const analysis = analyzeQuery(text);
+    try {
+      // 1. Check local knowledge for immediate question card
+      const localMatch = analyzeQuery(text);
+
+      // 2. Call live AI Tutor endpoint powered by Google Gemini
+      const res = await fetch('/api/ai-tutor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: text,
+          history: currentHistory.slice(-4),
+          studentName: currentUser?.name || 'Student',
+        }),
+      });
+
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.success && data.reply) {
+          const aiMsg: Message = {
+            id: 'ai_' + Date.now(),
+            sender: 'ai',
+            text: data.reply,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            quizResult: localMatch.quiz,
+          };
+          setMessages((prev) => [...prev, aiMsg]);
+          setIsTyping(false);
+          return;
+        }
+      }
+
+      // 3. Fallback to local intelligence if API is slow or offline
       const aiMsg: Message = {
         id: 'ai_' + Date.now(),
         sender: 'ai',
-        text: analysis.reply,
+        text: localMatch.reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        quizResult: analysis.quiz,
+        quizResult: localMatch.quiz,
       };
-
       setMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      console.warn('AI tutor fetch notice, using local knowledge:', err);
+      const localMatch = analyzeQuery(text);
+      const aiMsg: Message = {
+        id: 'ai_' + Date.now(),
+        sender: 'ai',
+        text: localMatch.reply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        quizResult: localMatch.quiz,
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    } finally {
       setIsTyping(false);
-    }, 450);
+    }
   };
 
   const quickActions = [
@@ -472,8 +550,8 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                       }`}
                     >
                       {/* Message Text */}
-                      <div className="whitespace-pre-wrap leading-relaxed">
-                        {msg.text}
+                      <div className="space-y-1 text-xs">
+                        {renderFormattedText(msg.text)}
                       </div>
 
                       {/* Quiz Breakdown Card if matched */}
