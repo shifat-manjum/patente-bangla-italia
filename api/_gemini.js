@@ -1,9 +1,14 @@
-import fs from 'fs';
-import path from 'path';
+import { getCollection } from './_db.js';
 
-function getGeminiApiKey() {
+let cachedGeminiKey = '';
+
+async function getGeminiApiKey() {
   if (process.env.GEMINI_API_KEY) {
     return process.env.GEMINI_API_KEY.trim();
+  }
+
+  if (cachedGeminiKey) {
+    return cachedGeminiKey;
   }
 
   // Gracefully read from local .env in development
@@ -13,18 +18,31 @@ function getGeminiApiKey() {
       const content = fs.readFileSync(envPath, 'utf8');
       const match = content.match(/GEMINI_API_KEY\s*=\s*([^\s\r\n]+)/);
       if (match && match[1]) {
-        return match[1].trim();
+        cachedGeminiKey = match[1].trim();
+        return cachedGeminiKey;
       }
     }
   } catch {}
+
+  // Read from MongoDB Atlas settings
+  try {
+    const settingsCol = await getCollection('settings');
+    const doc = await settingsCol.findOne({ key: 'app_settings' });
+    if (doc?.geminiApiKey) {
+      cachedGeminiKey = doc.geminiApiKey.trim();
+      return cachedGeminiKey;
+    }
+  } catch (err) {
+    console.warn('Could not read geminiApiKey from MongoDB settings:', err.message);
+  }
 
   return '';
 }
 
 export async function generateTutorResponse(prompt, history = []) {
-  const apiKey = getGeminiApiKey();
+  const apiKey = await getGeminiApiKey();
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured');
+    throw new Error('GEMINI_API_KEY is not configured in environment or database');
   }
 
   // Available high-performance models
@@ -109,3 +127,4 @@ Instructions:
 
   throw lastError || new Error('All AI models temporarily busy');
 }
+

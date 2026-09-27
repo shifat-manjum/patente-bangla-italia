@@ -46,7 +46,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const stripe = getStripe();
+    const stripe = await getStripe();
     const body = await parseBody(req);
     if (!body) {
       return res.status(400).json({ error: 'Missing request body' });
@@ -126,3 +126,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message || 'Payment session creation failed' });
   }
 }
+

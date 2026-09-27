@@ -6,7 +6,9 @@ import {
   Lightbulb,
   AlertTriangle,
   Languages,
-  Headphones
+  Headphones,
+  Copy,
+  Check
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
 import { RoadSign } from './RoadSign';
@@ -37,6 +39,28 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   const [showBanglaTranslation, setShowBanglaTranslation] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0); // Regular human reading speed
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyQuestion = async (text: string) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      setIsCopied(false);
+    }
+  };
 
   // Audio pronunciation using natural Italian female voice at regular speed
   const speakItalian = (text: string) => {
@@ -147,15 +171,37 @@ export const QuizCard: React.FC<QuizCardProps> = ({
                   </span>
                 </div>
 
-                {/* Quick Audio trigger */}
-                <button
-                  type="button"
-                  onClick={() => speakItalian(question.questionIt)}
-                  className="flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white cursor-pointer"
-                >
-                  <Volume2 className="w-3.5 h-3.5" />
-                  <span>{isSpeaking ? 'Stop Audio' : 'Listen with Headphones'}</span>
-                </button>
+                <div className="flex items-center gap-3">
+                  {/* One-click Copy Question for AI Tutor */}
+                  <button
+                    type="button"
+                    onClick={() => handleCopyQuestion(question.questionIt)}
+                    className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-[#FB6C00] dark:text-slate-300 dark:hover:text-[#FB6C00] cursor-pointer px-2 py-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/10 transition"
+                    title="ক্লিক করলেই প্রশ্নটি কপি হয়ে যাবে (AI টিউটর বা চ্যাটবটে পেস্ট করার জন্য)"
+                  >
+                    {isCopied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span className="text-emerald-600 font-black">কপি হয়েছে!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 shrink-0" />
+                        <span>কপি করুন</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Quick Audio trigger */}
+                  <button
+                    type="button"
+                    onClick={() => speakItalian(question.questionIt)}
+                    className="flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white cursor-pointer"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>{isSpeaking ? 'Stop Audio' : 'Listen with Headphones'}</span>
+                  </button>
+                </div>
               </div>
               <p className="text-base sm:text-xl font-black text-slate-900 dark:text-white leading-relaxed tracking-wide pt-1">
                 "{question.questionIt}"

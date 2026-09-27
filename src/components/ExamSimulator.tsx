@@ -156,13 +156,15 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
 
   // Auto-scroll ribbon to keep active question in view
   useEffect(() => {
-    if (activePillRef.current) {
-      activePillRef.current.scrollIntoView({
-        behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest'
-      });
-    }
+    try {
+      if (activePillRef.current) {
+        activePillRef.current.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'center',
+          block: 'nearest'
+        });
+      }
+    } catch {}
   }, [currentIdx]);
 
   // Keyboard navigation shortcuts: V for Vero, F for Falso, ArrowRight/Enter for Next, ArrowLeft for Prev
@@ -170,9 +172,12 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
     if (!isStarted) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is pressing modifier keys (Ctrl+C, Ctrl+V, Cmd+C, Alt, etc.)
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
       // Don't trigger if user is typing in an input
       const targetTag = (e.target as HTMLElement)?.tagName;
-      if (targetTag === 'INPUT' || targetTag === 'TEXTAREA') return;
+      if (targetTag === 'INPUT' || targetTag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) return;
 
       if (e.key === 'v' || e.key === 'V' || e.key === '1') {
         e.preventDefault();

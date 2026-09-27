@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const stripe = getStripe();
+    const stripe = await getStripe();
     let sessionId = null;
     if (req.method === 'GET') {
       const url = new URL(req.url, 'http://localhost');
@@ -155,3 +155,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message || 'Payment verification failed' });
   }
 }
+
