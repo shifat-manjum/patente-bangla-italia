@@ -16,6 +16,7 @@ import { ROUND_QUESTIONS } from '../data/roundQuestions';
 import { COMPREHENSIVE_VOCABULARY } from '../data/vocabData';
 import type { StudentUser } from './StudentAuthModal';
 import { speakItalian as playItalianFemaleVoice } from '../utils/italianSpeech';
+import { getBanglaTranslation } from '../utils/patenteTranslator';
 
 interface Message {
   id: string;
@@ -197,7 +198,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
         quiz: {
           isCorrect: matchedHotshot.isCorrect,
           questionIt: matchedHotshot.questionIt,
-          questionBn: matchedHotshot.questionBn,
+          questionBn: getBanglaTranslation(matchedHotshot.questionIt, matchedHotshot.questionBn),
           explanationBn: matchedHotshot.explanationBn,
           trapTipBn: matchedHotshot.trapTipBn,
           vocab: matchedHotshot.vocabulary,
@@ -223,7 +224,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
           quiz: {
             isCorrect: match.isCorrect,
             questionIt: match.questionIt,
-            questionBn: match.questionBn,
+            questionBn: getBanglaTranslation(match.questionIt, match.questionBn),
             explanationBn: match.explanationBn,
             vocab: match.vocabulary,
           },
@@ -585,6 +586,11 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                             <p className="font-bold text-slate-900 dark:text-slate-100 text-xs italic">
                               "{msg.quizResult.questionIt}"
                             </p>
+                            {msg.quizResult.questionBn && (
+                              <p className="mt-1.5 text-xs text-emerald-900 dark:text-emerald-300 font-medium bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200/60 dark:border-emerald-800/40 leading-relaxed">
+                                🇧🇩 {msg.quizResult.questionBn}
+                              </p>
+                            )}
                           </div>
 
                           <div className="pt-1 text-[11px] text-slate-700 dark:text-slate-300">

@@ -225,40 +225,452 @@ const normalizeItalian = (text: string): string => {
     .toLowerCase();
 };
 
+export interface BilingualKeywordRule {
+  itKeyword: RegExp;
+  itLabel: string;
+  bnTargets: string[];
+}
+
+export const BILINGUAL_KEYWORD_RULES: BilingualKeywordRule[] = [
+  // 1. Speeds, distances & braking dynamics
+  {
+    itKeyword: /\bspazio di frenatura\b/i,
+    itLabel: 'Spazio di frenatura',
+    bnTargets: ['ব্রেকিং দূরত্ব'],
+  },
+  {
+    itKeyword: /\bspazio di arresto\b/i,
+    itLabel: 'Spazio di arresto',
+    bnTargets: ['সম্পূর্ণ থামার দূরত্ব', 'থামার দূরত্ব'],
+  },
+  {
+    itKeyword: /\bspazio di reazione\b/i,
+    itLabel: 'Spazio di reazione',
+    bnTargets: ['প্রতিক্রিয়ার দূরত্ব', 'প্রতিক্রিয়া দূরত্ব'],
+  },
+  {
+    itKeyword: /\btempo di reazione\b/i,
+    itLabel: 'Tempo di reazione',
+    bnTargets: ['প্রতিক্রিয়া সময়', 'প্রতিক্রিয়ার সময়'],
+  },
+  {
+    itKeyword: /\bdistanza di sicurezza\b/i,
+    itLabel: 'Distanza di sicurezza',
+    bnTargets: ['নিরাপদ দূরত্ব'],
+  },
+  {
+    itKeyword: /\blimite massimo di velocit[àa]\b/i,
+    itLabel: 'Limite di velocità',
+    bnTargets: ['সর্বোচ্চ গতিসীমা', 'সর্বোচ্চ গতি সীমা'],
+  },
+
+  // 2. Road slopes, curves & geometry
+  {
+    itKeyword: /\bdisces[ae]\b/i,
+    itLabel: 'Discesa',
+    bnTargets: ['নিচের দিকে ঢালু রাস্তা', 'নিচের দিকে ঢালু', 'ঢালু রাস্তা', 'ঢালু অংশে', 'ঢালু অংশ', 'ঢালু', 'উতরাই'],
+  },
+  {
+    itKeyword: /\bsalit[ae]\b/i,
+    itLabel: 'Salita',
+    bnTargets: ['খাড়া চড়াই রাস্তা', 'খাড়া চড়াই', 'চড়াই রাস্তা', 'চড়াই অংশ', 'খাড়া চড়াই', 'চড়াই', 'চড়াই'],
+  },
+  {
+    itKeyword: /\bdoss[oi]\b/i,
+    itLabel: 'Dosso',
+    bnTargets: ['উঁচু ঢাল বা ঢিবির', 'উঁচু ঢাল বা ঢিবি', 'উঁচু ঢাল', 'উঁচু ঢিবি', 'ডোসো', 'বাম্পার'],
+  },
+  {
+    itKeyword: /\bcunett[ae]\b/i,
+    itLabel: 'Cunetta',
+    bnTargets: ['নিচু গর্ত বা নর্দমা', 'নিচু রাস্তা', 'কুনেত্তা'],
+  },
+  {
+    itKeyword: /\bdoppia curva\b/i,
+    itLabel: 'Doppia curva',
+    bnTargets: ['দ্বৈত বিপজ্জনক বাঁক', 'দ্বৈত বাঁক', 'পরপর দুটি বাঁক'],
+  },
+  {
+    itKeyword: /\bcurv[ae]\b(?!\s+pericolosa)/i,
+    itLabel: 'Curva',
+    bnTargets: ['বিপজ্জনক বাঁক', 'বাঁকের তীব্রতা', 'বাঁক'],
+  },
+  {
+    itKeyword: /\bstrada sdrucciolevole\b/i,
+    itLabel: 'Strada sdrucciolevole',
+    bnTargets: ['পিচ্ছিল রাস্তা'],
+  },
+  {
+    itKeyword: /\bsdrucciolevol[ei]\b/i,
+    itLabel: 'Sdrucciolevole',
+    bnTargets: ['পিচ্ছিল'],
+  },
+  {
+    itKeyword: /\bstrada deformata\b/i,
+    itLabel: 'Strada deformata',
+    bnTargets: ['ভাঙাচোরা রাস্তা', 'অমসৃণ রাস্তা'],
+  },
+  {
+    itKeyword: /\bgalleri[ae]\b/i,
+    itLabel: 'Galleria',
+    bnTargets: ['টানেল', 'সুরঙ্গ', 'সুড়ঙ্গ'],
+  },
+
+  // 3. Road infrastructure & elements (Compounds first)
+  {
+    itKeyword: /\bcorsia di emergenza\b/i,
+    itLabel: 'Corsia di emergenza',
+    bnTargets: ['জরুরি লেন'],
+  },
+  {
+    itKeyword: /\bcorsia di accelerazione\b/i,
+    itLabel: 'Corsia di accelerazione',
+    bnTargets: ['গতি বাড়ানোর লেন'],
+  },
+  {
+    itKeyword: /\bcorsia di decelerazione\b/i,
+    itLabel: 'Corsia di decelerazione',
+    bnTargets: ['গতি কমানোর লেন'],
+  },
+  {
+    itKeyword: /\bcorsi[ae] di canalizzazione\b/i,
+    itLabel: 'Corsie di canalizzazione',
+    bnTargets: ['লেন বিভাজন এলাকা', 'লেন বিভাজন', 'ক্যানালাইজেশন লেন'],
+  },
+  {
+    itKeyword: /\bcarreggiat[ae]\b/i,
+    itLabel: 'Carreggiata',
+    bnTargets: ['দ্বিমুখী মূল সড়ক', 'চলাচলের মূল সড়ক', 'মূল সড়ক', 'ক্যারেজিয়াটা', 'ক্যারেজওয়ে'],
+  },
+  {
+    itKeyword: /\bcorsi[ae]\b(?!\s+di\s+(canalizzazione|emergenza|accelerazione|decelerazione))/i,
+    itLabel: 'Corsia',
+    bnTargets: ['লেন'],
+  },
+  {
+    itKeyword: /\bbanchin[ae]\b/i,
+    itLabel: 'Banchina',
+    bnTargets: ['বানকিনা', 'রাস্তার সাইডের কাঁধ', 'রাস্তার কাঁধ'],
+  },
+  {
+    itKeyword: /\bmarciapied[ei]\b/i,
+    itLabel: 'Marciapiede',
+    bnTargets: ['ফুটপাত'],
+  },
+  {
+    itKeyword: /\bspartitraffico\b/i,
+    itLabel: 'Spartitraffico',
+    bnTargets: ['রোড ডিভাইডার', 'ট্রাফিক ডিভাইডার', 'ডিভাইডার'],
+  },
+  {
+    itKeyword: /\bsalvagente\b/i,
+    itLabel: 'Salvagente',
+    bnTargets: ['যাত্রী সুরক্ষা প্ল্যাটফর্ম', 'সালভাজেন্তে'],
+  },
+  {
+    itKeyword: /\bisola di traffico\b/i,
+    itLabel: 'Isola di traffico',
+    bnTargets: ['ট্রাফিক চ্যানেল আইল্যান্ড', 'ট্রাফিক আইল্যান্ড'],
+  },
+  {
+    itKeyword: /\brotatori[ae]\b/i,
+    itLabel: 'Rotatoria',
+    bnTargets: ['গোলচত্বর', 'রাউন্ডঅ্যাবাউট'],
+  },
+  {
+    itKeyword: /\bpassaggio a livello\b/i,
+    itLabel: 'Passaggio a livello',
+    bnTargets: ['ব্যারিয়ারযুক্ত রেল ক্রসিং', 'ব্যারিয়ারবিহীন রেল ক্রসিং', 'রেল ক্রসিং', 'লেভেল ক্রসিং'],
+  },
+  {
+    itKeyword: /\bpasso carrabile\b/i,
+    itLabel: 'Passo carrabile',
+    bnTargets: ['ব্যক্তিগত প্রবেশপথ'],
+  },
+  {
+    itKeyword: /\battraversamento pedonale\b/i,
+    itLabel: 'Attraversamento pedonale',
+    bnTargets: ['জেব্রা ক্রসিং', 'পথচারী পারাপার'],
+  },
+  {
+    itKeyword: /\bpista ciclabile\b/i,
+    itLabel: 'Pista ciclabile',
+    bnTargets: ['সাইকেল লেন', 'সাইকেল ট্র্যাক'],
+  },
+  {
+    itKeyword: /\bincroci[oi]\b/i,
+    itLabel: 'Incrocio',
+    bnTargets: ['চৌরাস্তায় বা মোড়', 'চৌরাস্তা বা মোড়', 'চৌরাস্তা', 'রাস্তার মোড়', 'মোড়'],
+  },
+  {
+    itKeyword: /\bintersezion[ei]\b/i,
+    itLabel: 'Intersezione',
+    bnTargets: ['ইন্টারসেকশন'],
+  },
+
+  // 4. Maneuvers & driving actions
+  {
+    itKeyword: /\bsosta di emergenza\b/i,
+    itLabel: 'Sosta di emergenza',
+    bnTargets: ['জরুরি পার্কিং'],
+  },
+  {
+    itKeyword: /\bsost[ae]\b(?!\s+di\s+emergenza)/i,
+    itLabel: 'Sosta',
+    bnTargets: ['পার্কিং করা', 'পার্কিং'],
+  },
+  {
+    itKeyword: /\bfermat[ae]\b/i,
+    itLabel: 'Fermata',
+    bnTargets: ['সাময়িক থামা', 'বাস স্টপ'],
+  },
+  {
+    itKeyword: /\barrest[oi]\b/i,
+    itLabel: 'Arresto',
+    bnTargets: ['সম্পূর্ণ গাড়ি থামা', 'গাড়ি সম্পূর্ণ থামানো', 'গাড়ি থামা'],
+  },
+  {
+    itKeyword: /\binversione di marcia\b/i,
+    itLabel: 'Inversione di marcia',
+    bnTargets: ['ইউ-টার্ন নিয়ে উল্টো দিকে চালাতে', 'ইউ-টার্ন', 'উল্টো দিকে গাড়ি ঘোরানো'],
+  },
+  {
+    itKeyword: /\bsorpass[oi]\b/i,
+    itLabel: 'Sorpasso',
+    bnTargets: ['ওভারটেকিং', 'ওভারটেক করার', 'ওভারটেক করতে', 'ওভারটেক করা', 'ওভারটেক'],
+  },
+  {
+    itKeyword: /\bprecedenz[ae]\b/i,
+    itLabel: 'Precedenza',
+    bnTargets: ['অগ্রাধিকার দেওয়ার', 'অগ্রাধিকার দেওয়া', 'অগ্রাধিকার'],
+  },
+  {
+    itKeyword: /\bsvolt[ae] a destra\b/i,
+    itLabel: 'Svolta a destra',
+    bnTargets: ['ডানদিকে মোড় নেওয়ার', 'ডানদিকে মোড় নিতে', 'ডানদিকে মোড়', 'ডানে মোড়'],
+  },
+  {
+    itKeyword: /\bsvolt[ae] a sinistra\b/i,
+    itLabel: 'Svolta a sinistra',
+    bnTargets: ['বামদিকে মোড় নেওয়ার', 'বামদিকে মোড় নিতে', 'বামদিকে মোড়', 'বামে মোড়'],
+  },
+  {
+    itKeyword: /\bsvolt[ae]\b(?!\s+a\s+(destra|sinistra))/i,
+    itLabel: 'Svolta',
+    bnTargets: ['মোড় নেওয়ার', 'মোড় নিতে', 'মোড় নেওয়া'],
+  },
+
+  // 5. Vehicle equipment, safety & conditions
+  {
+    itKeyword: /\bluci anabbaglianti\b|\banabbaglianti\b/i,
+    itLabel: 'Anabbaglianti',
+    bnTargets: ['লো-বিম হেডলাইট', 'লো-বিম লাইট', 'লো-বিম'],
+  },
+  {
+    itKeyword: /\bluci abbaglianti\b|\babbaglianti\b/i,
+    itLabel: 'Abbaglianti',
+    bnTargets: ['হাই-বিম হেডলাইট', 'হাই-বিম লাইট', 'হাই-বিম'],
+  },
+  {
+    itKeyword: /\bluci di posizione\b/i,
+    itLabel: 'Luci di posizione',
+    bnTargets: ['পজিশন লাইট'],
+  },
+  {
+    itKeyword: /\bquattro frecce\b|\bsegnalazione luminosa di pericolo\b/i,
+    itLabel: 'Quattro frecce',
+    bnTargets: ['হ্যাজার্ড লাইট', 'ইমার্জেন্সি ফ্লাশার', 'ইমার্জেন্সি লাইট'],
+  },
+  {
+    itKeyword: /\bcinture di sicurezza\b/i,
+    itLabel: 'Cinture di sicurezza',
+    bnTargets: ['সিটবেল্ট'],
+  },
+  {
+    itKeyword: /\bcasco\b/i,
+    itLabel: 'Casco',
+    bnTargets: ['সুরক্ষা হেলমেট', 'হেলমেট'],
+  },
+  {
+    itKeyword: /\bair-?bag\b/i,
+    itLabel: 'Airbag',
+    bnTargets: ['এয়ারব্যাগ'],
+  },
+  {
+    itKeyword: /\bcatene da neve\b/i,
+    itLabel: 'Catene da neve',
+    bnTargets: ['বরফের চেইন', 'স্নো চেইন'],
+  },
+  {
+    itKeyword: /\bpneumatic[oi]\b/i,
+    itLabel: 'Pneumatici',
+    bnTargets: ['টায়ার', 'টায়ার'],
+  },
+  {
+    itKeyword: /\baquaplaning\b/i,
+    itLabel: 'Aquaplaning',
+    bnTargets: ['অ্যাকুয়াপ্ল্যানিং', 'পানিতে চাকা পিছলে যাওয়া'],
+  },
+  {
+    itKeyword: /\bneopatentat[oi]\b/i,
+    itLabel: 'Neopatentati',
+    bnTargets: ['নতুন লাইসেন্সধারী চালক', 'নতুন লাইসেন্সধারী'],
+  },
+  {
+    itKeyword: /\btasso alcolemico\b/i,
+    itLabel: 'Tasso alcolemico',
+    bnTargets: ['রক্তে অ্যালকোহলের মাত্রা', 'অ্যালকোহলের মাত্রা'],
+  },
+  {
+    itKeyword: /\bspecchi[oi] retrovisore\b|\bspecchi retrovisori\b/i,
+    itLabel: 'Specchio retrovisore',
+    bnTargets: ['লুকিং গ্লাস', 'রিয়ারভিউ মিরর', 'রিয়ার-ভিউ আয়না'],
+  },
+  {
+    itKeyword: /\bautostrad[ae]\b/i,
+    itLabel: 'Autostrada',
+    bnTargets: ['অটোস্ত্রাদা বা হাইওয়ে', 'অটোস্ত্রাদা', 'হাইওয়ে'],
+  },
+  {
+    itKeyword: /\bstrad[ae] extraurban[ae] principal[ei]\b/i,
+    itLabel: 'Strada extraurbana principale',
+    bnTargets: ['প্রধান অতিরিক্ত নগর সড়ক', 'প্রধান হাইওয়ে'],
+  },
+  {
+    itKeyword: /\bstrad[ae] extraurban[ae] secondari[ae]\b/i,
+    itLabel: 'Strada extraurbana secondaria',
+    bnTargets: ['দ্বিতীয় শ্রেণির গ্রামীণ সড়ক', 'দ্বিতীয় শ্রেণির হাইওয়ে'],
+  },
+  {
+    itKeyword: /\bstrad[ae] extraurban[ae]\b(?!\s+(principale|secondaria))/i,
+    itLabel: 'Strada extraurbana',
+    bnTargets: ['শহরের বাইরের হাইওয়ে', 'শহরের বাইরের সড়ক'],
+  },
+
+  // 6. Common Trap keywords
+  {
+    itKeyword: /\besclusivamente\b/i,
+    itLabel: 'Esclusivamente',
+    bnTargets: ['শুধুমাত্র ও বিশেষভাবে', 'শুধুমাত্র'],
+  },
+  {
+    itKeyword: /\bobbligatoriamente\b/i,
+    itLabel: 'Obbligatoriamente',
+    bnTargets: ['বাধ্যতামূলকভাবে'],
+  },
+  {
+    itKeyword: /\bobbligatori[oi]\b/i,
+    itLabel: 'Obbligatorio',
+    bnTargets: ['বাধ্যতামূলক'],
+  },
+  {
+    itKeyword: /\bvietat[oi]\b/i,
+    itLabel: 'Vietato',
+    bnTargets: ['নিষিদ্ধ'],
+  },
+  {
+    itKeyword: /\bconsentit[oi]\b/i,
+    itLabel: 'Consentito',
+    bnTargets: ['অনুমোদিত'],
+  },
+];
+
 /**
- * Returns clean, guaranteed Bangla translation for any Patente Italian question
+ * Enriches Bengali translation with bracketed Italian technical terms
+ * e.g., "রাস্তা যদি নিচের দিকে ঢালু (Discesa) হয়, তবে ব্রেকিং দূরত্ব (Spazio di frenatura) বৃদ্ধি পায়"
+ */
+export const enrichBilingualKeywords = (bnText: string, itText: string): string => {
+  if (!bnText || !itText) return bnText || '';
+
+  let res = bnText;
+
+  for (const rule of BILINGUAL_KEYWORD_RULES) {
+    // 1. Verify Italian question actually features this keyword
+    if (!rule.itKeyword.test(itText)) {
+      continue;
+    }
+
+    // 2. Prevent duplicate annotations (e.g. avoid (Discesa) (Discesa))
+    const escapedLabel = rule.itLabel.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    if (new RegExp('\\(' + escapedLabel + '\\)', 'i').test(res)) {
+      continue;
+    }
+
+    // 3. Search and annotate the appropriate Bengali target word
+    for (const target of rule.bnTargets) {
+      const idx = res.indexOf(target);
+      if (idx !== -1) {
+        // Expand to include attached Bengali suffixes (e.g. চৌরাস্তায়, ফুটপাতে, পার্কিংয়ের)
+        let endIdx = idx + target.length;
+        while (endIdx < res.length && /[\u0980-\u09FF]/.test(res[endIdx])) {
+          endIdx++;
+        }
+
+        // Ensure following token is not already an open bracket
+        const afterTarget = res.slice(endIdx).trimStart();
+        if (afterTarget.startsWith('(')) {
+          break;
+        }
+
+        // Replace only the first occurrence cleanly
+        res = res.slice(0, endIdx) + ` (${rule.itLabel})` + res.slice(endIdx);
+        break; // Only annotate this term once per question
+      }
+    }
+  }
+
+  // Clean any accidental double spacing inside or before brackets
+  res = res.replace(/\s+\(([^)]+)\)/g, ' ($1)');
+  return res;
+};
+
+/**
+ * Returns clean, guaranteed Bangla translation for any Patente Italian question,
+ * automatically enriched with bilingual technical terms in brackets.
  */
 export const getBanglaTranslation = (questionIt: string, rawQuestionBn?: string): string => {
   const cleanIt = (questionIt || '').trim();
+  let bnResult = '';
 
   // 1. Check exact match in pre-compiled dictionary of all official questions
   if (PATENTE_TRANSLATIONS_BN[cleanIt]) {
-    return polishBengaliTranslation(PATENTE_TRANSLATIONS_BN[cleanIt]);
-  }
+    bnResult = polishBengaliTranslation(PATENTE_TRANSLATIONS_BN[cleanIt]);
+  } else if (rawQuestionBn && containsBengali(rawQuestionBn) && rawQuestionBn.trim() !== cleanIt) {
+    // 2. If rawQuestionBn has authentic Bengali and is not raw Italian, return it directly
+    bnResult = polishBengaliTranslation(rawQuestionBn.trim());
+  } else {
+    // 3. Normalize punctuation / typographic quotes / whitespace and check dictionary again
+    const normalizedTarget = normalizeItalian(cleanIt);
+    let matched = false;
+    for (const [dictIt, dictBn] of Object.entries(PATENTE_TRANSLATIONS_BN)) {
+      if (normalizeItalian(dictIt) === normalizedTarget) {
+        bnResult = polishBengaliTranslation(dictBn);
+        matched = true;
+        break;
+      }
+    }
 
-  // 2. If rawQuestionBn has authentic Bengali and is not raw Italian, return it directly
-  if (rawQuestionBn && containsBengali(rawQuestionBn) && rawQuestionBn.trim() !== cleanIt) {
-    return polishBengaliTranslation(rawQuestionBn.trim());
-  }
+    if (!matched) {
+      // 4. Pattern Match fallback for new dynamic questions
+      for (const [pattern, banglaPrefix] of PHRASE_DICTIONARY) {
+        if (pattern.test(cleanIt)) {
+          bnResult = polishBengaliTranslation(banglaPrefix);
+          matched = true;
+          break;
+        }
+      }
+    }
 
-  // 3. Normalize punctuation / typographic quotes / whitespace and check dictionary again
-  const normalizedTarget = normalizeItalian(cleanIt);
-  for (const [dictIt, dictBn] of Object.entries(PATENTE_TRANSLATIONS_BN)) {
-    if (normalizeItalian(dictIt) === normalizedTarget) {
-      return polishBengaliTranslation(dictBn);
+    if (!matched) {
+      // 5. Clean default fallback
+      bnResult = rawQuestionBn && containsBengali(rawQuestionBn) 
+        ? polishBengaliTranslation(rawQuestionBn.trim()) 
+        : 'প্রশ্নটির সহজ বাংলা ভাবার্থ শীঘ্রই যুক্ত করা হচ্ছে।';
     }
   }
 
-  // 4. Pattern Match fallback for new dynamic questions
-  for (const [pattern, banglaPrefix] of PHRASE_DICTIONARY) {
-    if (pattern.test(cleanIt)) {
-      return polishBengaliTranslation(banglaPrefix);
-    }
-  }
-
-  // 5. Clean default fallback
-  return rawQuestionBn && containsBengali(rawQuestionBn) 
-    ? polishBengaliTranslation(rawQuestionBn.trim()) 
-    : 'প্রশ্নটির সহজ বাংলা ভাবার্থ শীঘ্রই যুক্ত করা হচ্ছে।';
+  // 6. Enrich with Italian technical terms in brackets
+  return enrichBilingualKeywords(bnResult, cleanIt);
 };
+
 
