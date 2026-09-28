@@ -50,6 +50,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Initial welcome message (Human teacher vibe)
   const [messages, setMessages] = useState<Message[]>([
@@ -325,7 +326,12 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     }));
 
     setMessages((prev) => [...prev, userMsg]);
-    if (!textToSend) setInputText('');
+    if (!textToSend) {
+      setInputText('');
+      if (chatTextareaRef.current) {
+        chatTextareaRef.current.style.height = 'auto';
+      }
+    }
     setIsTyping(true);
 
     try {
@@ -382,6 +388,23 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       setMessages((prev) => [...prev, aiMsg]);
     } finally {
       setIsTyping(false);
+    }
+  };
+
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    if (chatTextareaRef.current) {
+      chatTextareaRef.current.style.height = 'auto';
+      chatTextareaRef.current.style.height = `${Math.min(chatTextareaRef.current.scrollHeight, 110)}px`;
+    }
+  };
+
+  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (inputText.trim()) {
+        handleSendMessage();
+      }
     }
   };
 
@@ -656,32 +679,36 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
               </div>
 
               {/* WhatsApp Input Bar */}
-              <div className="p-2.5 sm:p-3 border-t border-slate-200 dark:border-slate-800 bg-[#F0F2F5] dark:bg-[#1F2C34] shrink-0">
+              <div className="p-2 sm:p-2.5 border-t border-slate-200 dark:border-slate-800 bg-[#F0F2F5] dark:bg-[#1F2C34] shrink-0">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     handleSendMessage();
                   }}
-                  className="flex items-center gap-2"
+                  className="flex items-end gap-2"
                 >
-                  <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Scrivi un messaggio o incolla il quiz..."
-                    className="flex-1 py-2 px-3.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#2A3942] text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+                  <div className="flex-1 min-h-[38px] max-h-28 flex items-center bg-white dark:bg-[#2A3942] rounded-2xl border border-slate-300 dark:border-slate-700 px-3.5 py-1.5 focus-within:ring-2 focus-within:ring-emerald-500 shadow-xs transition-all">
+                    <textarea
+                      ref={chatTextareaRef}
+                      rows={1}
+                      value={inputText}
+                      onChange={handleTextareaInput}
+                      onKeyDown={handleTextareaKeyDown}
+                      placeholder="Scrivi un messaggio o incolla il quiz..."
+                      className="w-full resize-none bg-transparent text-slate-900 dark:text-white text-xs sm:text-[13px] leading-relaxed focus:outline-none max-h-24 overflow-y-auto block"
+                    />
+                  </div>
                   <button
                     type="submit"
                     disabled={!inputText.trim()}
-                    className="p-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] disabled:opacity-40 text-white font-bold transition cursor-pointer shadow-sm shrink-0"
-                    title="Send message"
+                    className="p-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] disabled:opacity-40 text-white font-bold transition cursor-pointer shadow-sm shrink-0 mb-0.5"
+                    title="Invia messaggio (Enter)"
                   >
                     <Send className="w-4 h-4" />
                   </button>
                 </form>
                 <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1 px-2">
-                  <span>Guaranteed response &lt; 1 min</span>
+                  <span>Risposta rapida &lt; 1 min • <strong>Enter</strong> invia, <strong>Shift+Enter</strong> a capo</span>
                   <button
                     type="button"
                     onClick={onOpenPaywall}
