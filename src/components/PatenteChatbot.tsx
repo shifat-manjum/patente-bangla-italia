@@ -50,7 +50,6 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Initial welcome message (Human teacher vibe)
   const [messages, setMessages] = useState<Message[]>([
@@ -328,9 +327,6 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     setMessages((prev) => [...prev, userMsg]);
     if (!textToSend) {
       setInputText('');
-      if (chatTextareaRef.current) {
-        chatTextareaRef.current.style.height = 'auto';
-      }
     }
     setIsTyping(true);
 
@@ -391,23 +387,6 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     }
   };
 
-  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputText(e.target.value);
-    if (chatTextareaRef.current) {
-      chatTextareaRef.current.style.height = 'auto';
-      chatTextareaRef.current.style.height = `${Math.min(chatTextareaRef.current.scrollHeight, 110)}px`;
-    }
-  };
-
-  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (inputText.trim()) {
-        handleSendMessage();
-      }
-    }
-  };
-
   const quickActions = [
     { label: '🛑 STOP বনাম Precedenza', query: 'STOP এবং Dare Precedenza এর পার্থক্য কি?' },
     { label: '⚠️ ফাঁদ শব্দ (Trabocchetti)', query: 'কুইজে কোন কোন ফাঁদ শব্দ থাকলে FALSO হয়?' },
@@ -424,7 +403,13 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
             ? { position: 'fixed', left: `${fabPosition.x}px`, top: `${fabPosition.y}px`, zIndex: 50 }
             : undefined
         }
-        className={!fabPosition || isOpen ? 'fixed bottom-52 sm:bottom-48 md:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end' : ''}
+        className={
+          isOpen
+            ? 'fixed bottom-3 sm:bottom-6 right-2 sm:right-6 z-50 flex flex-col items-end'
+            : !fabPosition
+            ? 'fixed bottom-52 sm:bottom-48 md:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end'
+            : ''
+        }
       >
         {/* Moveable WhatsApp Floating Action Button */}
         {!isOpen && !isDocked && (
@@ -687,21 +672,19 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                   }}
                   className="flex items-end gap-2"
                 >
-                  <div className="flex-1 min-h-[38px] max-h-28 flex items-center bg-white dark:bg-[#2A3942] rounded-2xl border border-slate-300 dark:border-slate-700 px-3.5 py-1.5 focus-within:ring-2 focus-within:ring-emerald-500 shadow-xs transition-all">
-                    <textarea
-                      ref={chatTextareaRef}
-                      rows={1}
+                  <div className="flex-1 h-10 flex items-center bg-white dark:bg-[#2A3942] rounded-full border border-slate-300 dark:border-slate-700 px-4 focus-within:ring-2 focus-within:ring-emerald-500 shadow-xs transition-none">
+                    <input
+                      type="text"
                       value={inputText}
-                      onChange={handleTextareaInput}
-                      onKeyDown={handleTextareaKeyDown}
+                      onChange={(e) => setInputText(e.target.value)}
                       placeholder="Scrivi un messaggio o incolla il quiz..."
-                      className="w-full resize-none bg-transparent text-slate-900 dark:text-white text-xs sm:text-[13px] leading-relaxed focus:outline-none max-h-24 overflow-y-auto block"
+                      className="w-full bg-transparent text-slate-900 dark:text-white text-[16px] sm:text-xs md:text-[13px] leading-normal focus:outline-none block"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={!inputText.trim()}
-                    className="p-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] disabled:opacity-40 text-white font-bold transition cursor-pointer shadow-sm shrink-0 mb-0.5"
+                    className="p-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] disabled:opacity-40 text-white font-bold transition cursor-pointer shadow-sm shrink-0"
                     title="Invia messaggio (Enter)"
                   >
                     <Send className="w-4 h-4" />
