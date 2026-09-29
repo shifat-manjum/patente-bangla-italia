@@ -99,6 +99,23 @@ export const syncStudentToServerDb = async (student: StudentProfile): Promise<bo
   return false;
 };
 
+// Helper to fetch student profile from MongoDB Atlas (/api/students?email=...) for cross-device VIP sync
+export const fetchStudentFromServerDb = async (email: string): Promise<Partial<StudentProfile> | null> => {
+  try {
+    if (typeof window !== 'undefined' && email) {
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await fetch(`/api/students?email=${encodeURIComponent(cleanEmail)}`);
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn('MongoDB Atlas fetch student notice:', err);
+  }
+  return null;
+};
+
 // Helper to get local mock user
 export const getCachedStudent = (): StudentProfile | null => {
   try {
@@ -282,6 +299,22 @@ export const loginStudent = async (
         displayName: firebaseUser.displayName,
       });
 
+      // Cross-check with MongoDB Atlas for VIP status
+      try {
+        const remoteDoc = await fetchStudentFromServerDb(cleanEmail);
+        if (remoteDoc) {
+          if (remoteDoc.isVip) {
+            safeProfile.isVip = true;
+            try {
+              localStorage.setItem('patente_bangla_is_vip', 'true');
+            } catch {}
+          }
+          if (typeof remoteDoc.unlockedRound === 'number' && remoteDoc.unlockedRound > safeProfile.unlockedRound) {
+            safeProfile.unlockedRound = remoteDoc.unlockedRound;
+          }
+        }
+      } catch {}
+
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeProfile));
       return safeProfile;
     } catch (err: any) {
@@ -293,6 +326,13 @@ export const loginStudent = async (
         const localFound = all.find((s) => s.email?.toLowerCase() === cleanEmail);
         if (localFound) {
           const safeFound = sanitizeStudentProfile(localFound);
+          try {
+            const remoteDoc = await fetchStudentFromServerDb(cleanEmail);
+            if (remoteDoc?.isVip) {
+              safeFound.isVip = true;
+              localStorage.setItem('patente_bangla_is_vip', 'true');
+            }
+          } catch {}
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeFound));
           return safeFound;
         }
@@ -320,6 +360,22 @@ export const loginStudent = async (
     isVip: false,
     lastLoginAt: new Date().toISOString(),
   });
+
+  // Cross-check with MongoDB Atlas for VIP status
+  try {
+    const remoteDoc = await fetchStudentFromServerDb(cleanEmail);
+    if (remoteDoc) {
+      if (remoteDoc.isVip) {
+        localProfile.isVip = true;
+        try {
+          localStorage.setItem('patente_bangla_is_vip', 'true');
+        } catch {}
+      }
+      if (typeof remoteDoc.unlockedRound === 'number' && remoteDoc.unlockedRound > localProfile.unlockedRound) {
+        localProfile.unlockedRound = remoteDoc.unlockedRound;
+      }
+    }
+  } catch {}
 
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localProfile));
   return localProfile;

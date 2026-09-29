@@ -20,6 +20,7 @@ import {
   logoutStudent,
   syncStudentProgressToCloud,
   sanitizeStudentProfile,
+  fetchStudentFromServerDb,
 } from './services/studentService';
 import { PatenteChatbot } from './components/PatenteChatbot';
 import { StudentProfileModal } from './components/StudentProfileModal';
@@ -191,6 +192,27 @@ export function App() {
 
     return () => unsubscribe();
   }, []);
+
+  // Cross-device check with MongoDB Atlas for VIP status
+  useEffect(() => {
+    if (currentUser?.email) {
+      fetchStudentFromServerDb(currentUser.email)
+        .then((remote) => {
+          if (remote) {
+            if (remote.isVip) {
+              setIsVip(true);
+              try {
+                localStorage.setItem('patente_bangla_is_vip', 'true');
+              } catch {}
+            }
+            if (typeof remote.unlockedRound === 'number' && remote.unlockedRound > unlockedRound) {
+              setUnlockedRound(remote.unlockedRound);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [currentUser?.email]);
 
   const handleLogout = async () => {
     await logoutStudent();

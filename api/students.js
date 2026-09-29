@@ -45,6 +45,23 @@ export default async function handler(req, res) {
     const col = await getCollection('students');
 
     if (req.method === 'GET') {
+      const url = new URL(req.url, 'http://localhost');
+      const email = url.searchParams.get('email');
+      const uid = url.searchParams.get('uid');
+
+      if (email || uid) {
+        const filter = email ? { email: email.trim().toLowerCase() } : { uid: String(uid) };
+        const doc = await col.findOne(filter);
+        if (!doc) {
+          return res.status(404).json({ error: 'Student not found' });
+        }
+        const { _id, ...rest } = doc;
+        return res.status(200).json({
+          ...rest,
+          _id: _id.toString(),
+        });
+      }
+
       const docs = await col
         .find({})
         .sort({ createdAt: -1 })

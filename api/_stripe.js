@@ -42,6 +42,45 @@ async function getStripeSecretKey() {
   return '';
 }
 
+let cachedWebhookSecret = '';
+
+export async function getStripeWebhookSecret() {
+  if (process.env.STRIPE_WEBHOOK_SECRET) {
+    return process.env.STRIPE_WEBHOOK_SECRET.trim();
+  }
+
+  if (cachedWebhookSecret) {
+    return cachedWebhookSecret;
+  }
+
+  // Gracefully fallback to local .env in development
+  try {
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8');
+      const match = content.match(/STRIPE_WEBHOOK_SECRET\s*=\s*([^\s\r\n]+)/);
+      if (match && match[1]) {
+        cachedWebhookSecret = match[1].trim();
+        return cachedWebhookSecret;
+      }
+    }
+  } catch {}
+
+  // Fallback to MongoDB Atlas settings
+  try {
+    const settingsCol = await getCollection('settings');
+    const doc = await settingsCol.findOne({ key: 'app_settings' });
+    if (doc?.stripeWebhookSecret) {
+      cachedWebhookSecret = doc.stripeWebhookSecret.trim();
+      return cachedWebhookSecret;
+    }
+  } catch (err) {
+    console.warn('Could not read stripeWebhookSecret from MongoDB settings:', err.message);
+  }
+
+  return '';
+}
+
 export async function getStripe() {
   const secretKey = await getStripeSecretKey();
   if (!secretKey) {
@@ -49,4 +88,3 @@ export async function getStripe() {
   }
   return new Stripe(secretKey);
 }
-
