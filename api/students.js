@@ -47,10 +47,16 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const url = new URL(req.url, 'http://localhost');
       const email = url.searchParams.get('email');
-      const uid = url.searchParams.get('uid');
+      const phone = url.searchParams.get('phone');
 
-      if (email || uid) {
-        const filter = email ? { email: email.trim().toLowerCase() } : { uid: String(uid) };
+      if (email || uid || phone) {
+        let filter;
+        if (email) filter = { email: email.trim().toLowerCase() };
+        else if (uid) filter = { uid: String(uid) };
+        else {
+          const cleanDigits = phone.replace(/\D/g, '');
+          filter = { phone: { $regex: cleanDigits.slice(-8) } };
+        }
         const doc = await col.findOne(filter);
         if (!doc) {
           return res.status(404).json({ error: 'Student not found' });

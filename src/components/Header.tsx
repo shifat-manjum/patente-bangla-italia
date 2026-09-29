@@ -40,9 +40,9 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  totalQuestionsAnswered,
+  totalQuestionsAnswered: _totalQuestionsAnswered,
   isVip,
-  freeRoundsLimit = 20,
+  freeRoundsLimit: _freeRoundsLimit = 20,
   onOpenPaywall,
   onOpenAbout,
   currentTheme,
@@ -267,22 +267,21 @@ export const Header: React.FC<HeaderProps> = ({
             {!isVip ? (
               <div className="flex items-center gap-2 sm:gap-2.5">
                 <div className="text-right hidden sm:block">
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">
-                    {freeRoundsLimit === 0 ? 'Academy Access' : 'Foundation Access'}
+                  <span className="text-[10px] text-amber-500 font-extrabold uppercase tracking-wider block">
+                    VIP 240 Rounds
                   </span>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-200">
-                    {freeRoundsLimit === 0
-                      ? 'একাডেমি প্রো'
-                      : `${Math.min(freeRoundsLimit * 30, totalQuestionsAnswered)} / ${freeRoundsLimit * 30} Qs`}
+                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100">
+                    €49 Una Tantum
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={onOpenPaywall}
-                  className="py-2 sm:py-2.5 px-4 sm:px-5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm shadow-md shadow-[#FB6C00]/25 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0"
+                  className="py-2 sm:py-2.5 px-3.5 sm:px-5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm shadow-md shadow-[#FB6C00]/30 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center gap-1.5 sm:gap-2 shrink-0 animate-pulse"
+                  title="সম্পূর্ণ কোর্স এক্সেস পেতে এখনই এনরোল ও পেমেন্ট করুন"
                 >
                   <GraduationCap className="w-4 h-4 text-white shrink-0" />
-                  <span>Academy Enrollment</span>
+                  <span>🔥 Pay Now (€49) / ভর্তি হন</span>
                 </button>
               </div>
             ) : (

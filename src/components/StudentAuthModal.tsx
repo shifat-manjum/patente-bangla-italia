@@ -101,9 +101,13 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
   };
 
   const isPasswordValid = (val: string) => {
-    if (val.length < 6) return false;
+    // Strict password policy: at least 8 to 9 characters
+    if (val.length < 8) return false;
     // Reject common trivial sequences
-    const trivial = ['123456', '1234567', '12345678', '000000', '111111', 'password', 'qwerty'];
+    const trivial = [
+      '12345678', '123456789', '00000000', '11111111', 
+      'password', 'password1', 'qwertyuiop', 'patente123'
+    ];
     if (trivial.includes(val.toLowerCase())) return false;
     // Must contain both letters and numbers
     const hasLetters = /[a-zA-Z]/.test(val);
@@ -120,7 +124,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       return 'ভুল ইমেইল বা পাসওয়ার্ড দেওয়া হয়েছে। দয়া করে আবার সঠিক তথ্য দিয়ে চেষ্টা করুন।';
     }
     if (code === 'auth/weak-password') {
-      return 'পাসওয়ার্ড অত্যন্ত সহজ। অন্তত ৬ অক্ষর এবং সাথে সংখ্যা ও অক্ষর মিলিয়ে লিখুন।';
+      return 'পাসওয়ার্ড নীতি: পাসওয়ার্ড অন্তত ৮ বা ৯ অক্ষরের হতে হবে এবং অক্ষর ও সংখ্যা মিলিয়ে লিখুন (যেমন: Patente2026)।';
     }
     if (code === 'auth/invalid-email') {
       return 'সঠিক ইমেইল এড্রেস লিখুন (যেমন: name@gmail.com)।';
@@ -157,13 +161,59 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       return;
     }
 
-    // 4. Validate Password Policy
+    // 4. Validate Password Policy (8-9+ chars, letters + numbers)
     if (!isPasswordValid(password)) {
-      setError('সহজ অথচ নিরাপদ পাসওয়ার্ড দিন: অন্তত ৬ অক্ষর এবং সাথে অক্ষর ও সংখ্যা মিলিয়ে লিখুন (যেমন: Patente26)।');
+      setError('পাসওয়ার্ড নীতি: পাসওয়ার্ড অন্তত ৮ বা ৯ অক্ষরের হতে হবে এবং অক্ষর ও সংখ্যা মিলিয়ে লিখুন (যেমন: Patente2026)।');
       return;
     }
 
+    const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = `${phoneCountry} ${phoneNumber.trim()}`;
+    const rawDigits = phoneNumber.replace(/\D/g, '');
+
+    // 5. Duplicate Check Policy: Email and Phone cannot be repeated!
+    try {
+      // A. Check local directory
+      const localList: any[] = JSON.parse(localStorage.getItem('patente_registered_students') || '[]');
+      const emailTakenLocal = localList.some((s) => (s?.email || '').toLowerCase() === cleanEmail);
+      if (emailTakenLocal) {
+        setError('এই ইমেইল ঠিকানা দিয়ে ইতোমধ্যেই একটি অ্যাকাউন্ট রয়েছে। দয়া করে Sign In (লগইন) করুন।');
+        return;
+      }
+      const phoneTakenLocal = localList.some((s) => {
+        const d = (s?.phone || '').replace(/\D/g, '');
+        return d && d.length >= 8 && d.endsWith(rawDigits.slice(-8));
+      });
+      if (phoneTakenLocal) {
+        setError('এই মোবাইল নম্বরটি দিয়ে ইতোমধ্যে অন্য একজন স্টুডেন্ট নিবন্ধিত রয়েছেন। প্রতিটি অ্যাকাউন্টের জন্য ইউনিক নম্বর বাধ্যতামূলক।');
+        return;
+      }
+
+      // B. Check MongoDB Atlas cloud directory
+      setIsLoading(true);
+      const cloudCheck = await fetch(`/api/students?email=${encodeURIComponent(cleanEmail)}`);
+      if (cloudCheck.ok) {
+        const cloudUser = await cloudCheck.json();
+        if (cloudUser && cloudUser.email) {
+          setIsLoading(false);
+          setError('এই ইমেইল দিয়ে ইতোমধ্যেই PatenteGuru-তে অ্যাকাউন্ট রয়েছে। দয়া করে Sign In (লগইন) করুন।');
+          return;
+        }
+      }
+
+      // Check phone in cloud
+      const cloudPhoneCheck = await fetch(`/api/students?phone=${encodeURIComponent(rawDigits)}`);
+      if (cloudPhoneCheck.ok) {
+        const cloudPhoneUser = await cloudPhoneCheck.json();
+        if (cloudPhoneUser && cloudPhoneUser.phone) {
+          setIsLoading(false);
+          setError('এই মোবাইল নম্বরটি দিয়ে ইতোমধ্যে PatenteGuru-তে অন্য অ্যাকাউন্ট খোলা আছে। দয়া করে আপনার নিজস্ব সঠিক নম্বর দিন।');
+          return;
+        }
+      }
+    } catch (checkErr) {
+      console.warn('Duplicate check warning:', checkErr);
+    }
 
     try {
       setIsLoading(true);

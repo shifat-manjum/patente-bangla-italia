@@ -78,4 +78,32 @@ function apiHandlerPlugin(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), apiHandlerPlugin()],
+  build: {
+    target: 'esnext',
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'vendor-react';
+          }
+          if (id.includes('node_modules/firebase')) {
+            return 'vendor-firebase';
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons';
+          }
+          if (id.includes('node_modules/canvas-confetti')) {
+            return 'vendor-confetti';
+          }
+          if (id.includes('src/data/roundQuestions')) {
+            return 'data-round-questions';
+          }
+          if (id.includes('src/data/patenteTranslationsBn')) {
+            return 'data-translations';
+          }
+        },
+      },
+    },
+  },
 })
