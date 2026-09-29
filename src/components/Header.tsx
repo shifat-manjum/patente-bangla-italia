@@ -285,16 +285,26 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={onGoToCurriculum}
-                className="flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 border border-slate-200 dark:border-white/20 text-slate-900 dark:text-white text-xs sm:text-sm font-black transition cursor-pointer shadow-xs active:scale-95"
-                title="২৪০ রাউন্ডের সম্পূর্ণ সিলেবাস খুলুন"
-              >
-                <ShieldCheck className="w-4 h-4 text-[#FB6C00] shrink-0" />
-                <span className="hidden sm:inline">Enrolled Student (240 Rounds)</span>
-                <span className="sm:hidden">240 Rounds</span>
-              </button>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <button
+                  type="button"
+                  onClick={onGoToCurriculum}
+                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-black transition cursor-pointer shadow-xs active:scale-95"
+                  title="২৪০ রাউন্ডের সম্পূর্ণ সিলেবাস খুলুন"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span className="hidden sm:inline">VIP Enrolled (240 Rounds)</span>
+                  <span className="sm:hidden">VIP</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onOpenPaywall}
+                  className="py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] text-white text-[11px] sm:text-xs font-black transition cursor-pointer shadow-xs active:scale-95 flex items-center gap-1"
+                  title="Make payment or test checkout"
+                >
+                  <span>💳 Pay Now</span>
+                </button>
+              </div>
             )}
           </div>
         </div>

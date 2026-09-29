@@ -125,7 +125,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                 className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs shadow-md shadow-[#FB6C00]/25 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1.5"
               >
                 <GraduationCap className="w-3.5 h-3.5 text-white" />
-                <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+                <span>💳 Pay Now (€49) / ভর্তি হন</span>
               </button>
             )}
           </div>
@@ -154,7 +154,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
             className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm shadow-md shadow-[#FB6C00]/25 hover:scale-105 active:scale-95 transition shrink-0 cursor-pointer flex items-center justify-center gap-2"
           >
             <GraduationCap className="w-4 h-4 text-white" />
-            <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+            <span>💳 Pay Now (€49) / এখনই ভর্তি হন</span>
           </button>
         </div>
       )}

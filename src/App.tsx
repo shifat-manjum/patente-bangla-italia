@@ -1,18 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
 import type { NavTab } from './components/Header';
 import { AppNavigation } from './components/AppNavigation';
 import type { AppTab } from './components/AppNavigation';
 import { StudentDashboardView } from './components/StudentDashboardView';
 import { RoundsCurriculumView } from './components/RoundsCurriculumView';
-import { TheorySummaryView } from './components/TheorySummaryView';
 import { EnrollmentModal } from './components/EnrollmentModal';
-import { ExamSimulator } from './components/ExamSimulator';
-import { MistakeReview } from './components/MistakeReview';
-import { AboutModal } from './components/AboutModal';
-import { AdminLoginModal } from './components/AdminLoginModal';
-import { AdminCrmDashboard } from './components/AdminCrmDashboard';
-import { StudentLeadModal } from './components/StudentLeadModal';
 import { StudentAuthModal } from './components/StudentAuthModal';
 import type { StudentUser } from './components/StudentAuthModal';
 import {
@@ -22,14 +15,9 @@ import {
   sanitizeStudentProfile,
   fetchStudentFromServerDb,
 } from './services/studentService';
-import { PatenteChatbot } from './components/PatenteChatbot';
-import { StudentProfileModal } from './components/StudentProfileModal';
 import type { ThemeMode } from './components/ThemeSwitcher';
 import { Footer } from './components/Footer';
-import { AcademyEnrollmentPage } from './components/AcademyEnrollmentPage';
 import confetti from 'canvas-confetti';
-import { CoursePaymentModal } from './components/CoursePaymentModal';
-import { CourseInvoiceModal } from './components/CourseInvoiceModal';
 import { 
   getLatestInvoice, 
   createInvoiceRecord, 
@@ -43,6 +31,20 @@ import {
   SETTINGS_CHANGE_EVENT 
 } from './services/appSettingsService';
 import type { AppSettings } from './services/appSettingsService';
+
+// Lazy-loaded heavy components (saves >2MB on initial mobile download!)
+const TheorySummaryView = lazy(() => import('./components/TheorySummaryView').then(m => ({ default: m.TheorySummaryView })));
+const ExamSimulator = lazy(() => import('./components/ExamSimulator').then(m => ({ default: m.ExamSimulator })));
+const MistakeReview = lazy(() => import('./components/MistakeReview').then(m => ({ default: m.MistakeReview })));
+const AdminCrmDashboard = lazy(() => import('./components/AdminCrmDashboard').then(m => ({ default: m.AdminCrmDashboard })));
+const AdminLoginModal = lazy(() => import('./components/AdminLoginModal').then(m => ({ default: m.AdminLoginModal })));
+const AboutModal = lazy(() => import('./components/AboutModal').then(m => ({ default: m.AboutModal })));
+const PatenteChatbot = lazy(() => import('./components/PatenteChatbot').then(m => ({ default: m.PatenteChatbot })));
+const StudentProfileModal = lazy(() => import('./components/StudentProfileModal').then(m => ({ default: m.StudentProfileModal })));
+const AcademyEnrollmentPage = lazy(() => import('./components/AcademyEnrollmentPage').then(m => ({ default: m.AcademyEnrollmentPage })));
+const CoursePaymentModal = lazy(() => import('./components/CoursePaymentModal').then(m => ({ default: m.CoursePaymentModal })));
+const CourseInvoiceModal = lazy(() => import('./components/CourseInvoiceModal').then(m => ({ default: m.CourseInvoiceModal })));
+const StudentLeadModal = lazy(() => import('./components/StudentLeadModal').then(m => ({ default: m.StudentLeadModal })));
 
 // Calculate true sequential progress: a student can only reach Round N if rounds 1..N-1 are passed
 export const getSequentialUnlockedRound = (completed?: Record<number, { passed: boolean }> | null): number => {
@@ -586,7 +588,7 @@ export function App() {
         totalQuestionsAnswered={totalQuestionsAnswered}
         isVip={isVip}
         freeRoundsLimit={appSettings.freeRoundsLimit}
-        onOpenPaywall={() => setAppTab('enrollment')}
+        onOpenPaywall={() => setIsPaymentModalOpen(true)}
         onOpenAbout={() => setIsAboutOpen(true)}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
@@ -674,121 +676,131 @@ export function App() {
           </div>
         )}
 
-        {appTab === 'dashboard' && (
-          <StudentDashboardView
-            student={currentUser}
-            activeRound={effectiveUnlockedRound}
-            completedRoundsCount={Object.values(completedRounds || {}).filter(r => r?.passed).length}
-            totalQuestionsSolved={totalQuestionsAnswered}
-            errorCount={mistakeIds.length}
-            isVip={isVip}
-            freeRoundsLimit={appSettings.freeRoundsLimit}
-            onContinueRound={(r) => handleStartRound(r)}
-            onGoToCurriculum={() => setAppTab('curriculum')}
-            onGoToTheory={() => setAppTab('theory')}
-            onGoToExam={() => {
-              if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
-              setCurrentRoundId(null);
-              setAppTab('exam');
-            }}
-            onGoToErrors={() => {
-              if (!requireLogin('ভুলের খাতা দেখতে')) return;
-              setAppTab('errors');
-            }}
-            onOpenEnrollment={() => setAppTab('enrollment')}
-          />
-        )}
+        <Suspense fallback={
+          <div className="flex flex-col items-center justify-center min-h-[350px] p-8 text-center space-y-4">
+            <div className="w-12 h-12 border-4 border-[#FB6C00] border-t-transparent rounded-full animate-spin" />
+            <div className="space-y-1">
+              <p className="text-sm font-black text-slate-900 dark:text-white">লোড হচ্ছে...</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Patente Guru উপাদান প্রস্তুত হচ্ছে</p>
+            </div>
+          </div>
+        }>
+          {appTab === 'dashboard' && (
+            <StudentDashboardView
+              student={currentUser}
+              activeRound={effectiveUnlockedRound}
+              completedRoundsCount={Object.values(completedRounds || {}).filter(r => r?.passed).length}
+              totalQuestionsSolved={totalQuestionsAnswered}
+              errorCount={mistakeIds.length}
+              isVip={isVip}
+              freeRoundsLimit={appSettings.freeRoundsLimit}
+              onContinueRound={(r) => handleStartRound(r)}
+              onGoToCurriculum={() => setAppTab('curriculum')}
+              onGoToTheory={() => setAppTab('theory')}
+              onGoToExam={() => {
+                if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
+                setCurrentRoundId(null);
+                setAppTab('exam');
+              }}
+              onGoToErrors={() => {
+                if (!requireLogin('ভুলের খাতা দেখতে')) return;
+                setAppTab('errors');
+              }}
+              onOpenEnrollment={() => setIsPaymentModalOpen(true)}
+            />
+          )}
 
-        {appTab === 'curriculum' && (
-          <RoundsCurriculumView
-            currentRoundId={effectiveUnlockedRound}
-            unlockedRound={effectiveUnlockedRound}
-            isVip={isVip}
-            freeRoundsLimit={appSettings.freeRoundsLimit}
-            onSelectRound={handleStartRound}
-            onTriggerEnrollment={(_r) => setAppTab('enrollment')}
-            completedRounds={completedRounds}
-          />
-        )}
+          {appTab === 'curriculum' && (
+            <RoundsCurriculumView
+              currentRoundId={effectiveUnlockedRound}
+              unlockedRound={effectiveUnlockedRound}
+              isVip={isVip}
+              freeRoundsLimit={appSettings.freeRoundsLimit}
+              onSelectRound={handleStartRound}
+              onTriggerEnrollment={(_r) => setIsPaymentModalOpen(true)}
+              completedRounds={completedRounds}
+            />
+          )}
 
-        {appTab === 'theory' && (
-          <TheorySummaryView
-            onStartRound={handleStartRound}
-            isVip={isVip}
-            onOpenEnrollment={() => setAppTab('enrollment')}
-            onOpenExamSim={() => {
-              if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
-              setCurrentRoundId(null);
-              setAppTab('exam');
-            }}
-          />
-        )}
-
-        {appTab === 'exam' && (
-          <ExamSimulator
-            roundId={currentRoundId}
-            isVip={isVip}
-            onOpenEnrollment={() => setAppTab('enrollment')}
-            onBackToRounds={() => {
-              setCurrentRoundId(null);
-              setAppTab('curriculum');
-            }}
-            onSelectRound={handleStartRound}
-            onSaveMistakes={handleSaveExamMistakes}
-            onGoToTopics={() => setAppTab('theory')}
-          />
-        )}
-
-        {appTab === 'errors' && (
-          <MistakeReview
-            mistakeIds={mistakeIds}
-            onClearMistakes={() => setMistakeIds([])}
-            onRemoveMistake={(id) => setMistakeIds((prev) => prev.filter((item) => item !== id))}
-            onGoToTopics={() => setAppTab('theory')}
-          />
-        )}
-
-        {appTab === 'admin' && (
-          adminEmail ? (
-            <AdminCrmDashboard
-              adminEmail={adminEmail}
-              onExitAdmin={() => {
-                try {
-                  sessionStorage.removeItem('patente_admin_auth');
-                } catch {}
-                setAdminEmail(null);
-                setAppTab('dashboard');
+          {appTab === 'theory' && (
+            <TheorySummaryView
+              onStartRound={handleStartRound}
+              isVip={isVip}
+              onOpenEnrollment={() => setIsPaymentModalOpen(true)}
+              onOpenExamSim={() => {
+                if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
+                setCurrentRoundId(null);
+                setAppTab('exam');
               }}
             />
-          ) : (
-            <div className="max-w-md mx-auto my-12 p-8 bg-white dark:bg-[#12161F] rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl text-center space-y-5">
-              <div className="w-16 h-16 rounded-2xl bg-[#FB6C00]/10 border border-[#FB6C00]/20 text-[#FB6C00] flex items-center justify-center mx-auto text-3xl">
-                🔒
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-xl font-black text-slate-900 dark:text-white">Admin CRM & Control Panel</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Access restricted to authorized owners (khshifat@gmail.com / khshifatmanjum@gmail.com).
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAdminLoginOpen(true)}
-                className="w-full py-3 rounded-xl bg-[#FB6C00] hover:bg-[#e05f00] text-white font-black text-sm shadow-lg shadow-[#FB6C00]/25 transition cursor-pointer"
-              >
-                Log In as Admin
-              </button>
-            </div>
-          )
-        )}
+          )}
 
-        {appTab === 'enrollment' && (
-          <AcademyEnrollmentPage
-            onBack={() => setAppTab('dashboard')}
-            onOpenPayment={() => setIsPaymentModalOpen(true)}
-            attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
-          />
-        )}
+          {appTab === 'exam' && (
+            <ExamSimulator
+              roundId={currentRoundId}
+              isVip={isVip}
+              onOpenEnrollment={() => setIsPaymentModalOpen(true)}
+              onBackToRounds={() => {
+                setCurrentRoundId(null);
+                setAppTab('curriculum');
+              }}
+              onSelectRound={handleStartRound}
+              onSaveMistakes={handleSaveExamMistakes}
+              onGoToTopics={() => setAppTab('theory')}
+            />
+          )}
+
+          {appTab === 'errors' && (
+            <MistakeReview
+              mistakeIds={mistakeIds}
+              onClearMistakes={() => setMistakeIds([])}
+              onRemoveMistake={(id) => setMistakeIds((prev) => prev.filter((item) => item !== id))}
+              onGoToTopics={() => setAppTab('theory')}
+            />
+          )}
+
+          {appTab === 'admin' && (
+            adminEmail ? (
+              <AdminCrmDashboard
+                adminEmail={adminEmail}
+                onExitAdmin={() => {
+                  try {
+                    sessionStorage.removeItem('patente_admin_auth');
+                  } catch {}
+                  setAdminEmail(null);
+                  setAppTab('dashboard');
+                }}
+              />
+            ) : (
+              <div className="max-w-md mx-auto my-12 p-8 bg-white dark:bg-[#12161F] rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl text-center space-y-5">
+                <div className="w-16 h-16 rounded-2xl bg-[#FB6C00]/10 border border-[#FB6C00]/20 text-[#FB6C00] flex items-center justify-center mx-auto text-3xl">
+                  🔒
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white">Admin CRM & Control Panel</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Access restricted to authorized owners (khshifat@gmail.com / khshifatmanjum@gmail.com).
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAdminLoginOpen(true)}
+                  className="w-full py-3 rounded-xl bg-[#FB6C00] hover:bg-[#e05f00] text-white font-black text-sm shadow-lg shadow-[#FB6C00]/25 transition cursor-pointer"
+                >
+                  Log In as Admin
+                </button>
+              </div>
+            )
+          )}
+
+          {appTab === 'enrollment' && (
+            <AcademyEnrollmentPage
+              onBack={() => setAppTab('dashboard')}
+              onOpenPayment={() => setIsPaymentModalOpen(true)}
+              attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
+            />
+          )}
+        </Suspense>
       </main>
 
       {/* Mandatory Student Auth Modal */}
@@ -800,23 +812,6 @@ export function App() {
           setCurrentUser(safe);
         }}
         forcedMessage={authForcedMessage}
-      />
-
-      {/* Student Personal Profile & Data Modal */}
-      <StudentProfileModal
-        isOpen={isStudentProfileOpen}
-        onClose={() => setIsStudentProfileOpen(false)}
-        student={currentUser}
-        isVip={isVip}
-        onLogout={handleLogout}
-        onOpenInvoice={handleOpenInvoice}
-        onUpdateProfile={(updated) => {
-          const safe = sanitizeStudentProfile(updated);
-          setCurrentUser(safe);
-          try {
-            localStorage.setItem('patente_student_user', JSON.stringify(safe));
-          } catch {}
-        }}
       />
 
       {/* Official Driving Academy Enrollment Modal */}
@@ -835,77 +830,121 @@ export function App() {
         attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
       />
 
-      {/* Direct Online Payment Checkout Modal */}
-      <CoursePaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onSuccess={handlePaymentSuccess}
-        initialStudent={
-          currentUser
-            ? {
-                name: currentUser.name,
-                email: currentUser.email,
-              }
-            : studentLead
-            ? {
-                name: studentLead.name,
-                email: studentLead.email,
-                phone: studentLead.phone,
-              }
-            : null
-        }
-        attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
-      />
+      <Suspense fallback={null}>
+        {/* Student Personal Profile & Data Modal */}
+        <StudentProfileModal
+          isOpen={isStudentProfileOpen}
+          onClose={() => setIsStudentProfileOpen(false)}
+          student={currentUser}
+          isVip={isVip}
+          onLogout={handleLogout}
+          onOpenInvoice={handleOpenInvoice}
+          onUpdateProfile={(updated) => {
+            const safe = sanitizeStudentProfile(updated);
+            setCurrentUser(safe);
+            try {
+              localStorage.setItem('patente_student_user', JSON.stringify(safe));
+            } catch {}
+          }}
+        />
 
-      {/* Official Tax Invoice & Payment Receipt Modal (Printable/Downloadable PDF) */}
-      <CourseInvoiceModal
-        isOpen={isInvoiceModalOpen}
-        onClose={() => setIsInvoiceModalOpen(false)}
-        invoice={activeInvoice}
-        onStartCourse={() => {
-          setIsInvoiceModalOpen(false);
-          setAppTab('curriculum');
-        }}
-      />
+        {/* Direct Online Payment Checkout Modal */}
+        <CoursePaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onSuccess={handlePaymentSuccess}
+          initialStudent={
+            currentUser
+              ? {
+                  name: currentUser.name,
+                  email: currentUser.email,
+                }
+              : studentLead
+              ? {
+                  name: studentLead.name,
+                  email: studentLead.email,
+                  phone: studentLead.phone,
+                }
+              : null
+          }
+          attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
+        />
 
-      {/* Student Lead Registration Modal */}
-      <StudentLeadModal
-        isOpen={isLeadModalOpen}
-        onClose={() => setIsLeadModalOpen(false)}
-        onSaveLead={(data) => {
-          try {
-            localStorage.setItem('patente_bangla_student_lead', JSON.stringify(data));
-          } catch {}
-          setStudentLead(data);
-        }}
-      />
+        {/* Official Tax Invoice & Payment Receipt Modal (Printable/Downloadable PDF) */}
+        <CourseInvoiceModal
+          isOpen={isInvoiceModalOpen}
+          onClose={() => setIsInvoiceModalOpen(false)}
+          invoice={activeInvoice}
+          onStartCourse={() => {
+            setIsInvoiceModalOpen(false);
+            setAppTab('curriculum');
+          }}
+        />
 
-      {/* About Us Modal (Shifat Manjum & Zentixx Story) */}
-      <AboutModal
-        isOpen={isAboutOpen}
-        onClose={() => setIsAboutOpen(false)}
-      />
+        {/* Student Lead Registration Modal */}
+        <StudentLeadModal
+          isOpen={isLeadModalOpen}
+          onClose={() => setIsLeadModalOpen(false)}
+          onSaveLead={(data) => {
+            try {
+              localStorage.setItem('patente_bangla_student_lead', JSON.stringify(data));
+            } catch {}
+            setStudentLead(data);
+          }}
+        />
 
-      {/* Floating 24/7 AI Maestro Tutor Chatbot */}
-      <PatenteChatbot
-        currentTheme={currentTheme}
-        currentUser={currentUser}
-        onOpenPaywall={() => setAppTab('enrollment')}
-      />
+        {/* About Us Modal (Shifat Manjum & Zentixx Story) */}
+        <AboutModal
+          isOpen={isAboutOpen}
+          onClose={() => setIsAboutOpen(false)}
+        />
 
-      {/* Admin Login Gate Modal */}
-      <AdminLoginModal
-        isOpen={isAdminLoginOpen}
-        onClose={() => setIsAdminLoginOpen(false)}
-        onAdminLoginSuccess={(email) => {
-          setAdminEmail(email);
-          try {
-            sessionStorage.setItem('patente_admin_auth', email);
-          } catch {}
-          setIsAdminLoginOpen(false);
-          setAppTab('admin');
-        }}
-      />
+        {/* Floating 24/7 AI Maestro Tutor Chatbot */}
+        <PatenteChatbot
+          currentTheme={currentTheme}
+          currentUser={currentUser}
+          onOpenPaywall={() => setIsPaymentModalOpen(true)}
+        />
+
+        {/* Admin Login Gate Modal */}
+        <AdminLoginModal
+          isOpen={isAdminLoginOpen}
+          onClose={() => setIsAdminLoginOpen(false)}
+          onAdminLoginSuccess={(email) => {
+            setAdminEmail(email);
+            try {
+              sessionStorage.setItem('patente_admin_auth', email);
+            } catch {}
+            setIsAdminLoginOpen(false);
+            setAppTab('admin');
+          }}
+        />
+      </Suspense>
+
+      {/* Mobile Sticky Floating Pay Now Bar (Always visible and easily accessible on mobile) */}
+      <div className="md:hidden fixed bottom-[74px] sm:bottom-[78px] left-3 right-3 z-30 animate-fadeIn pointer-events-auto">
+        <button
+          type="button"
+          onClick={() => {
+            if (isVip) {
+              handleOpenInvoice();
+            } else {
+              setIsPaymentModalOpen(true);
+            }
+          }}
+          className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-[#E52E2D] via-[#FB6C00] to-[#E52E2D] text-white font-black text-xs shadow-2xl shadow-[#FB6C00]/40 flex items-center justify-between border border-white/25 active:scale-95 transition cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping shrink-0" />
+            <span className="truncate">
+              {isVip ? '⭐ VIP সক্রিয় • অফিসিয়াল রসিদ দেখুন' : '🔥 ২৪০টি রাউন্ডের সম্পূর্ণ কোর্স আনলক (€৪৯)'}
+            </span>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-white text-slate-950 text-[11px] font-black shrink-0 shadow-sm ml-2">
+            {isVip ? 'রসিদ' : '💳 Pay Now'}
+          </span>
+        </button>
+      </div>
 
       {/* Footer */}
       <Footer

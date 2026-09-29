@@ -85,6 +85,35 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
 
   return (
     <div className="space-y-6 pb-24 md:pb-12">
+      {/* High-Impact VIP Enrollment Card (Visible to all students who want to enroll) */}
+      {!isVip && (
+        <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-r from-red-600 via-orange-600 to-amber-600 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-white/20 animate-fadeIn">
+          <div className="flex items-center gap-3.5 text-center sm:text-left">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-wider">
+                ⚡ স্পেশাল এনরোলমেন্ট অফার
+              </div>
+              <h3 className="text-base sm:text-lg font-black leading-snug">
+                সম্পূর্ণ কোর্স ও ২৪০টি রাউন্ড আনলক করুন (€৪৯)
+              </h3>
+              <p className="text-xs text-white/90">
+                এককালীন মাত্র €৪৯ ইউরো • পাস করা পর্যন্ত আনলিমিটেড এক্সেস • সাথে সাথে অফিসিয়াল ইনভয়েস
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenEnrollment}
+            className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-sm shadow-xl hover:scale-105 active:scale-95 transition cursor-pointer shrink-0 flex items-center justify-center gap-2"
+          >
+            <span>💳 Pay Now (€49) / এখনই ভর্তি হন</span>
+          </button>
+        </div>
+      )}
+
       {/* Student Welcome & Quick Resume Hero (Adobe Mesh Ambient Style) */}
       <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#18110E] rounded-3xl p-6 sm:p-8 text-white border border-white/10 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-[#E52E2D]/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
