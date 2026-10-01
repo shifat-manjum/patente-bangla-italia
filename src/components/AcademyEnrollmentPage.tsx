@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   GraduationCap, 
   BookOpen, 
@@ -10,18 +9,28 @@ import {
   Award,
   CreditCard
 } from 'lucide-react';
+import { getAppSettings } from '../services/appSettingsService';
 
 interface AcademyEnrollmentPageProps {
   onBack: () => void;
   onOpenPayment: () => void;
   attemptedRound?: number;
+  academyPriceEur?: number;
+  regularPriceEur?: number;
 }
 
 export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
   onBack,
   onOpenPayment,
   attemptedRound = 21,
+  academyPriceEur,
+  regularPriceEur,
 }) => {
+  const settings = getAppSettings();
+  const activePrice = academyPriceEur || settings.academyPriceEur || 49;
+  const regularPrice = regularPriceEur || settings.regularPriceEur || 120;
+  const discountPercent = regularPrice > 0 ? Math.round(((regularPrice - activePrice) / regularPrice) * 100) : 0;
+
   const whatsappMessage = encodeURIComponent(
     `Hello! I have questions regarding the complete course enrollment on Patente Bangla Italia / PatenteGuru (Round #${attemptedRound} to 240).`
   );
@@ -118,11 +127,15 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               <div>
                 <span className="text-xs text-blue-200 font-bold block">এককালীন কোর্স ফি • পাস করা পর্যন্ত এক্সেস (Una Tantum)</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-black text-white">€৪৯</span>
-                  <span className="text-xs text-slate-400 line-through">€৯৯</span>
-                  <span className="text-[11px] font-black text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/20">
-                    ৫০% ছাড়
-                  </span>
+                  <span className="text-2xl sm:text-3xl font-black text-white">€{activePrice}</span>
+                  {regularPrice > activePrice && (
+                    <span className="text-xs text-slate-400 line-through">€{regularPrice}</span>
+                  )}
+                  {discountPercent > 0 && (
+                    <span className="text-[11px] font-black text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/20">
+                      {discountPercent}% ছাড়
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -134,7 +147,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               className="py-4 px-6 sm:px-8 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 transition cursor-pointer shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 w-full sm:w-auto text-center"
             >
               <CreditCard className="w-5 h-5 shrink-0" />
-              <span>অনলাইনে সরাসরি পেমেন্ট করুন (€৪৯) • Paga Online</span>
+              <span>অনলাইনে সরাসরি পেমেন্ট করুন (€{activePrice}) • Paga Online</span>
             </button>
 
             {/* Secondary WhatsApp Help Button */}
@@ -199,7 +212,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               ১
             </span>
             <h4 className="font-black text-sm text-slate-900 dark:text-white">
-              অনলাইনে পেমেন্ট করুন (€৪৯)
+              অনলাইনে পেমেন্ট করুন (€{activePrice})
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               ওয়েবসাইটেই সরাসরি ডেবিট/ক্রেডিট কার্ড, PostePay, PayPal বা Bonifico দিয়ে নিরাপদে পেমেন্ট করুন।
@@ -249,7 +262,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
               className="flex-1 sm:flex-none py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md transition cursor-pointer active:scale-95"
             >
               <CreditCard className="w-4 h-4" />
-              <span>অনলাইনে পেমেন্ট (€৪৯)</span>
+              <span>অনলাইনে পেমেন্ট (€{activePrice})</span>
             </button>
 
             <a

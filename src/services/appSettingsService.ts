@@ -4,7 +4,8 @@ import { db, isFirebaseConfigured } from '../lib/firebase';
 
 export interface AppSettings {
   freeRoundsLimit: number; // e.g. 0 (all paid), 5, 10, 20 (standard), 240 (all free)
-  academyPriceEur: number;
+  academyPriceEur: number; // e.g. 49
+  regularPriceEur?: number; // e.g. 120 (regular price before discount)
   promoBannerText?: string;
   isPromoActive?: boolean;
   lastUpdated?: string;
@@ -16,6 +17,7 @@ export const SETTINGS_CHANGE_EVENT = 'patente_settings_changed';
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   freeRoundsLimit: 20,
   academyPriceEur: 49,
+  regularPriceEur: 120,
   promoBannerText: 'অফিসিয়াল ইতালিয়ান লাইসেন্স প্রস্তুতি • প্রথম প্রচেষ্টায় পাশের গ্যারান্টি',
   isPromoActive: false,
 };
@@ -35,6 +37,12 @@ export const getAppSettings = (): AppSettings => {
           freeRoundsLimit: Number.isFinite(parsed.freeRoundsLimit) && parsed.freeRoundsLimit >= 0
             ? Math.min(240, Math.max(0, parsed.freeRoundsLimit))
             : DEFAULT_APP_SETTINGS.freeRoundsLimit,
+          academyPriceEur: Number.isFinite(parsed.academyPriceEur) && parsed.academyPriceEur > 0
+            ? parsed.academyPriceEur
+            : DEFAULT_APP_SETTINGS.academyPriceEur,
+          regularPriceEur: Number.isFinite(parsed.regularPriceEur) && parsed.regularPriceEur > 0
+            ? parsed.regularPriceEur
+            : DEFAULT_APP_SETTINGS.regularPriceEur,
         };
       }
     }

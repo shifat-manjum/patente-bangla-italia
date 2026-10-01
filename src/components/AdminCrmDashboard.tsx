@@ -118,6 +118,36 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsSaveMsg, setSettingsSaveMsg] = useState<string | null>(null);
 
+  // Dynamic Pricing State (Regular Strike-through vs Active Offer Price)
+  const [priceInputRegular, setPriceInputRegular] = useState<number>(() => settings.regularPriceEur || 120);
+  const [priceInputActive, setPriceInputActive] = useState<number>(() => settings.academyPriceEur || 49);
+
+  useEffect(() => {
+    if (settings.regularPriceEur) setPriceInputRegular(settings.regularPriceEur);
+    if (settings.academyPriceEur) setPriceInputActive(settings.academyPriceEur);
+  }, [settings.regularPriceEur, settings.academyPriceEur]);
+
+  const handleSavePricing = async () => {
+    if (priceInputActive <= 0) {
+      alert('দয়া করে সঠিক অফার মূল্য দিন (কমপক্ষে €১)');
+      return;
+    }
+    setIsSavingSettings(true);
+    try {
+      const updated = await saveAppSettings({
+        regularPriceEur: priceInputRegular > 0 ? priceInputRegular : 120,
+        academyPriceEur: priceInputActive,
+      });
+      setSettings(updated);
+      setSettingsSaveMsg(`কোর্স মূল্য সফলভাবে আপডেট হয়েছে: নিয়মিত ~~€${updated.regularPriceEur}~~ • অফার €${updated.academyPriceEur}`);
+      setTimeout(() => setSettingsSaveMsg(null), 3500);
+    } catch (err) {
+      console.error('Failed to save pricing:', err);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
   const handleUpdateFreeRoundsLimit = async (limit: number) => {
     const validLimit = Math.min(240, Math.max(0, limit));
     setIsSavingSettings(true);
@@ -302,41 +332,81 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
     const total = students.length;
     const phoneLeads = students.filter((s) => s.phone && s.phone.trim().length > 5).length;
     const proPasses = students.filter((s) => s.isVip).length;
-    const totalRevenue = proPasses * 49;
+    const currentPrice = settings.academyPriceEur || 49;
+    const totalRevenue = proPasses * currentPrice;
     const totalQuestions = students.reduce((acc, s) => acc + (s.totalQuestionsAnswered || 0), 0);
     return { total, phoneLeads, proPasses, totalRevenue, totalQuestions };
-  }, [students]);
+  }, [students, settings.academyPriceEur]);
 
   // Toggle Pro Student Pass for a student directly from CRM (all 240 rounds free for closest ones)
   const handleToggleProPass = async (student: StudentProfile) => {
     const newStatus = !student.isVip;
     const confirmMsg = newStatus
-      ? `আপনি কি ${student.name}-কে আজীবনের জন্য সব ২৪০ রাউন্ড সম্পূর্ণ ফ্রি এক্সেস (VIP Pass) দিতে চান?\n\n(আপনার ঘনিষ্ঠ বন্ধু, পরিবার বা প্রিমিয়াম শিক্ষার্থীদের জন্য এটি তাৎক্ষণিকভাবে সব ২৪০টি রাউন্ড সম্পূর্ণ ফ্রি আনলক করবে)`
-      : `আপনি কি ${student.name}-এর ২৪০ রাউন্ড ফ্রি VIP Pass প্রত্যাহার করতে চান?`;
+      ? `আপনি কি ${student.name || student.email}-কে আজীবনের জন্য সব ২৪০ রাউন্ড সম্পূর্ণ ফ্রি এক্সেস (VIP Pass) দিতে চান?\n\n(এটি তাৎক্ষণিকভাবে শিক্ষার্থীর অ্যাকাউন্টে সব ২৪০টি রাউন্ড আনলক করবে)`
+      : `আপনি কি ${student.name || student.email}-এর ২৪০ রাউন্ড ফ্রি VIP Pass প্রত্যাহার করতে চান?`;
 
     if (!window.confirm(confirmMsg)) return;
 
-    // Update in Firestore
+    const payload: StudentProfile = {
+      ...student,
+      isVip: newStatus,
+      unlockedRound: newStatus ? 240 : (student.unlockedRound || 1),
+    };
+
+    // 1. Update in Firestore
     if (isFirebaseConfigured && db && student.uid) {
       try {
         const studentRef = doc(db, 'students', student.uid);
-        await updateDoc(studentRef, { isVip: newStatus });
+        await updateDoc(studentRef, {
+          isVip: newStatus,
+          unlockedRound: payload.unlockedRound,
+        });
       } catch (err) {
         console.warn('Failed to update Firestore:', err);
       }
     }
 
-    // Update state and local/server database
-    const updated = students.map((s) => (s.email === student.email ? { ...s, isVip: newStatus } : s));
+    // 2. Update local state
+    const updated = students.map((s) => (s.email.toLowerCase() === student.email.toLowerCase() ? payload : s));
     setStudents(updated);
+
     try {
       localStorage.setItem('patente_registered_students', JSON.stringify(updated));
-      fetch('/api/students', {
+
+      // 3. If currently logged in user on this device is this student, sync active session immediately
+      const currentStored = localStorage.getItem('patente_student_user');
+      if (currentStored) {
+        const parsed = JSON.parse(currentStored);
+        if (parsed.email && parsed.email.toLowerCase() === student.email.toLowerCase()) {
+          const updatedActive = { ...parsed, isVip: newStatus, unlockedRound: payload.unlockedRound };
+          localStorage.setItem('patente_student_user', JSON.stringify(updatedActive));
+          localStorage.setItem('patente_bangla_is_vip', String(newStatus));
+          if (newStatus) {
+            localStorage.setItem('patente_bangla_unlocked_round', '240');
+          }
+        }
+      }
+
+      // 4. Save to MongoDB Atlas server database (/api/students)
+      const res = await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...student, isVip: newStatus }),
-      }).catch(() => {});
-    } catch {}
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server returned status ${res.status}`);
+      }
+
+      alert(
+        newStatus
+          ? `✅ ${student.name || student.email}-এর জন্য সব ২৪০টি রাউন্ড সফলভাবে ফ্রি আনলক করা হয়েছে!`
+          : `ℹ️ ${student.name || student.email}-এর VIP এক্সেস প্রত্যাহার করা হয়েছে।`
+      );
+    } catch (err: any) {
+      console.error('Failed to sync VIP status:', err);
+      alert('লোকাল স্ট্যাটাস আপডেট হয়েছে।');
+    }
   };
 
   // Add new student manually from CRM
@@ -653,6 +723,103 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                   </>
                 )}
               </p>
+            </div>
+          </div>
+
+          {/* Dynamic Academy Pricing & Discount Control Panel (Regular vs Special Offer Price) */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/90 border border-slate-800 text-white shadow-xl space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-800 pb-3.5">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
+                    €
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-white">
+                    একাডেমি কোর্স ফি ও ডিসকাউন্ট কন্ট্রোল (Dynamic Pricing)
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400">
+                  নিয়মিত মূল্য (কাটা দাগ) এবং ডিসকাউন্ট অফার মূল্য নির্ধারণ করুন। পুরো ওয়েবসাইট ও স্ট্রাইপে তাৎক্ষণিক কার্যকর হবে।
+                </p>
+              </div>
+
+              {settingsSaveMsg && (
+                <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{settingsSaveMsg}</span>
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              {/* Regular Price (Crossed Out) */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-300 block">
+                  নিয়মিত ফি / Regular Price (€):
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">€</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={priceInputRegular}
+                    onChange={(e) => setPriceInputRegular(parseInt(e.target.value, 10) || 0)}
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-black text-sm focus:ring-2 focus:ring-[#FB6C00] focus:outline-none"
+                    placeholder="120"
+                  />
+                </div>
+                <span className="text-[10px] text-slate-400 block">কাটা দাগের নিয়মিত দাম (যেমন: €120)</span>
+              </div>
+
+              {/* Offer Price (Active Charged Price) */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-300 block">
+                  ডিসকাউন্ট অফার মূল্য / Special Offer Price (€):
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 font-bold">€</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={priceInputActive}
+                    onChange={(e) => setPriceInputActive(parseInt(e.target.value, 10) || 0)}
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-950 border border-emerald-500/50 text-emerald-400 font-black text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+                    placeholder="49"
+                  />
+                </div>
+                <span className="text-[10px] text-emerald-400 font-semibold block">শিক্ষার্থী যে আসল মূল্য পে করবে (যেমন: €49)</span>
+              </div>
+
+              {/* Save Pricing Button */}
+              <div>
+                <button
+                  type="button"
+                  disabled={isSavingSettings}
+                  onClick={handleSavePricing}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Check className="w-4 h-4 text-white" />
+                  <span>মূল্য সংরক্ষণ করুন (Save Pricing)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Live Visual Preview of Pricing */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between flex-wrap gap-2 text-xs">
+              <span className="text-slate-400">ওয়েবসাইটে শিক্ষার্থীদের কাছে ডিসপ্লে হবে:</span>
+              <div className="flex items-center gap-2.5">
+                <span className="line-through text-slate-500 text-xs font-bold">
+                  €{settings.regularPriceEur || 120}
+                </span>
+                <span className="text-lg font-black text-emerald-400">
+                  €{settings.academyPriceEur || 49}
+                </span>
+                {(settings.regularPriceEur || 120) > (settings.academyPriceEur || 49) && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">
+                    Save €{(settings.regularPriceEur || 120) - (settings.academyPriceEur || 49)} ({Math.round((((settings.regularPriceEur || 120) - (settings.academyPriceEur || 49)) / (settings.regularPriceEur || 120)) * 100)}% OFF)
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

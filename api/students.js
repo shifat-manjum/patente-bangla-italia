@@ -47,6 +47,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const url = new URL(req.url, 'http://localhost');
       const email = url.searchParams.get('email');
+      const uid = url.searchParams.get('uid');
       const phone = url.searchParams.get('phone');
 
       if (email || uid || phone) {

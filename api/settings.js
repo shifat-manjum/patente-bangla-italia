@@ -3,6 +3,7 @@ import { getCollection } from './_db.js';
 const DEFAULT_SETTINGS = {
   freeRoundsLimit: 20,
   academyPriceEur: 49,
+  regularPriceEur: 120,
   promoBannerText: 'অফিসিয়াল ইতালিয়ান লাইসেন্স প্রস্তুতি • প্রথম প্রচেষ্টায় পাশের গ্যারান্টি',
   isPromoActive: false,
 };

@@ -13,6 +13,8 @@ interface RoundsCurriculumViewProps {
   unlockedRound?: number;
   isVip?: boolean;
   freeRoundsLimit?: number;
+  academyPriceEur?: number;
+  regularPriceEur?: number;
   onSelectRound: (roundId: number) => void;
   onTriggerEnrollment: (roundId: number) => void;
   completedRounds?: Record<number, { errors: number; passed: boolean }>;
@@ -23,6 +25,8 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
   unlockedRound: _unlockedRound,
   isVip = false,
   freeRoundsLimit = 20,
+  academyPriceEur = 49,
+  regularPriceEur = 120,
   onSelectRound,
   onTriggerEnrollment,
   completedRounds = {},
@@ -112,7 +116,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
             </div>
             {effectiveFreeLimit < 240 && (
               <div className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-slate-200">
-                🎓 একাডেমি প্রো: <span className="text-slate-100 font-black">রাউন্ড {effectiveFreeLimit + 1}–২৪০ (€৪৯ • পাস করা পর্যন্ত এক্সেস)</span>
+                🎓 একাডেমি প্রো: <span className="text-slate-100 font-black">রাউন্ড {effectiveFreeLimit + 1}–২৪০ (€{academyPriceEur}{regularPriceEur > academyPriceEur ? ` / ছাড়ের পূর্বে €${regularPriceEur}` : ''} • পাস করা পর্যন্ত এক্সেস)</span>
               </div>
             )}
             <div className="px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-slate-200">
@@ -125,7 +129,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                 className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs shadow-md shadow-[#FB6C00]/25 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-1.5"
               >
                 <GraduationCap className="w-3.5 h-3.5 text-white" />
-                <span>💳 Pay Now (€49) / ভর্তি হন</span>
+                <span>💳 Pay Now (€{academyPriceEur}) / ভর্তি হন</span>
               </button>
             )}
           </div>
@@ -154,7 +158,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
             className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm shadow-md shadow-[#FB6C00]/25 hover:scale-105 active:scale-95 transition shrink-0 cursor-pointer flex items-center justify-center gap-2"
           >
             <GraduationCap className="w-4 h-4 text-white" />
-            <span>💳 Pay Now (€49) / এখনই ভর্তি হন</span>
+            <span>💳 Pay Now (€{academyPriceEur}) / এখনই ভর্তি হন</span>
           </button>
         </div>
       )}
@@ -200,9 +204,9 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
         {filteredRounds.map((round) => {
           const isPassed = round.result?.passed === true;
-          // Sequential unlocking for ALL students (paid and unpaid):
-          // A round is accessible only if it is at or below the student's highest reached unlocked round
-          const isUnlocked = round.id <= effectiveUnlocked;
+          // Unlocking logic: VIP students have ALL 240 rounds completely unlocked!
+          // Non-VIP students follow sequential progression
+          const isUnlocked = isVip || round.id <= effectiveUnlocked;
           const isCurrent = round.id === effectiveUnlocked;
           const isPaidSyllabus = round.id > effectiveFreeLimit && !isVip;
 
@@ -250,7 +254,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                   ) : !isUnlocked ? (
                     <span className="flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/5 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-white/10">
                       <Lock className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                      <span>{isPaidSyllabus ? '€৪৯ একাডেমি' : 'লক করা'}</span>
+                      <span>{isPaidSyllabus ? `€${academyPriceEur} একাডেমি` : 'লক করা'}</span>
                     </span>
                   ) : isCurrent ? (
                     <span className="flex items-center gap-1.5 text-[11px] font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/10 px-2.5 py-1 rounded-full border border-slate-300 dark:border-white/20 animate-pulse">
@@ -306,7 +310,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                     className="w-full py-2.5 px-3 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:opacity-90 text-white font-black text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md active:scale-95"
                   >
                     <GraduationCap className="w-4 h-4 text-white" />
-                    <span>একাডেমিতে ভর্তি হন (Iscriviti - €৪৯)</span>
+                    <span>একাডেমিতে ভর্তি হন (Iscriviti - €{academyPriceEur})</span>
                   </button>
                 ) : !isUnlocked ? (
                   <button

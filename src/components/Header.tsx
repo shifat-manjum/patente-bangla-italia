@@ -26,6 +26,8 @@ interface HeaderProps {
   totalQuestionsAnswered: number;
   isVip: boolean;
   freeRoundsLimit?: number;
+  academyPriceEur?: number;
+  regularPriceEur?: number;
   onOpenPaywall: () => void;
   onOpenAbout: () => void;
   currentTheme: ThemeMode;
@@ -43,6 +45,8 @@ export const Header: React.FC<HeaderProps> = ({
   totalQuestionsAnswered: _totalQuestionsAnswered,
   isVip,
   freeRoundsLimit: _freeRoundsLimit = 20,
+  academyPriceEur = 49,
+  regularPriceEur = 120,
   onOpenPaywall,
   onOpenAbout,
   currentTheme,
@@ -270,9 +274,14 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="text-[10px] text-amber-500 font-extrabold uppercase tracking-wider block">
                     VIP 240 Rounds
                   </span>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100">
-                    €49 Una Tantum
-                  </span>
+                  <div className="flex items-baseline gap-1 justify-end">
+                    <span className="text-[11px] text-slate-400 line-through">
+                      €{regularPriceEur}
+                    </span>
+                    <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100">
+                      €{academyPriceEur}
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -281,7 +290,7 @@ export const Header: React.FC<HeaderProps> = ({
                   title="সম্পূর্ণ কোর্স এক্সেস পেতে এখনই এনরোল ও পেমেন্ট করুন"
                 >
                   <GraduationCap className="w-4 h-4 text-white shrink-0" />
-                  <span>🔥 Pay Now (€49) / ভর্তি হন</span>
+                  <span>🔥 Pay Now (€{academyPriceEur}) / ভর্তি হন</span>
                 </button>
               </div>
             ) : (

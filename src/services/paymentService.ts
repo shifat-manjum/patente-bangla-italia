@@ -71,7 +71,7 @@ export const getPaymentMethodLabel = (method: PaymentMethodType): string => {
   }
 };
 
-export const createInvoiceRecord = (formData: PaymentFormData): InvoiceRecord => {
+export const createInvoiceRecord = (formData: PaymentFormData, amount: number = 49.0): InvoiceRecord => {
   const now = new Date();
   const formattedDate = now.toLocaleDateString('it-IT', {
     day: '2-digit',
@@ -91,7 +91,7 @@ export const createInvoiceRecord = (formData: PaymentFormData): InvoiceRecord =>
     codiceFiscale: formData.codiceFiscale.trim().toUpperCase() || 'NON SPECIFICATO',
     address: formData.address.trim() || 'Italia',
     city: formData.city.trim() || 'Bolzano',
-    amount: 49.0,
+    amount: typeof amount === 'number' && amount > 0 ? amount : 49.0,
     currency: 'EUR',
     taxExemptionNote:
       "Operazione didattico-formativa esente da IVA ai sensi dell'art. 10, comma 1, n. 20 del D.P.R. 633/1972.",

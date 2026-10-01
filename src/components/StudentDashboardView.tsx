@@ -52,6 +52,8 @@ interface StudentDashboardViewProps {
   errorCount: number;
   isVip?: boolean;
   freeRoundsLimit?: number;
+  academyPriceEur?: number;
+  regularPriceEur?: number;
   onContinueRound: (roundId: number) => void;
   onGoToCurriculum: () => void;
   onGoToTheory: () => void;
@@ -68,6 +70,8 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   errorCount,
   isVip = false,
   freeRoundsLimit = 20,
+  academyPriceEur = 49,
+  regularPriceEur = 120,
   onContinueRound,
   onGoToCurriculum,
   onGoToTheory,
@@ -93,14 +97,19 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-wider">
-                ⚡ স্পেশাল এনরোলমেন্ট অফার
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-wider">
+                <span>⚡ স্পেশাল এনরোলমেন্ট অফার</span>
+                {regularPriceEur > academyPriceEur && (
+                  <span className="bg-white text-slate-900 px-1.5 py-0.2 rounded-full font-black">
+                    Save €{regularPriceEur - academyPriceEur}
+                  </span>
+                )}
               </div>
               <h3 className="text-base sm:text-lg font-black leading-snug">
-                সম্পূর্ণ কোর্স ও ২৪০টি রাউন্ড আনলক করুন (€৪৯)
+                সম্পূর্ণ কোর্স ও ২৪০টি রাউন্ড আনলক করুন (€{academyPriceEur})
               </h3>
               <p className="text-xs text-white/90">
-                এককালীন মাত্র €৪৯ ইউরো • পাস করা পর্যন্ত আনলিমিটেড এক্সেস • সাথে সাথে অফিসিয়াল ইনভয়েস
+                নিয়মিত মূল্য <span className="line-through opacity-75">€{regularPriceEur}</span> • সীমিত সময়ের বিশেষ অফারে মাত্র €{academyPriceEur} • পাস করা পর্যন্ত আনলিমিটেড এক্সেস
               </p>
             </div>
           </div>
@@ -109,7 +118,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             onClick={onOpenEnrollment}
             className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-sm shadow-xl hover:scale-105 active:scale-95 transition cursor-pointer shrink-0 flex items-center justify-center gap-2"
           >
-            <span>💳 Pay Now (€49) / এখনই ভর্তি হন</span>
+            <span>💳 Pay Now (€{academyPriceEur}) / এখনই ভর্তি হন</span>
           </button>
         </div>
       )}

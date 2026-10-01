@@ -443,10 +443,9 @@ export function App() {
       setIsPaywallOpen(true);
       return;
     }
-    // Sequential locking for ALL students (paid or unpaid):
-    // Students can access any previously completed round, OR the current running round.
-    // They CANNOT access round N+1 if round N has not been passed!
-    if (roundId > effectiveUnlockedRound) {
+    // Sequential locking only applies to non-VIP students:
+    // VIP students (who paid or were granted the 240 Free VIP pass) can practice ANY round from 1 to 240!
+    if (!isVip && roundId > effectiveUnlockedRound) {
       alert(`🔒 রাউন্ড #${roundId} এখনও লক করা। দয়া করে প্রথমে পূর্ববর্তী রাউন্ড #${roundId - 1} সফলভাবে পাস করুন (সর্বোচ্চ ৩টি ভুল)।`);
       return;
     }
@@ -588,6 +587,8 @@ export function App() {
         totalQuestionsAnswered={totalQuestionsAnswered}
         isVip={isVip}
         freeRoundsLimit={appSettings.freeRoundsLimit}
+        academyPriceEur={appSettings.academyPriceEur}
+        regularPriceEur={appSettings.regularPriceEur}
         onOpenPaywall={() => setIsPaymentModalOpen(true)}
         onOpenAbout={() => setIsAboutOpen(true)}
         currentTheme={currentTheme}
@@ -694,6 +695,8 @@ export function App() {
               errorCount={mistakeIds.length}
               isVip={isVip}
               freeRoundsLimit={appSettings.freeRoundsLimit}
+              academyPriceEur={appSettings.academyPriceEur}
+              regularPriceEur={appSettings.regularPriceEur}
               onContinueRound={(r) => handleStartRound(r)}
               onGoToCurriculum={() => setAppTab('curriculum')}
               onGoToTheory={() => setAppTab('theory')}
@@ -716,6 +719,8 @@ export function App() {
               unlockedRound={effectiveUnlockedRound}
               isVip={isVip}
               freeRoundsLimit={appSettings.freeRoundsLimit}
+              academyPriceEur={appSettings.academyPriceEur}
+              regularPriceEur={appSettings.regularPriceEur}
               onSelectRound={handleStartRound}
               onTriggerEnrollment={(_r) => setIsPaymentModalOpen(true)}
               completedRounds={completedRounds}
@@ -798,6 +803,8 @@ export function App() {
               onBack={() => setAppTab('dashboard')}
               onOpenPayment={() => setIsPaymentModalOpen(true)}
               attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
+              academyPriceEur={appSettings.academyPriceEur}
+              regularPriceEur={appSettings.regularPriceEur}
             />
           )}
         </Suspense>
@@ -853,6 +860,8 @@ export function App() {
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
           onSuccess={handlePaymentSuccess}
+          academyPriceEur={appSettings.academyPriceEur}
+          regularPriceEur={appSettings.regularPriceEur}
           initialStudent={
             currentUser
               ? {
@@ -937,7 +946,9 @@ export function App() {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping shrink-0" />
             <span className="truncate">
-              {isVip ? '⭐ VIP সক্রিয় • অফিসিয়াল রসিদ দেখুন' : '🔥 ২৪০টি রাউন্ডের সম্পূর্ণ কোর্স আনলক (€৪৯)'}
+              {isVip
+                ? '⭐ VIP সক্রিয় • অফিসিয়াল রসিদ দেখুন'
+                : `🔥 ২৪০টি রাউন্ডের সম্পূর্ণ কোর্স আনলক (€${appSettings.academyPriceEur || 49})`}
             </span>
           </div>
           <span className="px-3 py-1 rounded-full bg-white text-slate-950 text-[11px] font-black shrink-0 shadow-sm ml-2">

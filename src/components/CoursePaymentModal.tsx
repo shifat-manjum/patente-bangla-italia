@@ -21,6 +21,10 @@ import type {
   PaymentFormData, 
   InvoiceRecord 
 } from '../services/paymentService';
+import { 
+  getAppSettings, 
+  SETTINGS_CHANGE_EVENT 
+} from '../services/appSettingsService';
 
 interface CoursePaymentModalProps {
   isOpen: boolean;
@@ -32,6 +36,8 @@ interface CoursePaymentModalProps {
     phone?: string;
   } | null;
   attemptedRound?: number;
+  academyPriceEur?: number;
+  regularPriceEur?: number;
 }
 
 export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
@@ -40,7 +46,20 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
   onSuccess,
   initialStudent,
   attemptedRound = 21,
+  academyPriceEur,
+  regularPriceEur,
 }) => {
+  const [appSettings, setAppSettings] = useState(() => getAppSettings());
+  const activePrice = academyPriceEur || appSettings.academyPriceEur || 49;
+  const regularPrice = regularPriceEur || appSettings.regularPriceEur || 120;
+
+  useEffect(() => {
+    const handleSettingsChanged = (e: any) => {
+      if (e?.detail) setAppSettings(e.detail);
+    };
+    window.addEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+    return () => window.removeEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+  }, []);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodType>('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -115,7 +134,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
           ...formData,
           paymentMethod: selectedMethod,
         };
-        const invoice = createInvoiceRecord(payload);
+        const invoice = createInvoiceRecord(payload, activePrice);
         saveInvoice(invoice);
         setIsProcessing(false);
         onSuccess(invoice);
@@ -214,9 +233,9 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
             <div className="text-right sm:border-l sm:border-slate-200 dark:sm:border-slate-700 sm:pl-4 shrink-0">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-                  €49,00
+                  €{activePrice},00
                 </span>
-                <span className="text-xs text-slate-400 line-through">€99</span>
+                <span className="text-xs text-slate-400 line-through">€{regularPrice}</span>
               </div>
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
                 Esente IVA Art. 10 DPR 633/72
@@ -516,13 +535,13 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
               ) : selectedMethod === 'bonifico' ? (
                 <>
                   <Building2 className="w-4.5 h-4.5" />
-                  <span>বোনিফিকো তথ্য নিশ্চিত করুন • Conferma Bonifico €49,00</span>
+                  <span>বোনিফিকো তথ্য নিশ্চিত করুন • Conferma Bonifico €{activePrice},00</span>
                 </>
               ) : (
                 <>
                   <Lock className="w-4.5 h-4.5" />
                   <span>
-                    নিরাপদে পেমেন্ট সম্পন্ন করুন (€৪৯) • Paga Ora €49,00 con Stripe
+                    নিরাপদে পেমেন্ট সম্পন্ন করুন (€{activePrice}) • Paga Ora €{activePrice},00 con Stripe
                   </span>
                 </>
               )}
