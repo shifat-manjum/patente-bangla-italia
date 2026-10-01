@@ -106,8 +106,8 @@ Rules for response:
         body: JSON.stringify({
           contents,
           generationConfig: {
-            temperature: 0.25,
-            maxOutputTokens: 350,
+            temperature: 0.3,
+            maxOutputTokens: 550,
           },
         }),
       });
