@@ -151,6 +151,22 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
 
   const activePillRef = useRef<HTMLButtonElement | null>(null);
+  const ribbonScrollRef = useRef<HTMLDivElement | null>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [thumbWidthRatio, setThumbWidthRatio] = useState(0.35);
+
+  const handleRibbonScroll = () => {
+    if (!ribbonScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = ribbonScrollRef.current;
+    const maxScroll = scrollWidth - clientWidth;
+    if (maxScroll > 0) {
+      setScrollProgress((scrollLeft / maxScroll) * 100);
+      setThumbWidthRatio(Math.max(0.2, Math.min(1, clientWidth / scrollWidth)));
+    } else {
+      setScrollProgress(0);
+      setThumbWidthRatio(1);
+    }
+  };
 
   // Group questions into official ministerial exam brackets of 10 (1-10, 11-20, 21-30)
   const questionGroups: { start: number; end: number; items: { q: QuizQuestion; idx: number }[] }[] = [];
@@ -176,7 +192,15 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
         });
       }
     } catch {}
+    const timer = setTimeout(handleRibbonScroll, 200);
+    return () => clearTimeout(timer);
   }, [currentIdx]);
+
+  useEffect(() => {
+    handleRibbonScroll();
+    window.addEventListener('resize', handleRibbonScroll);
+    return () => window.removeEventListener('resize', handleRibbonScroll);
+  }, [questions]);
 
   // Keyboard navigation shortcuts: V for Vero, F for Falso, ArrowRight/Enter for Next, ArrowLeft for Prev
   useEffect(() => {
@@ -539,62 +563,102 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
         </div>
       )}
 
-      {/* Official Ministerial Exam Question Ribbon: 10-Question Brackets (1-10 | 11-20 | 21-30) */}
-      <div className="bg-white dark:bg-[#12161F] rounded-2xl p-2 sm:p-2.5 border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm flex items-center gap-2 overflow-hidden">
-        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0 pl-1 hidden md:inline">
-          Domande:
-        </span>
+      {/* Official Ministerial Exam Question Ribbon: 10-Question Brackets with Google Antigravity Scroller */}
+      <div className="bg-white dark:bg-[#12161F] rounded-2xl p-2 sm:p-2.5 border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5">
+        <div className="flex items-center gap-2 overflow-hidden">
+          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0 pl-1 hidden md:inline">
+            Domande:
+          </span>
 
-        <div className="flex items-center gap-2 overflow-x-auto py-1 px-0.5 scrollbar-none flex-1">
-          {questionGroups.map((group, groupIdx) => (
-            <React.Fragment key={groupIdx}>
-              {/* Bracketed 10-Question Group */}
-              <div className="flex items-center gap-1 bg-slate-100/70 dark:bg-white/[0.04] p-1 rounded-xl border border-slate-200/80 dark:border-white/5 shrink-0">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 px-1 hidden sm:inline select-none">
-                  {group.start}–{group.end}
-                </span>
+          <div
+            ref={ribbonScrollRef}
+            onScroll={handleRibbonScroll}
+            className="flex items-center gap-2 overflow-x-auto py-1 px-0.5 scrollbar-none flex-1"
+          >
+            {questionGroups.map((group, groupIdx) => (
+              <React.Fragment key={groupIdx}>
+                {/* Bracketed 10-Question Group: [ 1 2 3 ... 10 ] */}
+                <div className="flex items-center gap-1 bg-slate-100/70 dark:bg-white/[0.04] p-1 px-1.5 rounded-xl border border-slate-200/80 dark:border-white/5 shrink-0">
+                  <span className="text-slate-400 dark:text-slate-500 font-black select-none text-xs sm:text-sm px-0.5">
+                    [
+                  </span>
 
-                {group.items.map(({ q, idx }) => {
-                  const hasAnswered = answers[idx] !== undefined;
-                  const isCurrent = currentIdx === idx;
-                  const isUserRight = isSubmitted && answers[idx] === q.isCorrect;
+                  {group.items.map(({ q, idx }) => {
+                    const hasAnswered = answers[idx] !== undefined;
+                    const isCurrent = currentIdx === idx;
+                    const isUserRight = isSubmitted && answers[idx] === q.isCorrect;
 
-                  return (
-                    <button
-                      key={idx}
-                      ref={isCurrent ? activePillRef : null}
-                      type="button"
-                      onClick={() => setCurrentIdx(idx)}
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl font-black text-xs shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                        isCurrent
-                          ? 'bg-[#FB6C00] text-white shadow-md shadow-[#FB6C00]/30 ring-2 ring-[#FB6C00]/30 scale-105'
-                          : isSubmitted
-                          ? isUserRight
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-rose-600 text-white'
-                          : hasAnswered
-                          ? 'bg-slate-300 text-slate-900 dark:bg-white/20 dark:text-white font-bold'
-                          : 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-transparent'
-                      }`}
-                      title={`Question ${idx + 1}${hasAnswered ? ' (Answered)' : ''}`}
-                    >
-                      {idx + 1}
-                    </button>
-                  );
-                })}
-              </div>
+                    return (
+                      <button
+                        key={idx}
+                        ref={isCurrent ? activePillRef : null}
+                        type="button"
+                        onClick={() => setCurrentIdx(idx)}
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl font-black text-xs shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[#FB6C00] text-white shadow-md shadow-[#FB6C00]/30 ring-2 ring-[#FB6C00]/30 scale-105'
+                            : isSubmitted
+                            ? isUserRight
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-rose-600 text-white'
+                            : hasAnswered
+                            ? 'bg-slate-300 text-slate-900 dark:bg-white/20 dark:text-white font-bold'
+                            : 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-transparent'
+                        }`}
+                        title={`Question ${idx + 1}${hasAnswered ? ' (Answered)' : ''}`}
+                      >
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
 
-              {/* Break/Divider between brackets */}
-              {groupIdx < questionGroups.length - 1 && (
-                <div className="w-[1.5px] h-6 bg-slate-300 dark:bg-white/15 shrink-0 mx-0.5" />
-              )}
-            </React.Fragment>
-          ))}
+                  <span className="text-slate-400 dark:text-slate-500 font-black select-none text-xs sm:text-sm px-0.5">
+                    ]
+                  </span>
+                </div>
+
+                {/* Break/Divider between brackets */}
+                {groupIdx < questionGroups.length - 1 && (
+                  <span className="text-slate-300 dark:text-white/20 font-bold select-none text-base px-0.5 shrink-0">
+                    │
+                  </span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0 pr-1 hidden lg:flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>{Object.keys(answers).length}/30 উত্তর</span>
+          </div>
         </div>
 
-        <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0 pr-1 hidden lg:flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span>{Object.keys(answers).length}/30 উত্তর</span>
+        {/* Google Antigravity-themed Scroller Track */}
+        <div className="w-full px-1 pt-0.5">
+          <div
+            onClick={(e) => {
+              if (!ribbonScrollRef.current) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const clickRatio = (e.clientX - rect.left) / rect.width;
+              const maxScroll = ribbonScrollRef.current.scrollWidth - ribbonScrollRef.current.clientWidth;
+              ribbonScrollRef.current.scrollTo({
+                left: clickRatio * maxScroll,
+                behavior: 'smooth',
+              });
+            }}
+            className="h-1.5 w-full bg-slate-200/70 dark:bg-white/10 rounded-full relative overflow-hidden cursor-pointer transition-all hover:h-2"
+            title="Google Antigravity Scroller"
+          >
+            <div
+              className="h-full rounded-full transition-all duration-150 ease-out shadow-xs"
+              style={{
+                width: `${Math.max(18, thumbWidthRatio * 100)}%`,
+                marginLeft: `${Math.min(100 - Math.max(18, thumbWidthRatio * 100), scrollProgress * (1 - thumbWidthRatio))}%`,
+                background: 'linear-gradient(90deg, #4285F4 0%, #EA4335 33%, #FBBC05 66%, #34A853 100%)',
+                boxShadow: '0 0 10px rgba(66, 133, 244, 0.4), 0 0 6px rgba(234, 67, 53, 0.3)',
+              }}
+            />
+          </div>
         </div>
       </div>
 
