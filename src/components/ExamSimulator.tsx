@@ -8,7 +8,6 @@ import {
   XCircle,
   ArrowRight,
   ArrowLeft,
-  LayoutGrid,
   GraduationCap
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
@@ -151,8 +150,20 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   const isPassed = errorCount <= 3;
   const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
 
-  const [showFullGrid, setShowFullGrid] = useState<boolean>(false);
   const activePillRef = useRef<HTMLButtonElement | null>(null);
+
+  // Group questions into official ministerial exam brackets of 10 (1-10, 11-20, 21-30)
+  const questionGroups: { start: number; end: number; items: { q: QuizQuestion; idx: number }[] }[] = [];
+  for (let i = 0; i < questions.length; i += 10) {
+    questionGroups.push({
+      start: i + 1,
+      end: Math.min(i + 10, questions.length),
+      items: questions.slice(i, i + 10).map((q, offset) => ({
+        q,
+        idx: i + offset,
+      })),
+    });
+  }
 
   // Auto-scroll ribbon to keep active question in view
   useEffect(() => {
@@ -528,96 +539,64 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
         </div>
       )}
 
-      {/* Sleek, Compact Single-Row Question Ribbon (Only 42px tall, saves 200px vertical space!) */}
-      <div className="bg-white dark:bg-[#12161F] rounded-2xl p-2 sm:p-2.5 border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm flex items-center gap-2">
-        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0 pl-1 hidden sm:inline">
-          Questions:
+      {/* Official Ministerial Exam Question Ribbon: 10-Question Brackets (1-10 | 11-20 | 21-30) */}
+      <div className="bg-white dark:bg-[#12161F] rounded-2xl p-2 sm:p-2.5 border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm flex items-center gap-2 overflow-hidden">
+        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0 pl-1 hidden md:inline">
+          Domande:
         </span>
-        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none flex-1">
-          {questions.map((q, idx) => {
-            const hasAnswered = answers[idx] !== undefined;
-            const isCurrent = currentIdx === idx;
-            const isUserRight = isSubmitted && answers[idx] === q.isCorrect;
 
-            return (
-              <button
-                key={idx}
-                ref={isCurrent ? activePillRef : null}
-                type="button"
-                onClick={() => setCurrentIdx(idx)}
-                className={`w-8 h-8 sm:w-8 sm:h-8 rounded-xl font-black text-xs shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                  isCurrent
-                    ? 'bg-[#FB6C00] text-white shadow-md shadow-[#FB6C00]/30 ring-2 ring-[#FB6C00]/30 scale-105'
-                    : isSubmitted
-                    ? isUserRight
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-rose-600 text-white'
-                    : hasAnswered
-                    ? 'bg-slate-200 text-slate-900 dark:bg-white/15 dark:text-white font-bold'
-                    : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white'
-                }`}
-                title={`Question ${idx + 1}${hasAnswered ? ' (Answered)' : ''}`}
-              >
-                {idx + 1}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2 overflow-x-auto py-1 px-0.5 scrollbar-none flex-1">
+          {questionGroups.map((group, groupIdx) => (
+            <React.Fragment key={groupIdx}>
+              {/* Bracketed 10-Question Group */}
+              <div className="flex items-center gap-1 bg-slate-100/70 dark:bg-white/[0.04] p-1 rounded-xl border border-slate-200/80 dark:border-white/5 shrink-0">
+                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 px-1 hidden sm:inline select-none">
+                  {group.start}–{group.end}
+                </span>
+
+                {group.items.map(({ q, idx }) => {
+                  const hasAnswered = answers[idx] !== undefined;
+                  const isCurrent = currentIdx === idx;
+                  const isUserRight = isSubmitted && answers[idx] === q.isCorrect;
+
+                  return (
+                    <button
+                      key={idx}
+                      ref={isCurrent ? activePillRef : null}
+                      type="button"
+                      onClick={() => setCurrentIdx(idx)}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl font-black text-xs shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#FB6C00] text-white shadow-md shadow-[#FB6C00]/30 ring-2 ring-[#FB6C00]/30 scale-105'
+                          : isSubmitted
+                          ? isUserRight
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-rose-600 text-white'
+                          : hasAnswered
+                          ? 'bg-slate-300 text-slate-900 dark:bg-white/20 dark:text-white font-bold'
+                          : 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-transparent'
+                      }`}
+                      title={`Question ${idx + 1}${hasAnswered ? ' (Answered)' : ''}`}
+                    >
+                      {idx + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Break/Divider between brackets */}
+              {groupIdx < questionGroups.length - 1 && (
+                <div className="w-[1.5px] h-6 bg-slate-300 dark:bg-white/15 shrink-0 mx-0.5" />
+              )}
+            </React.Fragment>
+          ))}
         </div>
 
-        {/* Toggle Full Grid if desired */}
-        <button
-          type="button"
-          onClick={() => setShowFullGrid(!showFullGrid)}
-          className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-white/10 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-950 dark:hover:text-white shrink-0 cursor-pointer flex items-center gap-1"
-          title="Toggle 30 questions grid"
-        >
-          <LayoutGrid className="w-3 h-3" />
-          <span className="hidden sm:inline">{showFullGrid ? 'Close' : '30 Grid'}</span>
-        </button>
+        <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0 pr-1 hidden lg:flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span>{Object.keys(answers).length}/30 উত্তর</span>
+        </div>
       </div>
-
-      {/* Optional Collapsible 30-Question Grid */}
-      {showFullGrid && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm animate-fadeIn space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>সবগুলো প্রশ্ন (1 - 30):</span>
-            <span className="text-[11px]">
-              {isSubmitted ? 'সবুজ = সঠিক • লাল = ভুল' : 'গাঢ় = উত্তর দেওয়া হয়েছে'}
-            </span>
-          </div>
-          <div className="grid grid-cols-6 sm:grid-cols-10 gap-2">
-            {questions.map((q, idx) => {
-              const hasAnswered = answers[idx] !== undefined;
-              const isCurrent = currentIdx === idx;
-              const isUserRight = isSubmitted && answers[idx] === q.isCorrect;
-
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    setCurrentIdx(idx);
-                    setShowFullGrid(false);
-                  }}
-                  className={`h-9 rounded-xl font-black text-xs flex items-center justify-center transition-all cursor-pointer ${
-                    isCurrent ? 'ring-2 ring-[#FB6C00] scale-105' : ''
-                  } ${
-                    isSubmitted
-                      ? isUserRight
-                        ? 'bg-emerald-600 text-white font-black'
-                        : 'bg-rose-600 text-white font-black'
-                      : hasAnswered
-                      ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-bold'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {idx + 1}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Active Question Card: Visible immediately in the viewport; clearance padding on mobile only */}
       <div className="pb-36 md:pb-0">
