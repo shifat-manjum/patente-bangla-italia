@@ -51,12 +51,12 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initial welcome message (Focused teacher persona)
+  // Initial welcome message (Funny & charismatic teacher persona)
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       sender: 'ai',
-      text: `Ciao ${currentUser ? (currentUser.name || currentUser.email || 'Student').split(' ')[0] : 'Student'}! Sono Marco. 👋\n\nযেকোনো ইতালিয়ান কুইজ বা প্রশ্ন এখানে পেস্ট করুন—সরাসরি **VERO/FALSO**, বাংলা অর্থ ও মূল ট্রাফিক নিয়ম এক নজরে বুঝিয়ে দেব। 🚗`,
+      text: `Ciao ${currentUser ? (currentUser.name || currentUser.email || 'Student').split(' ')[0] : 'Student'}! Sono Teacher Marco! 🇮🇹🚗\n\nপাতেন্তে নিয়ে কোনো প্যারা? কুইজ বুঝতে মাথা ঘুরছে? যেকোনো প্রশ্ন বা কুইজ এখানে পেস্ট করুন—সহজ, মজার ছলে ও ফাঁদ ধরিয়ে বুঝিয়ে দেব! 🍕\n\nতবে হ্যাঁ, বিরিয়ানির রেসিপি জিজ্ঞেস করবেন না কিন্তু, আমি শুধু গাড়ি চালানো আর পাতেন্তে পাস করানো জানি! 😂🏎️`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -183,7 +183,56 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   const analyzeQuery = (query: string): { reply: string; quiz?: any } => {
     const cleanQuery = query.toLowerCase().trim();
 
-    // 1. Check if user pasted an existing hotshot question
+    // 0. Out-of-Scope / Irrelevant Topic Detection (Witty Marco Rejection)
+    const outOfScopePatterns = [
+      /রেসিপি|বিরিয়ানি|রান্না|তরকারি|খাবার|recipe|cook|cooking|briyani|pizza recipe|pasta recipe/,
+      /মুভি|সিনেমা|গান|নাটক|অভিনেতা|movie|actor|actress|cinema|bollywood|song/,
+      /প্রেম|বিয়ে|ভালোবাসা|ব্রেকআপ|ক্রাশ|গার্লফ্রেন্ড|বয়ফ্রেন্ড|love|dating|girlfriend|boyfriend/,
+      /রাশিফল|জ্যোতিষ|ভাগ্য|গণক|horoscope|astrology|fortune/,
+      /কোডিং|প্রোগ্রামিং|জাভাস্ক্রিপ্ট|পাইথন|react|html|css|coding|programmer|python|java\b|software/,
+      /ক্রিকেট|ফুটবল|মেসি|রোনালদো|বিপিএল|আইপিএল|cricket|football|soccer|messi|ronaldo/,
+      /রাজনীতি|প্রধানমন্ত্রী|ভোট|এমপি|মন্ত্রী|politics|election|minister/,
+      /ঔষধ|ট্যাবলেট|প্রেসক্রিপশন|medicine|doctor advice/,
+    ];
+
+    if (outOfScopePatterns.some((pattern) => pattern.test(cleanQuery))) {
+      return {
+        reply: `Mamma Mia! 🤌😂 ওহে বন্ধু, আমি তো ইতালিয়ান ড্রাইভিং লাইসেন্স গুরু মারকো! আমি কি শেফ, কোডার নাকি জ্যোতিষী? 🍝\n\nএই প্রশ্নের সাথে তো পাতেন্তে বি বা ইতালিয়ান ট্রাফিক আইনের দূর-দূরান্তেও কোনো সম্পর্ক নেই! এসবে সময় নষ্ট না করে গাড়ির স্টিয়ারিংয়ে মন দাও—পাতেন্তে পাস না করলে ইতালি ঘুরে দেখবে কীভাবে? 🚗\n\nচলো, কোনো ট্রাফিক সাইন, কুইজের ফাঁদ (Trabocchetti) বা ড্রাইভিং নিয়ম নিয়ে প্রশ্ন করো, চুটকিতে বুঝিয়ে দিচ্ছি! Andiamo! 🏎️💨`,
+      };
+    }
+
+    // 1. Common Student Questions (Course, Exam & License Rules)
+    if (cleanQuery.includes('ভুল') || cleanQuery.includes('error') || cleanQuery.includes('কয়টা ভুল')) {
+      return {
+        reply: `🎯 **পরীক্ষার নিয়ম ও ভুল সীমা (Regole d'Esame):**\n\nইতালিয়ান Patente B কুইজ পরীক্ষায় মোট **৩০টি প্রশ্ন** থাকে এবং সময় থাকে **২০ মিনিট**।\n\n• পাস করার নিয়ম: আপনি **সর্বোচ্চ ৩টি ভুল (Massimo 3 errori)** করতে পারবেন! ✅\n• **৪টি ভুল হলেই পরীক্ষা ফেইল (Bocciato)!** 😱\n\nমারকোর পরামর্শ: আমাদের ২৪০টি রাউন্ড নিয়মিত প্র্যাকটিস করুন, ভুল শূন্যে নামিয়ে আনাই আমাদের টার্গেট! 🚗💨`,
+      };
+    }
+
+    if (cleanQuery.includes('সময় কত') || cleanQuery.includes('কত মিনিট') || cleanQuery.includes('পরীক্ষা কত') || cleanQuery.includes('tempo')) {
+      return {
+        reply: `⏱️ **পরীক্ষার সময়সীমা (Tempo d'Esame):**\n\nঅফিশিয়াল কুইজ পরীক্ষার জন্য আপনি পাবেন ঠিক **২০ মিনিট (20 minuti)**! ৩০টি প্রশ্নের জন্য এটা যথেষ্ট সময়—প্রতি প্রশ্নে গড়ে ৪০ সেকেন্ড।\n\nমারকোর সিক্রেট টিপস: কঠিন প্রশ্নে আটকে না থেকে প্রথমে নিশ্চিত প্রশ্নগুলোর উত্তর দিন, তারপর বাকিগুলো ঠান্ডা মাথায় চেক করুন! 🇮🇹✅`,
+      };
+    }
+
+    if (cleanQuery.includes('foglio rosa') || cleanQuery.includes('ফোগলিও রোসা') || cleanQuery.includes('ফোগলিও')) {
+      return {
+        reply: `📄 **ফোগলিও রোসা (Foglio Rosa) কী?**\n\nথিওরি পরীক্ষায় পাস করার পরই আপনি পাবেন 'Foglio Rosa'! এর মেয়াদ **১ বছর (12 mesi)** এবং এই সময়ের মধ্যে আপনি প্র্যাকটিক্যাল পরীক্ষার ৩টি সুযোগ (3 tentativi) পাবেন।\n\nমারকোর ড্রাইভিং টিপস: ফোগলিও রোসা দিয়ে গাড়ি ড্রাইভ করার সময় পাশে অবশ্যই কমপক্ষে ১০ বছরের অভিজ্ঞ লাইসেন্সধারী গাইড থাকতে হবে! 🚗`,
+      };
+    }
+
+    if (cleanQuery.includes('neopatentat') || cleanQuery.includes('নেওপাতেন্তাতো') || cleanQuery.includes('নতুন ড্রাইভার')) {
+      return {
+        reply: `🚦 **Neopatentati (নতুন ড্রাইভারদের কড়া নিয়ম):**\n\nলাইসেন্স পাওয়ার প্রথম ৩ বছর আপনি 'Neopatentato':\n• **গতিসীমা:** হাইওয়েতে (Autostrada) সর্বোচ্চ ১০০ কিমি/ঘণ্টা (সাধারণদের ১৩০), এবং Tangenziale-তে ৯০ কিমি/ঘণ্টা।\n• **অ্যালকোহল লিমিট:** ঠিক **0.0 g/l**! এক ফোঁটাও অ্যালকোহল সহ্য করা হবে না! 🚫🍷\n• **পয়েন্ট কাটা:** কোনো ভায়োলেশনে সাধারণ চালকের চেয়ে দ্বিগুণ (Double) পয়েন্ট কাটা যাবে! সাবধান! ⚠️`,
+      };
+    }
+
+    if (cleanQuery.includes('sosta') && cleanQuery.includes('fermata')) {
+      return {
+        reply: `🅿️ **Sosta বনাম Fermata এর সহজ পার্থক্য:**\n\n• **Fermata (থামানো):** খুব অল্প সময়ের জন্য গাড়ি দাঁড় করানো (যেমন যাত্রী নামানো বা উঠানো)। চালককে অবশ্যই গাড়ির স্টিয়ারিংয়ে প্রস্তুত থাকতে হবে! VERO! ⏱️\n• **Sosta (পার্কিং):** গাড়ি রেখে চলে যাওয়া বা দীর্ঘ সময় রাখা। ইঞ্জিন বন্ধ থাকে।\n\nমারকোর গোল্ডেন রুল: যেখানে Fermata নিষেধ, সেখানে Sosta ও নিষেধ! কিন্তু যেখানে Sosta নিষেধ, সেখানে Fermata করা যেতে পারে (যদি বাধা সৃষ্টি না হয়)! 🚗`,
+      };
+    }
+
+    // 2. Check if user pasted an existing hotshot question
     const matchedHotshot = HOTSHOT_QUESTIONS.find(
       (q) =>
         q.questionIt.toLowerCase().includes(cleanQuery) ||
@@ -192,9 +241,9 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
     if (matchedHotshot) {
       return {
-        reply: `🔍 **লাইভ টিউটর বিশ্লেষণ সম্পন্ন!**\n\nঅফিশিয়াল পরীক্ষা অনুযায়ী এই বক্তব্যটি **${
+        reply: `Mamma Mia! 🤌 **কুইজ প্রশ্ন পেয়ে গেছি!**\n\nপরীক্ষা অনুযায়ী এর উত্তর **${
           matchedHotshot.isCorrect ? '✅ VERO (সত্য)' : '❌ FALSO (মিথ্যা)'
-        }**।\n\nনিচে শিক্ষক দলের বিস্তারিত বিশ্লেষণ দেওয়া হলো:`,
+        }**।\n\nমারকোর সহজ বিশ্লেষণ নিচে দেওয়া হলো:`,
         quiz: {
           isCorrect: matchedHotshot.isCorrect,
           questionIt: matchedHotshot.questionIt,
@@ -206,7 +255,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       };
     }
 
-    // 2. Check in all 20 rounds (600 official questions)
+    // 3. Check in all 20 rounds (600 official questions)
     for (const roundList of Object.values(ROUND_QUESTIONS)) {
       const match = roundList.find((q) => {
         const it = q.questionIt.toLowerCase();
@@ -218,7 +267,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
       if (match) {
         return {
-          reply: `🎯 **অফিশিয়াল প্রশ্ন শনাক্ত হয়েছে!**\n\nপরীক্ষা অনুযায়ী এর উত্তর **${
+          reply: `Bravissimo! 🎯 **অফিশিয়াল প্রশ্ন শনাক্ত হয়েছে!**\n\nপরীক্ষা অনুযায়ী এর উত্তর **${
             match.isCorrect ? '✅ VERO (সত্য)' : '❌ FALSO (মিথ্যা)'
           }**।`,
           quiz: {
@@ -232,7 +281,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       }
     }
 
-    // 3. Keyword / Trap Word Check (Trabocchetti)
+    // 4. Keyword / Trap Word Check (Trabocchetti)
     const trapWords = [
       'esclusivamente',
       'sempre',
@@ -247,11 +296,11 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     const foundTrap = trapWords.find((w) => cleanQuery.includes(w));
     if (foundTrap) {
       return {
-        reply: `⚠️ **ট্র্যাপ শব্দ শনাক্ত হয়েছে: "${foundTrap.toUpperCase()}"**\n\nইতালিয়ান ড্রাইভিং লাইসেন্স কুইজে **${foundTrap}** (শুধুমাত্র / সবসময় / কোনো অবস্থাতেই না) শব্দগুলো থাকলে **৯৫% ক্ষেত্রে প্রশ্নটি FALSO (মিথ্যা)** হয়। কারণ ট্রাফিক বিধিতে প্রায় সবসময়ই কিছু ব্যতিক্রম বা বিশেষ পরিস্থিতি অনুমোদিত থাকে।\n\nপ্রশ্নটি ভালো করে পড়ুন এবং নিঃশর্ত বক্তব্যের ফাঁদে পা দেবেন না!`,
+        reply: `Attenzione! ⚠️ **মারকোর ট্র্যাপ অ্যালার্ট: "${foundTrap.toUpperCase()}"**\n\nইতালিয়ান ড্রাইভিং লাইসেন্স কুইজে **${foundTrap}** (শুধুমাত্র / সবসময় / কোনো অবস্থাতেই না) শব্দগুলো থাকলে **৯৫% ক্ষেত্রে প্রশ্নটি FALSO (মিথ্যা)** হয়! কারণ ট্রাফিক বিধিতে প্রায় সবসময়ই কিছু ব্যতিক্রম থাকে।\n\nপ্রশ্নটি ভালো করে পড়ুন এবং এই ফাঁদে পা দেবেন না! 🤌`,
       };
     }
 
-    // 4. Vocabulary Matcher
+    // 5. Vocabulary Matcher
     const matchedVocab = COMPREHENSIVE_VOCABULARY.filter(
       (v) =>
         cleanQuery.includes(v.wordIt.toLowerCase()) ||
@@ -266,13 +315,13 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
         )
         .join('\n');
       return {
-        reply: `📖 **গুরুত্বপূর্ণ শব্দার্থ:**\n\n${vocabText}\n\nআপনার কুইজের পুরো বাক্যটি এখানে পেস্ট করুন, আমি সাথে সাথে VERO/FALSO এবং নিয়ম ব্যাখ্যা করে দেব।`,
+        reply: `📖 **গুরুত্বপূর্ণ শব্দার্থ (Vocabolario):**\n\n${vocabText}\n\nআপনার কুইজের পুরো বাক্যটি এখানে পেস্ট করুন, আমি সাথে সাথে VERO/FALSO এবং নিয়ম বুঝিয়ে দেব! 🚗`,
       };
     }
 
-    // 5. Default Teacher Support Guidance
+    // 6. Default Teacher Support Guidance
     return {
-      reply: `👨‍🏫 **লাইভ শিক্ষক দলের উত্তর:**\n\nআপনার প্রশ্নটি পেয়েছি। ইতালিয়ান লাইসেন্স পরীক্ষায় সঠিক উত্তর নিশ্চিত করতে যে কোনো কুইজ প্রশ্ন সরাসরি ইতালিয়ান ভাষায় হুবহু পেস্ট করুন।\n\nউদাহরণ:\n• *"La carreggiata è destinata alla sosta di emergenza..."*\n• *"In presenza del segnale di STOP..."*\n\n১ মিনিটের মধ্যে আমাদের সিস্টেম ও শিক্ষক দল আপনার জন্য সম্পূর্ণ বাংলা ভাবার্থ ও ফাঁদ বের করে দেবে! 🇮🇹🇧🇩`,
+      reply: `Ciao Amico! 🇮🇹👨‍🏫 আপনার প্রশ্নটি পেয়েছি। ইতালিয়ান লাইসেন্স পরীক্ষায় সঠিক উত্তর নিশ্চিত করতে যে কোনো কুইজ প্রশ্ন সরাসরি ইতালিয়ান ভাষায় হুবহু পেস্ট করুন।\n\nউদাহরণ:\n• *"La carreggiata è destinata alla sosta di emergenza..."*\n• *"In presenza del segnale di STOP..."*\n\nকুইজ ড্রপ করলেই আমি সম্পূর্ণ বাংলা ভাবার্থ ও ফাঁদ বের করে বুঝিয়ে দেব! Andiamo! 🚗💨`,
     };
   };
 
