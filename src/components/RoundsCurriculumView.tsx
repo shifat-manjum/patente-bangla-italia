@@ -181,8 +181,8 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {[
             { id: 'all', label: `সব রাউন্ড (${totalRounds})` },
-            { id: 'free', label: `ফ্রি ফাউন্ডেশন (${freeRoundsCount})` },
-            { id: 'pro', label: `একাডেমি প্রো (${proRoundsCount})` },
+            { id: 'free', label: `ফ্রি রাউন্ড (${freeRoundsCount})` },
+            { id: 'pro', label: `পেইড রাউন্ড (${proRoundsCount})` },
             { id: 'passed', label: `পাস হয়েছে (${passedCount})` },
           ].map((tab) => (
             <button
@@ -251,19 +251,15 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>{30 - (round.result?.errors ?? 0)}/৩০ পাস</span>
                     </span>
-                  ) : !isUnlocked ? (
-                    <span className="flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/5 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-white/10">
-                      <Lock className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                      <span>{isPaidSyllabus ? `€${academyPriceEur} একাডেমি` : 'লক করা'}</span>
-                    </span>
                   ) : isCurrent ? (
-                    <span className="flex items-center gap-1.5 text-[11px] font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/10 px-2.5 py-1 rounded-full border border-slate-300 dark:border-white/20 animate-pulse">
-                      <span className="w-2 h-2 rounded-full bg-[#FB6C00] dark:bg-[#FB6C00]" />
+                    <span className="flex items-center gap-1.5 text-[11px] font-black text-white bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] px-2.5 py-1 rounded-full shadow-sm shadow-[#FB6C00]/25 animate-pulse">
+                      <span className="w-2 h-2 rounded-full bg-white" />
                       <span>রানিং রাউন্ড</span>
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-white/10">
-                      {round.isFree ? 'ফ্রি রাউন্ড' : 'প্রো সিলেবাস'}
+                    <span className="flex items-center gap-1 text-[11px] font-black text-white bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] px-2.5 py-1 rounded-full shadow-sm shadow-[#FB6C00]/25">
+                      {!isUnlocked && <Lock className="w-3 h-3 text-white/90" />}
+                      <span>{round.isFree ? 'ফ্রি রাউন্ড' : 'পেইড রাউন্ড'}</span>
                     </span>
                   )}
                 </div>
