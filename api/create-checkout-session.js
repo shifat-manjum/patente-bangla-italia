@@ -65,8 +65,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Valid student email is required' });
     }
 
-    // Determine current academy price from settings (default €49)
-    let priceEur = 49;
+    // Determine current academy price: check DB settings first, fallback to body.priceEur, then default €49
+    let priceEur = typeof body.priceEur === 'number' && body.priceEur > 0 ? body.priceEur : 49;
     try {
       const settingsCol = await getCollection('settings');
       const settingsDoc = await settingsCol.findOne({ key: 'app_settings' });
@@ -74,7 +74,7 @@ export default async function handler(req, res) {
         priceEur = settingsDoc.academyPriceEur;
       }
     } catch (e) {
-      console.warn('Could not read price from settings, using default 49:', e);
+      console.warn('Could not read price from settings, using fallback price:', e);
     }
 
     // Determine origin for redirection

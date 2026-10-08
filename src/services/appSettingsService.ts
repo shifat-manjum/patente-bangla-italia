@@ -97,53 +97,93 @@ export const saveAppSettings = async (newSettings: Partial<AppSettings>): Promis
     }
   }
 
-  // 4. Sync to Server JSON DB if available
+  // 4. Sync to Server JSON / MongoDB DB (/api/settings)
   try {
     if (typeof window !== 'undefined') {
-      fetch('/api/settings', {
+      await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(merged),
-      }).catch(() => {});
+      });
     }
-  } catch {}
+  } catch (err) {
+    console.warn('Server API settings sync notice:', err);
+  }
 
   return merged;
 };
 
 /**
- * Fetch latest settings from Cloud Firestore and local server
+ * Fetch latest settings with smart timestamp conflict resolution
+ * (Prevents older remote data from overwriting freshly changed local settings)
  */
 export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
-  // Try Firestore
-  if (isFirebaseConfigured && db) {
-    try {
-      const snap = await getDoc(doc(db, 'settings', 'general'));
-      if (snap.exists()) {
-        const data = snap.data() as AppSettings;
-        if (data && typeof data.freeRoundsLimit === 'number') {
-          saveAppSettings(data);
-          return data;
-        }
-      }
-    } catch {}
-  }
+  const local = getAppSettings();
+  const localTime = local.lastUpdated ? new Date(local.lastUpdated).getTime() : 0;
 
-  // Try server API (MongoDB Atlas)
+  let remoteSettings: AppSettings | null = null;
+
+  // 1. Try Server API (MongoDB Atlas) first
   try {
     const res = await fetch('/api/settings');
     const contentType = res.headers.get('content-type') || '';
     if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
-      if (data && typeof data.freeRoundsLimit === 'number') {
-        saveAppSettings(data);
-        return data;
+      if (data && (typeof data.freeRoundsLimit === 'number' || typeof data.academyPriceEur === 'number')) {
+        remoteSettings = data;
       }
     }
   } catch (err) {
     console.warn('Settings API fetch notice:', err);
   }
 
-  return getAppSettings();
+  // 2. Try Firestore if no server settings
+  if (!remoteSettings && isFirebaseConfigured && db) {
+    try {
+      const snap = await getDoc(doc(db, 'settings', 'general'));
+      if (snap.exists()) {
+        const data = snap.data() as AppSettings;
+        if (data && (typeof data.freeRoundsLimit === 'number' || typeof data.academyPriceEur === 'number')) {
+          remoteSettings = data;
+        }
+      }
+    } catch {}
+  }
+
+  // 3. Smart Conflict Resolution based on timestamps
+  if (remoteSettings) {
+    const remoteTime = remoteSettings.lastUpdated ? new Date(remoteSettings.lastUpdated).getTime() : 0;
+
+    // Only adopt remote if it is genuinely NEWER than local
+    if (remoteTime > localTime) {
+      const merged: AppSettings = {
+        ...local,
+        ...remoteSettings,
+        freeRoundsLimit: typeof remoteSettings.freeRoundsLimit === 'number' && remoteSettings.freeRoundsLimit >= 0
+          ? Math.min(240, Math.max(0, remoteSettings.freeRoundsLimit))
+          : local.freeRoundsLimit,
+        academyPriceEur: typeof remoteSettings.academyPriceEur === 'number' && remoteSettings.academyPriceEur > 0
+          ? remoteSettings.academyPriceEur
+          : local.academyPriceEur,
+        regularPriceEur: typeof remoteSettings.regularPriceEur === 'number' && remoteSettings.regularPriceEur > 0
+          ? remoteSettings.regularPriceEur
+          : local.regularPriceEur,
+      };
+      try {
+        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(merged));
+        localStorage.setItem('patente_free_rounds_limit', String(merged.freeRoundsLimit));
+      } catch {}
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(SETTINGS_CHANGE_EVENT, { detail: merged }));
+      }
+      return merged;
+    } else if (localTime > remoteTime && localTime > 0) {
+      // Local has newer changes that were not yet synced to remote -> push local to remote!
+      saveAppSettings(local).catch(() => {});
+      return local;
+    }
+  }
+
+  return local;
 };
 

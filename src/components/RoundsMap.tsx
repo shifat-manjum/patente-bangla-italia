@@ -64,6 +64,7 @@ interface RoundsMapProps {
   onOpenPaywall: () => void;
   isVip: boolean;
   totalQuestionsAnswered: number;
+  academyPriceEur?: number;
 }
 
 export const RoundsMap: React.FC<RoundsMapProps> = ({
@@ -73,6 +74,7 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
   onOpenPaywall,
   isVip,
   totalQuestionsAnswered,
+  academyPriceEur = 49,
 }) => {
   return (
     <div className="max-w-5xl mx-auto space-y-10 animate-fadeIn">
@@ -113,7 +115,7 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                 className="w-full py-2.5 px-3 rounded-xl bg-[#FB6C00] text-white font-black text-xs transition cursor-pointer flex items-center justify-center gap-2 shadow-sm hover:bg-orange-600"
               >
                 <Sparkles className="w-4 h-4 fill-current" />
-                <span>Pro Student Pass (€49)</span>
+                <span>Pro Student Pass (€{academyPriceEur})</span>
               </button>
             ) : isVip ? (
               <div className="text-xs font-black text-emerald-700 flex items-center justify-center gap-1.5 py-1 bg-emerald-50 rounded-xl border border-emerald-200">
@@ -204,7 +206,7 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                     ) : (
                       <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                         <Lock className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Pro Student Pass (€49)</span>
+                        <span>Pro Student Pass (€{academyPriceEur})</span>
                       </span>
                     )}
                   </div>
@@ -240,7 +242,7 @@ export const RoundsMap: React.FC<RoundsMapProps> = ({
                     ) : isVip ? (
                       <span className="text-orange-700 font-bold">Pro Student Pass Active</span>
                     ) : (
-                      <span className="text-slate-500">Requires Pro Pass (€49)</span>
+                      <span className="text-slate-500">Requires Pro Pass (€{academyPriceEur})</span>
                     )}
                   </span>
 

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   GraduationCap, 
@@ -10,6 +10,7 @@ import {
   ExternalLink,
   CreditCard
 } from 'lucide-react';
+import { getAppSettings, SETTINGS_CHANGE_EVENT } from '../services/appSettingsService';
 
 interface EnrollmentModalProps {
   isOpen: boolean;
@@ -18,6 +19,9 @@ interface EnrollmentModalProps {
   onViewFullPage?: () => void;
   onOpenPayment?: () => void;
   attemptedRound?: number;
+  academyPriceEur?: number;
+  regularPriceEur?: number;
+  freeRoundsLimit?: number;
 }
 
 export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
@@ -27,7 +31,23 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
   onViewFullPage,
   onOpenPayment,
   attemptedRound = 21,
+  academyPriceEur,
+  regularPriceEur: _regularPriceEur,
+  freeRoundsLimit,
 }) => {
+  const [appSettings, setAppSettings] = useState(() => getAppSettings());
+
+  useEffect(() => {
+    const handleSettingsChanged = (e: any) => {
+      if (e?.detail) setAppSettings(e.detail);
+    };
+    window.addEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+    return () => window.removeEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+  }, []);
+
+  const activePrice = academyPriceEur || appSettings.academyPriceEur || 49;
+  const currentFreeLimit = typeof freeRoundsLimit === 'number' ? freeRoundsLimit : appSettings.freeRoundsLimit;
+
   // Listen for Escape key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,7 +102,7 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               Complete Syllabus & Full Academy Access
             </h2>
             <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed">
-              ফাউন্ডেশন রাউন্ড (১–২০) সফলভাবে মূল্যায়নের পর সম্পূর্ণ কোর্স অ্যাক্টিভ করুন (€৪৯ এককালীন কোর্স ফি • পাস করা পর্যন্ত এক্সেস)।
+              ফাউন্ডেশন রাউন্ড (১–{currentFreeLimit}) সফলভাবে মূল্যায়নের পর সম্পূর্ণ কোর্স অ্যাক্টিভ করুন (€{activePrice} এককালীন কোর্স ফি • পাস করা পর্যন্ত এক্সেস)।
             </p>
           </div>
         </div>
@@ -172,7 +192,7 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-98"
             >
               <CreditCard className="w-4.5 h-4.5" />
-              <span>অনলাইনে সরাসরি পেমেন্ট করুন (€৪৯) • Paga Online</span>
+              <span>অনলাইনে সরাসরি পেমেন্ট করুন (€{activePrice}) • Paga Online</span>
             </button>
           ) : (
             <a
@@ -182,7 +202,7 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-98"
             >
               <MessageCircle className="w-4.5 h-4.5" />
-              <span>Confirm Enrollment via WhatsApp (€৪৯)</span>
+              <span>Confirm Enrollment via WhatsApp (€{activePrice})</span>
             </a>
           )}
 
@@ -192,7 +212,7 @@ export const EnrollmentModal: React.FC<EnrollmentModalProps> = ({
               onClick={onContinueFree}
               className="flex-1 py-2 px-3 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-bold text-xs text-center transition cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
             >
-              Continue Free (১–২০ রাউন্ড)
+              Continue Free (১–{currentFreeLimit} রাউন্ড)
             </button>
 
             <a

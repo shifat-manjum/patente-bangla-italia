@@ -31,6 +31,7 @@ import {
   SETTINGS_CHANGE_EVENT 
 } from './services/appSettingsService';
 import type { AppSettings } from './services/appSettingsService';
+import { trackViewContent, trackPurchase } from './utils/metaPixel';
 
 // Lazy-loaded heavy components (saves >2MB on initial mobile download!)
 const TheorySummaryView = lazy(() => import('./components/TheorySummaryView').then(m => ({ default: m.TheorySummaryView })));
@@ -452,6 +453,7 @@ export function App() {
     // Switch to exam simulator to take the round
     setCurrentRoundId(roundId);
     setAppTab('exam');
+    trackViewContent(`Round #${roundId}`, roundId <= appSettings.freeRoundsLimit ? 'Free Quiz Round' : 'Pro Round');
   };
 
   const handleSelectTab = (tab: NavTab) => {
@@ -485,6 +487,7 @@ export function App() {
     setActiveInvoice(invoice);
     setIsPaymentModalOpen(false);
     setIsInvoiceModalOpen(true);
+    trackPurchase(invoice?.amount || appSettings.academyPriceEur || 49, 'EUR', 'Patente Bangla Pro Pass - 240 Rounds');
 
     if (currentUser?.uid) {
       syncStudentProgressToCloud(currentUser.uid, {
@@ -731,6 +734,8 @@ export function App() {
             <TheorySummaryView
               onStartRound={handleStartRound}
               isVip={isVip}
+              academyPriceEur={appSettings.academyPriceEur}
+              regularPriceEur={appSettings.regularPriceEur}
               onOpenEnrollment={() => setIsPaymentModalOpen(true)}
               onOpenExamSim={() => {
                 if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
@@ -744,6 +749,7 @@ export function App() {
             <ExamSimulator
               roundId={currentRoundId}
               isVip={isVip}
+              academyPriceEur={appSettings.academyPriceEur}
               onOpenEnrollment={() => setIsPaymentModalOpen(true)}
               onBackToRounds={() => {
                 setCurrentRoundId(null);
@@ -834,7 +840,10 @@ export function App() {
           setIsPaywallOpen(false);
           setIsPaymentModalOpen(true);
         }}
-        attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
+        attemptedRound={unlockedRound > appSettings.freeRoundsLimit ? unlockedRound : appSettings.freeRoundsLimit + 1}
+        academyPriceEur={appSettings.academyPriceEur}
+        regularPriceEur={appSettings.regularPriceEur}
+        freeRoundsLimit={appSettings.freeRoundsLimit}
       />
 
       <Suspense fallback={null}>

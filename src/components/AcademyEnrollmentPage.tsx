@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { 
   GraduationCap, 
   BookOpen, 
@@ -9,7 +10,8 @@ import {
   Award,
   CreditCard
 } from 'lucide-react';
-import { getAppSettings } from '../services/appSettingsService';
+import { getAppSettings, SETTINGS_CHANGE_EVENT } from '../services/appSettingsService';
+import { trackInitiateCheckout } from '../utils/metaPixel';
 
 interface AcademyEnrollmentPageProps {
   onBack: () => void;
@@ -26,7 +28,16 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
   academyPriceEur,
   regularPriceEur,
 }) => {
-  const settings = getAppSettings();
+  const [settings, setSettings] = useState(() => getAppSettings());
+
+  useEffect(() => {
+    const handleSettingsChanged = (e: any) => {
+      if (e?.detail) setSettings(e.detail);
+    };
+    window.addEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+    return () => window.removeEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+  }, []);
+
   const activePrice = academyPriceEur || settings.academyPriceEur || 49;
   const regularPrice = regularPriceEur || settings.regularPriceEur || 120;
   const discountPercent = regularPrice > 0 ? Math.round(((regularPrice - activePrice) / regularPrice) * 100) : 0;
@@ -258,7 +269,10 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               type="button"
-              onClick={onOpenPayment}
+              onClick={() => {
+                trackInitiateCheckout(activePrice, 'EUR', 'Patente Bangla Pro Pass');
+                onOpenPayment();
+              }}
               className="flex-1 sm:flex-none py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-md transition cursor-pointer active:scale-95"
             >
               <CreditCard className="w-4 h-4" />

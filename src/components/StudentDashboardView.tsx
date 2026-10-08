@@ -181,7 +181,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   className="py-3 px-5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-[#FB6C00]/25 transition hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <GraduationCap className="w-4 h-4 text-white" />
-                  <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+                  <span>একাডেমিতে ভর্তি হন (€{academyPriceEur})</span>
                 </button>
               )}
 
@@ -345,7 +345,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-xs font-black text-orange-400">
               <GraduationCap className="w-4 h-4 text-orange-400" />
-              <span>Patente Bangla Academy Pro Pass • এককালীন মাত্র €৪৯</span>
+              <span>Patente Bangla Academy Pro Pass • এককালীন মাত্র €{academyPriceEur}</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
               ২৪০টি সম্পূর্ণ রাউন্ড ও পাস করা পর্যন্ত আনলিমিটেড প্রস্তুতি
@@ -380,7 +380,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
               className="w-full sm:w-auto lg:w-full py-3.5 px-8 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-sm shadow-xl shadow-[#FB6C00]/30 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2 text-center"
             >
               <GraduationCap className="w-4 h-4 text-white" />
-              <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+              <span>একাডেমিতে ভর্তি হন (€{academyPriceEur})</span>
             </button>
             <span className="text-[11px] text-slate-400 font-semibold text-center">
               লাইফটাইম এক্সেস • কোনো মাসিক সাবস্ক্রিপশন নেই

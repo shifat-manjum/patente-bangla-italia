@@ -17,13 +17,19 @@ interface TheorySummaryViewProps {
   onOpenExamSim?: () => void;
   isVip?: boolean;
   onOpenEnrollment?: () => void;
+  academyPriceEur?: number;
+  regularPriceEur?: number;
 }
 
 export const TheorySummaryView: React.FC<TheorySummaryViewProps> = ({
   onStartRound,
   isVip = false,
   onOpenEnrollment,
+  academyPriceEur = 49,
+  regularPriceEur = 120,
 }) => {
+  const activePrice = academyPriceEur || 49;
+  const regularPrice = regularPriceEur || 120;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [playingRule, setPlayingRule] = useState<string | null>(null);
@@ -249,7 +255,7 @@ export const TheorySummaryView: React.FC<TheorySummaryViewProps> = ({
           <div className="space-y-2 max-w-2xl text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-xs font-black text-orange-400">
               <GraduationCap className="w-4 h-4 text-orange-400" />
-              <span>Patente Bangla Academy Pro Pass • এককালীন মাত্র €৪৯</span>
+              <span>Patente Bangla Academy Pro Pass • এককালীন মাত্র €{activePrice}{regularPrice > activePrice ? ` (নিয়মিত €${regularPrice})` : ''}</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
               থিওরি রিভিশন শেষ? এবার ২৪০ রাউন্ডের কুইজ দিয়ে ১০০% প্রস্তুতি নিন
@@ -266,7 +272,7 @@ export const TheorySummaryView: React.FC<TheorySummaryViewProps> = ({
               className="w-full sm:w-auto py-3 px-8 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-sm shadow-xl shadow-[#FB6C00]/30 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2 text-center"
             >
               <GraduationCap className="w-4 h-4 text-white" />
-              <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+              <span>একাডেমিতে ভর্তি হন (€{activePrice})</span>
             </button>
             <span className="text-[11px] text-slate-400 font-semibold text-center">
               লাইফটাইম এক্সেস • একবার ফি দিয়ে পাস করা পর্যন্ত

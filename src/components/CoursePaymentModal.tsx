@@ -25,6 +25,7 @@ import {
   getAppSettings, 
   SETTINGS_CHANGE_EVENT 
 } from '../services/appSettingsService';
+import { trackInitiateCheckout } from '../utils/metaPixel';
 
 interface CoursePaymentModalProps {
   isOpen: boolean;
@@ -147,6 +148,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
     // Real Stripe Checkout for Card, PostePay, Apple Pay, Google Pay, and PayPal
     try {
+      trackInitiateCheckout(activePrice, 'EUR', 'Patente Bangla Pro Pass');
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -157,6 +159,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
           codiceFiscale: formData.codiceFiscale.trim(),
           address: formData.address.trim(),
           city: formData.city.trim(),
+          priceEur: activePrice,
         }),
       });
 
@@ -199,7 +202,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
               <span>Checkout Sicuro SSL 256-bit • Ricevuta Fiscale Immediata</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
-              অনলাইন কোর্স এনরোলমেন্ট ও পেমেন্ট (€৪৯)
+              অনলাইন কোর্স এনরোলমেন্ট ও পেমেন্ট (€{activePrice})
             </h2>
             <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed">
               পাস করা পর্যন্ত এককালীন এক্সেস (Una Tantum) • Round #{attemptedRound} থেকে ২৪০ রাউন্ড এবং সাথে সাথে অফিসিয়াল ইনভয়েস রসিদ
@@ -417,7 +420,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
               <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/60 space-y-2 text-xs">
                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  নিচের <strong>"Paga Ora €49,00 con Stripe"</strong> বাটনে ক্লিক করলে আপনাকে Stripe-এর অফিসিয়াল <strong>256-bit SSL নিরাপদ চেকআউট</strong> পেজে নিয়ে যাওয়া হবে।
+                  নিচের <strong>"Paga Ora €{activePrice},00 con Stripe"</strong> বাটনে ক্লিক করলে আপনাকে Stripe-এর অফিসিয়াল <strong>256-bit SSL নিরাপদ চেকআউট</strong> পেজে নিয়ে যাওয়া হবে।
                 </p>
                 <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-400">
                   <li className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">

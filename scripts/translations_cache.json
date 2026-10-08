@@ -1,5 +1,4 @@
-// Pre-compiled high-quality Google/Gemini Bangla Translations for all official Patente B questions
-export const PATENTE_TRANSLATIONS_BN: Record<string, string> = {
+{
   "Il numero delle persone trasportabili sulle autovetture può raggiungere il massimo di dieci": "যাত্রীবাহী গাড়িতে সর্বোচ্চ দশজন পর্যন্ত মানুষকে পরিবহন করা যেতে পারে।",
   "Il segnale raffigurato, se barrato, da una striscia rossa indica la fine di una strada extraurbana principale": "প্রদর্শিত চিহ্নটির ওপর দিয়ে যদি লাল রঙের একটি আড়াআড়ি দাগ টানা থাকে, তবে তা প্রধান সড়কের (Strada extraurbana principale) সমাপ্তি নির্দেশ করে।",
   "Il segnale raffigurato se barrato da una striscia rossa indica la fine della sua validità": "প্রদর্শিত সাইনটির ওপর যদি একটি লাল আড়াআড়ি দাগ টানা থাকে, তবে তা এর কার্যকারিতার সমাপ্তি নির্দেশ করে।",
@@ -666,5 +665,5 @@ export const PATENTE_TRANSLATIONS_BN: Record<string, string> = {
   "La pressione dei pneumatici deve essere controllata solo quando sono caldi.": "টায়ারের প্রেসার বা বায়ুচাপ শুধুমাত্র সেগুলো গরম থাকা অবস্থায় পরীক্ষা করা উচিত।",
   "In caso di incidente con ferito in stato di shock, bisogna farlo bere un po' di alcol per farlo riprendere.": "শক (shock) বা মানসিক আঘাতের অবস্থায় থাকা কোনো আহত ব্যক্তির সাথে দুর্ঘটনা ঘটলে, তাকে সুস্থ করার জন্য কিছুটা অ্যালকোহল পান করানো উচিত।",
   "Al ferito della strada che ha una ferita che sanguina, si deve togliere il corpo estraneo conficcato nella ferita.": "সড়ক দুর্ঘটনায় আহত যার ক্ষতস্থান থেকে রক্তপাত হচ্ছে, তার ক্ষতস্থানে গেঁথে থাকা বাইরের কোনো বস্তু তুলে ফেলা উচিত।",
-  "Il numero unico europeo per le emergenze è il 112.": "ইউরোপীয় জরুরি সেবার একক নম্বর হলো ১১২ (112)।",
-};
+  "Il numero unico europeo per le emergenze è il 112.": "ইউরোপীয় জরুরি সেবার একক নম্বর হলো ১১২ (112)।"
+}

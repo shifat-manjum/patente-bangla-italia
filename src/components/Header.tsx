@@ -261,7 +261,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onOpenAdmin}
               className="py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-white/10 text-xs sm:text-sm font-bold transition flex items-center gap-1 cursor-pointer"
-              title="Admin CRM Portal (khshifat@gmail.com)"
+              title="Admin CRM Portal (Authorized Admins)"
             >
               <ShieldCheck className="w-4 h-4 text-slate-400" />
               <span className="hidden xl:inline text-xs">Admin</span>

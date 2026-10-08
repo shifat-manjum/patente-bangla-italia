@@ -13,6 +13,8 @@ interface VipPaywallModalProps {
   onClose: () => void;
   onUnlockVip: () => void;
   questionsAnsweredCount: number;
+  academyPriceEur?: number;
+  regularPriceEur?: number;
 }
 
 export const VipPaywallModal: React.FC<VipPaywallModalProps> = ({
@@ -20,7 +22,13 @@ export const VipPaywallModal: React.FC<VipPaywallModalProps> = ({
   onClose,
   onUnlockVip,
   questionsAnsweredCount,
+  academyPriceEur = 49,
+  regularPriceEur = 120,
 }) => {
+  const activePrice = academyPriceEur || 49;
+  const regularPrice = regularPriceEur || 120;
+  const discountPercent = regularPrice > 0 ? Math.round(((regularPrice - activePrice) / regularPrice) * 100) : 0;
+
   if (!isOpen) return null;
 
   return (
@@ -90,11 +98,15 @@ export const VipPaywallModal: React.FC<VipPaywallModalProps> = ({
               One-Time Enrollment • Access Until You Pass (Fino alla Patente)
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-black text-slate-900">€49</span>
-              <span className="text-xs text-slate-400 line-through">€120</span>
-              <span className="text-[11px] font-bold text-[#FB6C00] bg-white px-2 py-0.5 rounded-full border border-orange-200">
-                60% OFF
-              </span>
+              <span className="text-3xl sm:text-4xl font-black text-slate-900">€{activePrice}</span>
+              {regularPrice > activePrice && (
+                <span className="text-xs text-slate-400 line-through">€{regularPrice}</span>
+              )}
+              {discountPercent > 0 && (
+                <span className="text-[11px] font-bold text-[#FB6C00] bg-white px-2 py-0.5 rounded-full border border-orange-200">
+                  {discountPercent}% OFF
+                </span>
+              )}
             </div>
             <p className="text-[11px] text-slate-500 mt-0.5">
               No monthly subscription • Study until you pass
@@ -107,7 +119,7 @@ export const VipPaywallModal: React.FC<VipPaywallModalProps> = ({
             className="w-full sm:w-auto py-3.5 px-6 rounded-xl bg-[#FB6C00] hover:bg-orange-600 text-white font-black text-sm shadow-md shadow-orange-500/20 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2 shrink-0"
           >
             <CreditCard className="w-4 h-4" />
-            <span>Unlock Pro Student Pass (€49)</span>
+            <span>Unlock Pro Student Pass (€{activePrice})</span>
           </button>
         </div>
 

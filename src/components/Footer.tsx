@@ -126,7 +126,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
               onClick={onOpenAbout}
               className="hover:text-slate-950 dark:hover:text-white underline transition cursor-pointer font-medium text-slate-700 dark:text-slate-300"
             >
-              Shifat Manjum (Zentixx)
+              Shifat Manjum &amp; Saiful Islam (Zentixx)
             </button>
             <span>•</span>
             <span>কমিউনিটির উপকারের জন্য নির্মিত</span>

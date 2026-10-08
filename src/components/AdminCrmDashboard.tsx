@@ -13,7 +13,8 @@ import {
   ExternalLink,
   FileText,
   Sliders,
-  Check
+  Check,
+  Save
 } from 'lucide-react';
 import { db, isFirebaseConfigured } from '../lib/firebase';
 import { collection, getDocs, doc, updateDoc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -122,27 +123,36 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const [priceInputRegular, setPriceInputRegular] = useState<number>(() => settings.regularPriceEur || 120);
   const [priceInputActive, setPriceInputActive] = useState<number>(() => settings.academyPriceEur || 49);
 
+  // Dynamic Free Rounds Limit State (allows arbitrary inputs like 5, 15, etc.)
+  const [freeRoundsInput, setFreeRoundsInput] = useState<number>(() => settings.freeRoundsLimit);
+
   useEffect(() => {
     if (settings.regularPriceEur) setPriceInputRegular(settings.regularPriceEur);
     if (settings.academyPriceEur) setPriceInputActive(settings.academyPriceEur);
-  }, [settings.regularPriceEur, settings.academyPriceEur]);
+    if (typeof settings.freeRoundsLimit === 'number') setFreeRoundsInput(settings.freeRoundsLimit);
+  }, [settings.regularPriceEur, settings.academyPriceEur, settings.freeRoundsLimit]);
 
   const handleSavePricing = async () => {
     if (priceInputActive <= 0) {
       alert('দয়া করে সঠিক অফার মূল্য দিন (কমপক্ষে €১)');
       return;
     }
+    const regularToSave = priceInputRegular > 0 ? priceInputRegular : 120;
+    const activeToSave = priceInputActive;
     setIsSavingSettings(true);
     try {
       const updated = await saveAppSettings({
-        regularPriceEur: priceInputRegular > 0 ? priceInputRegular : 120,
-        academyPriceEur: priceInputActive,
+        regularPriceEur: regularToSave,
+        academyPriceEur: activeToSave,
       });
       setSettings(updated);
-      setSettingsSaveMsg(`কোর্স মূল্য সফলভাবে আপডেট হয়েছে: নিয়মিত ~~€${updated.regularPriceEur}~~ • অফার €${updated.academyPriceEur}`);
-      setTimeout(() => setSettingsSaveMsg(null), 3500);
+      setPriceInputRegular(updated.regularPriceEur || 120);
+      setPriceInputActive(updated.academyPriceEur || 49);
+      setSettingsSaveMsg(`কোর্স মূল্য সফলভাবে আপডেট ও পুরো ওয়েবসাইটে লাইভ হয়েছে: নিয়মিত ~~€${updated.regularPriceEur}~~ • অফার €${updated.academyPriceEur}`);
+      setTimeout(() => setSettingsSaveMsg(null), 4000);
     } catch (err) {
       console.error('Failed to save pricing:', err);
+      alert('মূল্য সংরক্ষণ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
     } finally {
       setIsSavingSettings(false);
     }
@@ -150,11 +160,13 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
 
   const handleUpdateFreeRoundsLimit = async (limit: number) => {
     const validLimit = Math.min(240, Math.max(0, limit));
+    setFreeRoundsInput(validLimit);
     setIsSavingSettings(true);
     setSettings((prev) => ({ ...prev, freeRoundsLimit: validLimit }));
     try {
       const updated = await saveAppSettings({ freeRoundsLimit: validLimit });
       setSettings(updated);
+      setFreeRoundsInput(updated.freeRoundsLimit);
       setSettingsSaveMsg(`সফলভাবে আপডেট হয়েছে: বর্তমানে ${validLimit}টি রাউন্ড ফ্রি`);
       setTimeout(() => setSettingsSaveMsg(null), 3500);
     } catch (e) {
@@ -473,7 +485,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       `"${s.phone || ''}"`,
       `"${s.unlockedRound || 1}"`,
       `"${s.totalQuestionsAnswered || 0}"`,
-      `"${s.isVip ? 'YES (Pro €49)' : 'NO (Free Trial)'}"`,
+      `"${s.isVip ? `YES (Pro €${settings.academyPriceEur || 49})` : 'NO (Free Trial)'}"`,
       `"${s.createdAt ? new Date(s.createdAt.seconds ? s.createdAt.seconds * 1000 : s.createdAt).toLocaleDateString() : ''}"`,
     ]);
 
@@ -669,38 +681,68 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
               </div>
             </div>
 
-            {/* Custom Slider & Number Input */}
-            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex-1 space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span>কাস্টম সংখ্যা স্লাইডার (০ থেকে ২৪০):</span>
-                  <span className="font-mono text-orange-400 font-black">{settings.freeRoundsLimit} / ২৪০ রাউন্ড</span>
+            {/* Custom Slider & Number Input with Explicit Save Button */}
+            <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex-1 space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                    <span>কাস্টম সংখ্যা স্লাইডার (০ থেকে ২৪০):</span>
+                    <span className="font-mono text-orange-400 font-black">{freeRoundsInput} / ২৪০ রাউন্ড</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="240"
+                    value={freeRoundsInput}
+                    onChange={(e) => setFreeRoundsInput(parseInt(e.target.value, 10) || 0)}
+                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#FB6C00]"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="240"
-                  value={settings.freeRoundsLimit}
-                  onChange={(e) => handleUpdateFreeRoundsLimit(parseInt(e.target.value, 10) || 0)}
-                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-[#FB6C00]"
-                />
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-400">সরাসরি ইনপুট:</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="240"
+                      value={freeRoundsInput}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val)) setFreeRoundsInput(Math.min(240, Math.max(0, val)));
+                      }}
+                      className="w-20 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-black text-center text-xs focus:ring-2 focus:ring-[#FB6C00] focus:outline-none"
+                    />
+                    <span className="text-xs text-slate-400">রাউন্ড</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isSavingSettings}
+                    onClick={() => handleUpdateFreeRoundsLimit(freeRoundsInput)}
+                    className={`px-4 py-2 rounded-xl text-white font-black text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50 ${
+                      freeRoundsInput !== settings.freeRoundsLimit
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 animate-pulse ring-2 ring-emerald-400/30'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                    }`}
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>
+                      {isSavingSettings 
+                        ? 'সংরক্ষণ হচ্ছে...' 
+                        : freeRoundsInput !== settings.freeRoundsLimit 
+                        ? 'পরিবর্তন সংরক্ষণ করুন' 
+                        : 'সংরক্ষিত (Saved)'}
+                    </span>
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs font-bold text-slate-400">সরাসরি ইনপুট:</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="240"
-                  value={settings.freeRoundsLimit}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    if (!isNaN(val)) handleUpdateFreeRoundsLimit(val);
-                  }}
-                  className="w-20 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-black text-center text-xs focus:ring-2 focus:ring-[#FB6C00] focus:outline-none"
-                />
-                <span className="text-xs text-slate-400">রাউন্ড</span>
-              </div>
+              {freeRoundsInput !== settings.freeRoundsLimit && (
+                <div className="text-[11px] text-amber-400 font-semibold flex items-center gap-1">
+                  <span>⚠️ আপনি মান পরিবর্তন করেছেন ({freeRoundsInput} রাউন্ড)। পুরো ওয়েবসাইটে কার্যকর করতে "পরিবর্তন সংরক্ষণ করুন" বাটনে ক্লিক করুন।</span>
+                </div>
+              )}
             </div>
 
             {/* Live Explanation Callout */}
@@ -792,35 +834,77 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
 
               {/* Save Pricing Button */}
               <div>
-                <button
-                  type="button"
-                  disabled={isSavingSettings}
-                  onClick={handleSavePricing}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <Check className="w-4 h-4 text-white" />
-                  <span>মূল্য সংরক্ষণ করুন (Save Pricing)</span>
-                </button>
+                {(() => {
+                  const hasUnsavedPriceChanges =
+                    priceInputActive !== (settings.academyPriceEur || 49) ||
+                    priceInputRegular !== (settings.regularPriceEur || 120);
+
+                  return (
+                    <button
+                      type="button"
+                      disabled={isSavingSettings}
+                      onClick={handleSavePricing}
+                      className={`w-full py-2.5 px-4 rounded-xl text-white font-black text-xs shadow-lg active:scale-95 transition cursor-pointer flex items-center justify-center gap-2 ${
+                        hasUnsavedPriceChanges
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 ring-2 ring-amber-400 animate-pulse shadow-orange-500/30'
+                          : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-emerald-500/20'
+                      }`}
+                    >
+                      <Check className="w-4 h-4 text-white" />
+                      <span>
+                        {isSavingSettings
+                          ? 'সংরক্ষণ হচ্ছে...'
+                          : hasUnsavedPriceChanges
+                          ? 'নতুন মূল্য সেভ করুন (Save New Price)'
+                          : 'মূল্য সংরক্ষিত (Price Saved)'}
+                      </span>
+                    </button>
+                  );
+                })()}
               </div>
             </div>
 
             {/* Live Visual Preview of Pricing */}
-            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between flex-wrap gap-2 text-xs">
-              <span className="text-slate-400">ওয়েবসাইটে শিক্ষার্থীদের কাছে ডিসপ্লে হবে:</span>
-              <div className="flex items-center gap-2.5">
-                <span className="line-through text-slate-500 text-xs font-bold">
-                  €{settings.regularPriceEur || 120}
-                </span>
-                <span className="text-lg font-black text-emerald-400">
-                  €{settings.academyPriceEur || 49}
-                </span>
-                {(settings.regularPriceEur || 120) > (settings.academyPriceEur || 49) && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">
-                    Save €{(settings.regularPriceEur || 120) - (settings.academyPriceEur || 49)} ({Math.round((((settings.regularPriceEur || 120) - (settings.academyPriceEur || 49)) / (settings.regularPriceEur || 120)) * 100)}% OFF)
-                  </span>
-                )}
-              </div>
-            </div>
+            {(() => {
+              const previewRegular = priceInputRegular > 0 ? priceInputRegular : (settings.regularPriceEur || 120);
+              const previewActive = priceInputActive > 0 ? priceInputActive : (settings.academyPriceEur || 49);
+              const previewSavings = Math.max(0, previewRegular - previewActive);
+              const previewDiscountPct = previewRegular > 0 ? Math.round((previewSavings / previewRegular) * 100) : 0;
+              const hasUnsavedPriceChanges =
+                priceInputActive !== (settings.academyPriceEur || 49) ||
+                priceInputRegular !== (settings.regularPriceEur || 120);
+
+              return (
+                <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between flex-wrap gap-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-400">ওয়েবসাইটে শিক্ষার্থীদের কাছে ডিসপ্লে হবে:</span>
+                    {hasUnsavedPriceChanges ? (
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold animate-pulse">
+                        ⚠️ আনসেভড প্রিভিউ (সেভ করতে বাটনে চাপ দিন)
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        <span>লাইভ সক্রিয়</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="line-through text-slate-500 text-xs font-bold">
+                      €{previewRegular}
+                    </span>
+                    <span className="text-lg font-black text-emerald-400">
+                      €{previewActive}
+                    </span>
+                    {previewSavings > 0 && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">
+                        Save €{previewSavings} ({previewDiscountPct}% OFF)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Executive CRM Metrics Cards */}
@@ -858,7 +942,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
               <div className="text-2xl sm:text-3xl font-black text-[#FB6C00]">
                 {metrics.proPasses}
               </div>
-              <p className="text-[10px] text-slate-400">€49 Lifetime Enrolled</p>
+              <p className="text-[10px] text-slate-400">€{settings.academyPriceEur || 49} Lifetime Enrolled</p>
             </div>
 
             {/* Total Revenue */}
@@ -870,7 +954,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
                 €{metrics.totalRevenue}
               </div>
-              <p className="text-[10px] text-slate-400">Based on €49 Pass</p>
+              <p className="text-[10px] text-slate-400">Based on €{settings.academyPriceEur || 49} Pass</p>
             </div>
 
             {/* Total Questions Solved */}
@@ -1186,7 +1270,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                   className="w-4 h-4 rounded text-orange-500 focus:ring-orange-400 cursor-pointer"
                 />
                 <label htmlFor="isVipCheck" className="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
-                  একাডেমি Pro VIP Pass (€49 লাইফটাইম এক্সেস)
+                  একাডেমি Pro VIP Pass (€{settings.academyPriceEur || 49} লাইফটাইম এক্সেস)
                 </label>
               </div>
 

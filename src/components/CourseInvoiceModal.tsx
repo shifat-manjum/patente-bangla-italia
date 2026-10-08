@@ -32,6 +32,8 @@ export const CourseInvoiceModal: React.FC<CourseInvoiceModalProps> = ({
     printInvoiceDocument(invoice);
   };
 
+  const formattedAmount = `€${Number(invoice.amount || 49).toFixed(2).replace('.', ',')}`;
+
   return (
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fadeIn overflow-y-auto"
@@ -192,8 +194,8 @@ export const CourseInvoiceModal: React.FC<CourseInvoiceModalProps> = ({
                       </p>
                     </td>
                     <td className="py-3 px-2 text-center font-bold text-slate-700">1</td>
-                    <td className="py-3 px-2 text-right font-medium text-slate-700">€49,00</td>
-                    <td className="py-3 px-3 text-right font-black text-slate-900">€49,00</td>
+                    <td className="py-3 px-2 text-right font-medium text-slate-700">{formattedAmount}</td>
+                    <td className="py-3 px-3 text-right font-black text-slate-900">{formattedAmount}</td>
                   </tr>
                 </tbody>
               </table>
@@ -204,7 +206,7 @@ export const CourseInvoiceModal: React.FC<CourseInvoiceModalProps> = ({
               <div className="w-full sm:w-64 space-y-1.5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
                 <div className="flex justify-between text-slate-600">
                   <span>Imponibile:</span>
-                  <span>€49,00</span>
+                  <span>{formattedAmount}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>IVA (Esente art. 10 DPR 633/72):</span>
@@ -212,7 +214,7 @@ export const CourseInvoiceModal: React.FC<CourseInvoiceModalProps> = ({
                 </div>
                 <div className="flex justify-between text-sm font-black text-slate-900 pt-1.5 border-t border-slate-200">
                   <span>Totale Pagato:</span>
-                  <span className="text-emerald-700">€49,00</span>
+                  <span className="text-emerald-700">{formattedAmount}</span>
                 </div>
               </div>
             </div>

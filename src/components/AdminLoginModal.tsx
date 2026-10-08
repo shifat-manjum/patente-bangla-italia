@@ -13,6 +13,7 @@ interface AdminLoginModalProps {
 const AUTHORIZED_ADMIN_EMAILS = [
   'khshifat@gmail.com',
   'khshifatmanjum@gmail.com',
+  'saifulislamnyt@gmail.com',
 ];
 
 export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
@@ -37,7 +38,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     const isAuthorized = AUTHORIZED_ADMIN_EMAILS.some((adm) => cleanEmail === adm.toLowerCase());
 
     if (!isAuthorized) {
-      setError('অননুমোদিত ইমেইল (Access Denied). শুধুমাত্র অনুমোদিত অ্যাডমিন (khshifat@gmail.com বা khshifatmanjum@gmail.com) এই পোর্টালে প্রবেশ করতে পারেন।');
+      setError('অননুমোদিত ইমেইল (Access Denied). শুধুমাত্র অনুমোদিত অ্যাডমিনরা (khshifat@gmail.com, khshifatmanjum@gmail.com বা saifulislamnyt@gmail.com) এই পোর্টালে প্রবেশ করতে পারেন।');
       return;
     }
 
@@ -59,7 +60,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       } catch (fbErr: any) {
         // If password fails or user isn't yet created in this specific Firebase instance,
         // allow master admin passcode override for the exact authorized admin emails
-        if (password === 'admin123' || password === 'zentixx2026' || password === 'admin@2026' || password === 'shifat2026') {
+        if (password === 'admin123' || password === 'zentixx2026' || password === 'admin@2026' || password === 'shifat2026' || password === 'saiful2026') {
           sessionStorage.setItem('patente_admin_auth', cleanEmail);
           onAdminLoginSuccess(cleanEmail);
           onClose();
@@ -125,6 +126,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           <div className="flex flex-col gap-0.5 pl-5 font-mono text-[10px] text-[#FB6C00]">
             <span>• khshifat@gmail.com</span>
             <span>• khshifatmanjum@gmail.com</span>
+            <span>• saifulislamnyt@gmail.com</span>
           </div>
         </div>
 
@@ -149,7 +151,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="khshifatmanjum@gmail.com"
+                placeholder="saifulislamnyt@gmail.com বা khshifat@gmail.com"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
@@ -182,25 +184,35 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           </button>
         </form>
 
-        {/* 1-Click Fast Access for Owner */}
+        {/* 1-Click Fast Access for Owners & Partners */}
         <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
           <span className="text-[10px] text-slate-400 block text-center uppercase tracking-wider font-bold">
             দ্রুত অ্যাডমিন অ্যাক্সেস (Fast 1-Click Verify)
           </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => handleQuickAdminLogin('khshifatmanjum@gmail.com')}
-              className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold transition cursor-pointer text-center border border-slate-200 dark:border-slate-700 truncate"
+              className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold transition cursor-pointer text-center border border-slate-200 dark:border-slate-700 truncate"
+              title="khshifatmanjum@gmail.com"
             >
               khshifatmanjum@...
             </button>
             <button
               type="button"
               onClick={() => handleQuickAdminLogin('khshifat@gmail.com')}
-              className="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold transition cursor-pointer text-center border border-slate-200 dark:border-slate-700 truncate"
+              className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold transition cursor-pointer text-center border border-slate-200 dark:border-slate-700 truncate"
+              title="khshifat@gmail.com"
             >
               khshifat@...
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickAdminLogin('saifulislamnyt@gmail.com')}
+              className="py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold transition cursor-pointer text-center border border-emerald-200 dark:border-emerald-800 truncate"
+              title="saifulislamnyt@gmail.com"
+            >
+              saifulislamnyt@...
             </button>
           </div>
         </div>

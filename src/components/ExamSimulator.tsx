@@ -24,6 +24,7 @@ interface ExamSimulatorProps {
   onSelectRound?: (roundId: number) => void;
   isVip?: boolean;
   onOpenEnrollment?: () => void;
+  academyPriceEur?: number;
 }
 
 export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
@@ -34,6 +35,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   onSelectRound,
   isVip = false,
   onOpenEnrollment,
+  academyPriceEur = 49,
 }) => {
   // Select questions based on round or general mock test (randomized order on every attempt)
   const currentRoundTopic = roundId ? getRoundTopic(roundId) : null;
@@ -467,7 +469,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
                     সম্পূর্ণ ২৪০টি রাউন্ডের অফিশিয়াল কুইজ প্র্যাকটিস করতে চান?
                   </h4>
                   <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300">
-                    একাডেমি প্রো মেম্বারশিপে (€৪৯) লাইফটাইম এক্সেস ও পাস করা পর্যন্ত আনলিমিটেড মক টেস্ট পান।
+                    একাডেমি প্রো মেম্বারশিপে (€{academyPriceEur}) লাইফটাইম এক্সেস ও পাস করা পর্যন্ত আনলিমিটেড মক টেস্ট পান।
                   </p>
                 </div>
               </div>
@@ -478,7 +480,7 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
                 className="w-full sm:w-auto py-2.5 px-5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs shrink-0 shadow-md shadow-[#FB6C00]/25 transition hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <GraduationCap className="w-3.5 h-3.5 text-white" />
-                <span>একাডেমিতে ভর্তি হন (€৪৯)</span>
+                <span>একাডেমিতে ভর্তি হন (€{academyPriceEur})</span>
               </button>
             </div>
           )}

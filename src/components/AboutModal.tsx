@@ -35,22 +35,53 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           </p>
         </div>
 
-        {/* Founder Story Card */}
-        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-4 text-left shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#FB6C00] to-[#F9B637] p-0.5 shadow-sm shrink-0">
-              <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center text-xl font-black text-[#FB6C00]">
-                SM
+        {/* Founders & Development Partners Grid */}
+        <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-5 text-left shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Shifat Manjum */}
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/10 shadow-xs">
+              <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#FB6C00] to-[#F9B637] p-0.5 shadow-sm shrink-0">
+                <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center text-lg font-black text-[#FB6C00]">
+                  SM
+                </div>
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">Shifat Manjum</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-100 dark:bg-orange-950/60 text-[#FB6C00] border border-orange-200 dark:border-orange-800">
+                    Founder
+                  </span>
+                </div>
+                <p className="text-xs text-[#FB6C00] font-bold truncate">
+                  Product Architect &amp; Founder
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  সফটওয়্যার ডেভেলপার ও উদ্যোক্তা
+                </p>
               </div>
             </div>
-            <div>
-              <h3 className="text-lg font-black text-slate-900 dark:text-white">Shifat Manjum</h3>
-              <p className="text-xs text-[#FB6C00] font-bold">
-                Product Architect &amp; Founder, Zentixx
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                সফটওয়্যার ডেভেলপার ও উদ্যোক্তা (ইতালি ও ইউরোপ)
-              </p>
+
+            {/* Saiful Islam */}
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/10 shadow-xs">
+              <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-sm shrink-0">
+                <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[14px] flex items-center justify-center text-lg font-black text-emerald-600">
+                  SI
+                </div>
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">Saiful Islam</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    Partner
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold truncate">
+                  Co-Developer &amp; Partner
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  সফটওয়্যার ডেভেলপার ও প্রজেক্ট পার্টনার
+                </p>
+              </div>
             </div>
           </div>
 
@@ -59,10 +90,10 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
               «ইতালিতে আসার পর একটি ড্রাইভিং লাইসেন্স (Patente B) পাওয়া মানে কেবল গাড়ি চালানো নয়—এটি কাজের নতুন দুয়ার উন্মোচন, স্বাধীনভাবে চলাফেরা এবং পরিবারের সুরক্ষা নিশ্চিত করার সবচেয়ে বড় চাবিকাঠি।»
             </p>
             <p>
-              «কিন্তু বহু বছর ধরে আমি দেখেছি, কঠিন ইতালিয়ান ব্যাকরণ ও হাজার হাজার অপরিচিত শব্দের কারণে আমাদের বহু প্রবাসী ভাই-বোন বারবার পরীক্ষায় ফেল করেন। অনেকেই কাজের ব্যস্ততার কারণে নির্দিষ্ট সময়ে কোচিং বা জুম ক্লাসে বসতে পারেন না, আবার অনেকে অতিরিক্ত অর্থ খরচ করেও সঠিক গাইডলাইন পান না।»
+              «কিন্তু বহু বছর ধরে আমরা দেখেছি, কঠিন ইতালিয়ান ব্যাকরণ ও হাজার হাজার অপরিচিত শব্দের কারণে আমাদের বহু প্রবাসী ভাই-বোন বারবার পরীক্ষায় ফেল করেন। অনেকেই কাজের ব্যস্ততার কারণে নির্দিষ্ট সময়ে কোচিং বা জুম ক্লাসে বসতে পারেন না, আবার অনেকে অতিরিক্ত অর্থ খরচ করেও সঠিক গাইডলাইন পান না।»
             </p>
             <p className="text-orange-950 dark:text-orange-200 font-semibold bg-orange-100/50 dark:bg-orange-950/40 p-3 rounded-xl border border-orange-200 dark:border-orange-800">
-              «সেই সমস্যাকে স্থায়ীভাবে সমাধান করতেই আমি এবং Zentixx টিম তৈরি করেছি Patente Bangla। আমাদের লক্ষ্য একটাই: উন্নত প্রযুক্তি ও কৃত্রিম বুদ্ধিমত্তার সাহায্যে প্রতিটি সরকারি প্রশ্নকে সহজ বাংলায় বুঝিয়ে দেওয়া, সঠিক উচ্চারণ শোনানো এবং পরীক্ষার ফাঁদ শব্দগুলো ধরিয়ে দেওয়া—যাতে যে কেউ নিজের সুবিধামতো সময়ে অনুশীলন করে প্রথম সুযোগেই সফল হতে পারেন।»
+              «সেই সমস্যাকে স্থায়ীভাবে সমাধান করতেই আমরা (Shifat Manjum &amp; Saiful Islam) যৌথভাবে দিনরাত পরিশ্রম করে তৈরি করেছি Patente Bangla। আমাদের লক্ষ্য একটাই: উন্নত প্রযুক্তি ও কৃত্রিম বুদ্ধিমত্তার সাহায্যে প্রতিটি সরকারি প্রশ্নকে সহজ বাংলায় বুঝিয়ে দেওয়া, সঠিক উচ্চারণ শোনানো এবং পরীক্ষার ফাঁদ শব্দগুলো ধরিয়ে দেওয়া—যাতে যে কেউ নিজের সুবিধামতো সময়ে অনুশীলন করে প্রথম সুযোগেই সফল হতে পারেন।»
             </p>
           </div>
 
@@ -84,11 +115,11 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
               </svg>
-              <span>github.com/shifat-manjum</span>
+              <span>Shifat Manjum</span>
             </a>
             <span className="text-slate-300 dark:text-slate-700">|</span>
             <span className="text-slate-500 dark:text-slate-400 text-xs">
-              ইকোসিস্টেম: <strong className="text-slate-800 dark:text-slate-200">Zentixx Store • MyPdfTools</strong>
+              টিম: <strong className="text-slate-800 dark:text-slate-200">Shifat Manjum &amp; Saiful Islam (Zentixx • MyPdfTools)</strong>
             </span>
           </div>
         </div>
