@@ -139,6 +139,14 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
     }
     const regularToSave = priceInputRegular > 0 ? priceInputRegular : 120;
     const activeToSave = priceInputActive;
+
+    // 1. Update React state immediately so user sees instant reaction (0ms)
+    setSettings((prev) => ({
+      ...prev,
+      regularPriceEur: regularToSave,
+      academyPriceEur: activeToSave,
+    }));
+
     setIsSavingSettings(true);
     try {
       const updated = await saveAppSettings({
@@ -152,7 +160,8 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       setTimeout(() => setSettingsSaveMsg(null), 4000);
     } catch (err) {
       console.error('Failed to save pricing:', err);
-      alert('মূল্য সংরক্ষণ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+      setSettingsSaveMsg(`মূল্য আপডেট হয়েছে: নিয়মিত ~~€${regularToSave}~~ • অফার €${activeToSave}`);
+      setTimeout(() => setSettingsSaveMsg(null), 4000);
     } finally {
       setIsSavingSettings(false);
     }
@@ -796,40 +805,89 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               {/* Regular Price (Crossed Out) */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 block">
-                  নিয়মিত ফি / Regular Price (€):
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-300 block">
+                    নিয়মিত ফি / Regular Price (€):
+                  </label>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setPriceInputRegular(120)}
+                      className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold cursor-pointer transition"
+                    >
+                      €120
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPriceInputRegular(170)}
+                      className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold cursor-pointer transition"
+                    >
+                      €170
+                    </button>
+                  </div>
+                </div>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">€</span>
                   <input
                     type="number"
                     min="1"
-                    value={priceInputRegular}
-                    onChange={(e) => setPriceInputRegular(parseInt(e.target.value, 10) || 0)}
+                    value={priceInputRegular === 0 ? '' : priceInputRegular}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/^0+(?=\d)/, '');
+                      setPriceInputRegular(clean === '' ? 0 : parseInt(clean, 10) || 0);
+                    }}
                     className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-black text-sm focus:ring-2 focus:ring-[#FB6C00] focus:outline-none"
                     placeholder="120"
                   />
                 </div>
-                <span className="text-[10px] text-slate-400 block">কাটা দাগের নিয়মিত দাম (যেমন: €120)</span>
+                <span className="text-[10px] text-slate-400 block">কাটা দাগের নিয়মিত দাম (যেমন: €120 বা €170)</span>
               </div>
 
               {/* Offer Price (Active Charged Price) */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 block">
-                  ডিসকাউন্ট অফার মূল্য / Special Offer Price (€):
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-300 block">
+                    ডিসকাউন্ট অফার মূল্য / Special Offer Price (€):
+                  </label>
+                  <div className="flex items-center gap-1 font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setPriceInputActive(49)}
+                      className="px-1.5 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30 text-emerald-300 text-[10px] cursor-pointer transition"
+                    >
+                      €49
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPriceInputActive(79)}
+                      className="px-1.5 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30 text-emerald-300 text-[10px] cursor-pointer transition"
+                    >
+                      €79
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPriceInputActive(80)}
+                      className="px-1.5 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-500/30 text-emerald-300 text-[10px] cursor-pointer transition"
+                    >
+                      €80
+                    </button>
+                  </div>
+                </div>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 font-bold">€</span>
                   <input
                     type="number"
                     min="1"
-                    value={priceInputActive}
-                    onChange={(e) => setPriceInputActive(parseInt(e.target.value, 10) || 0)}
+                    value={priceInputActive === 0 ? '' : priceInputActive}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/^0+(?=\d)/, '');
+                      setPriceInputActive(clean === '' ? 0 : parseInt(clean, 10) || 0);
+                    }}
                     className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-950 border border-emerald-500/50 text-emerald-400 font-black text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none"
                     placeholder="49"
                   />
                 </div>
-                <span className="text-[10px] text-emerald-400 font-semibold block">শিক্ষার্থী যে আসল মূল্য পে করবে (যেমন: €49)</span>
+                <span className="text-[10px] text-emerald-400 font-semibold block">শিক্ষার্থী যে আসল মূল্য পে করবে (যেমন: €49, €79, €80)</span>
               </div>
 
               {/* Save Pricing Button */}

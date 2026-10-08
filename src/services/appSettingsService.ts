@@ -80,35 +80,46 @@ export const saveAppSettings = async (newSettings: Partial<AppSettings>): Promis
   try {
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(merged));
     localStorage.setItem('patente_free_rounds_limit', String(merged.freeRoundsLimit));
-  } catch {}
+  } catch (err) {
+    console.warn('LocalStorage save error:', err);
+  }
 
-  // 2. Dispatch real-time event so all components update in real-time
+  // 2. Dispatch real-time event so all components across the app update immediately (0ms)
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(SETTINGS_CHANGE_EVENT, { detail: merged }));
   }
 
-  // 3. Sync to Cloud Firestore if connected
+  // 3. Non-blocking network sync with a strict 2-second timeout (guarantees UI NEVER hangs)
+  const syncPromises: Promise<any>[] = [];
+
+  // Sync to MongoDB serverless API (/api/settings)
+  if (typeof window !== 'undefined') {
+    const apiPromise = fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(merged),
+    }).catch((err) => {
+      console.warn('Server API settings sync notice:', err);
+    });
+    syncPromises.push(apiPromise);
+  }
+
+  // Sync to Cloud Firestore if connected
   if (isFirebaseConfigured && db) {
     try {
       const settingsRef = doc(db, 'settings', 'general');
-      await setDoc(settingsRef, merged, { merge: true });
+      const firestorePromise = setDoc(settingsRef, merged, { merge: true }).catch((err) => {
+        console.warn('Firestore settings sync notice:', err);
+      });
+      syncPromises.push(firestorePromise);
     } catch (err) {
-      console.warn('Firestore settings sync notice:', err);
+      console.warn('Firestore ref error:', err);
     }
   }
 
-  // 4. Sync to Server JSON / MongoDB DB (/api/settings)
-  try {
-    if (typeof window !== 'undefined') {
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(merged),
-      });
-    }
-  } catch (err) {
-    console.warn('Server API settings sync notice:', err);
-  }
+  // Wait max 1.8 seconds for network sync, then return immediately
+  const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1800));
+  await Promise.race([Promise.allSettled(syncPromises), timeoutPromise]);
 
   return merged;
 };
@@ -123,9 +134,12 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
 
   let remoteSettings: AppSettings | null = null;
 
-  // 1. Try Server API (MongoDB Atlas) first
+  // 1. Try Server API (MongoDB Atlas) first with 2.5-second timeout
   try {
-    const res = await fetch('/api/settings');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch('/api/settings', { signal: controller.signal });
+    clearTimeout(timer);
     const contentType = res.headers.get('content-type') || '';
     if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
@@ -137,11 +151,15 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
     console.warn('Settings API fetch notice:', err);
   }
 
-  // 2. Try Firestore if no server settings
+  // 2. Try Firestore if no server settings (with 2.5s race timeout)
   if (!remoteSettings && isFirebaseConfigured && db) {
     try {
-      const snap = await getDoc(doc(db, 'settings', 'general'));
-      if (snap.exists()) {
+      const firestorePromise = getDoc(doc(db, 'settings', 'general'));
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Firestore timeout')), 2500)
+      );
+      const snap = await Promise.race([firestorePromise, timeoutPromise]);
+      if (snap && snap.exists()) {
         const data = snap.data() as AppSettings;
         if (data && (typeof data.freeRoundsLimit === 'number' || typeof data.academyPriceEur === 'number')) {
           remoteSettings = data;
@@ -178,7 +196,7 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
       }
       return merged;
     } else if (localTime > remoteTime && localTime > 0) {
-      // Local has newer changes that were not yet synced to remote -> push local to remote!
+      // Local has newer changes that were not yet synced to remote -> push local to remote in background
       saveAppSettings(local).catch(() => {});
       return local;
     }
