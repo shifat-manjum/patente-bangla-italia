@@ -251,23 +251,37 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-bold block">মোট প্রশ্ন:</span>
             <span className="text-lg font-black text-slate-900 dark:text-white">৩০টি কুইজ</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 block">৭,১৬৫টি ব্যাংক থেকে</span>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-bold block">সময় সীমা:</span>
             <span className="text-lg font-black text-[#FB6C00]">২০ মিনিট</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 block">টাইমার নিয়ন্ত্রণ</span>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1">
             <span className="text-xs text-slate-500 dark:text-slate-400 font-bold block">পাস করার শর্ত:</span>
             <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">সর্বোচ্চ ৩ ভুল</span>
+            <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 block">অফিসিয়াল মান</span>
           </div>
+        </div>
+
+        {/* Essential Advice Quote: Complete all 240 rounds first */}
+        <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border-2 border-amber-500/30 max-w-xl mx-auto text-left space-y-1.5">
+          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-black text-xs uppercase tracking-wide">
+            <span>💡 শিক্ষকের বিশেষ পরামর্শ (Consiglio del Docente):</span>
+          </div>
+          <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
+            &ldquo;সরাসরি সিমুলেশন পরীক্ষা দেওয়ার আগে আমাদের কারিকুলামের সম্পূর্ণ <strong>২৪০টি রাউন্ড শেষ করার জোর সুপারিশ করা হলো</strong>। ২৪০টি রাউন্ড শেষ করলে আপনার সরকারি সিলেবাসের প্রতিটি অধ্যায় নির্ভুলভাবে আয়ত্তে চলে আসবে এবং সিমুলেশনে নিশ্চিত পাস করবেন!&rdquo;
+          </p>
         </div>
 
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 max-w-xl mx-auto text-xs text-slate-700 dark:text-slate-300 text-left">
           💡 <strong>আমাদের বিশেষ সুবিধা:</strong> পরীক্ষার সময় বা পরীক্ষা শেষে প্রতিটি প্রশ্নের নিচে <strong>[বাংলা অর্থ ও বিস্তারিত ব্যাখ্যা]</strong> দেখতে পারবেন, যাতে বুঝতে পারেন কেন ভুল হলো।
-          <div className="mt-1.5 text-[11px] text-[#FB6C00] font-semibold">
-            ✨ সম্পূর্ণ ৭,১৬৫টি সরকারি প্রশ্নভাণ্ডার থেকে সরাসরি লাইভ প্রশ্ন লোড হয়।
+          <div className="mt-1.5 text-[11px] text-[#FB6C00] font-semibold flex items-center gap-1.5">
+            <span>✨</span>
+            <span>প্রতিবার পরীক্ষা শুরু করলে সম্পূর্ণ <strong>৭,১৬৫টি অফিশিয়াল সরকারি প্রশ্নভাণ্ডার</strong> থেকে র‍্যান্ডমভাবে ৩০টি নতুন প্রশ্ন আসে।</span>
           </div>
         </div>
 
