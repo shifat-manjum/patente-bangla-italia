@@ -277,14 +277,6 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 max-w-xl mx-auto text-xs text-slate-700 dark:text-slate-300 text-left">
-          💡 <strong>আমাদের বিশেষ সুবিধা:</strong> পরীক্ষার সময় বা পরীক্ষা শেষে প্রতিটি প্রশ্নের নিচে <strong>[বাংলা অর্থ ও বিস্তারিত ব্যাখ্যা]</strong> দেখতে পারবেন, যাতে বুঝতে পারেন কেন ভুল হলো।
-          <div className="mt-1.5 text-[11px] text-[#FB6C00] font-semibold flex items-center gap-1.5">
-            <span>✨</span>
-            <span>প্রতিবার পরীক্ষা শুরু করলে সম্পূর্ণ <strong>৭,১৬৫টি অফিশিয়াল সরকারি প্রশ্নভাণ্ডার</strong> থেকে র‍্যান্ডমভাবে ৩০টি নতুন প্রশ্ন আসে।</span>
-          </div>
-        </div>
-
         <button
           type="button"
           onClick={startNewExam}
