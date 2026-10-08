@@ -11,11 +11,11 @@ console.log('Total questionIt in roundQuestions.ts:', itMatches.length);
 const uniqueIt = Array.from(new Set(itMatches));
 console.log('Unique questionIt in roundQuestions.ts:', uniqueIt.length);
 
-const transContent = fs.readFileSync('./src/data/patenteTranslationsBn.ts', 'utf8');
-const transMatches = [];
-const transRegex = /"([^"]+)":\s*"([^"]+)"/g;
-let tm;
-while ((tm = transRegex.exec(transContent)) !== null) {
-  transMatches.push({ it: tm[1], bn: tm[2] });
+const allPart = rqContent.substring(rqContent.indexOf('export const ALL_200_QUESTIONS'));
+const allQuestionsInArray = [];
+let am;
+while ((am = regex.exec(allPart)) !== null) {
+  allQuestionsInArray.push(am[1]);
 }
-console.log('Total entries in patenteTranslationsBn.ts:', transMatches.length);
+console.log('Total questions in ALL_200_QUESTIONS array:', allQuestionsInArray.length);
+

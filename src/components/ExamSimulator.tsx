@@ -15,6 +15,7 @@ import { getQuestionsForRound, ALL_200_QUESTIONS, shuffleQuestions } from '../da
 import { getRoundTopic } from '../data/roundCurriculumData';
 import { QuizCard } from './QuizCard';
 import { trackExamStart, trackExamSubmit } from '../services/analytics';
+import { fetchSimulationExamQuestions } from '../services/questionsService';
 
 interface ExamSimulatorProps {
   onSaveMistakes: (questionIds: string[], roundId?: number | null) => void;
@@ -40,21 +41,13 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
   // Select questions based on round or general mock test (randomized order on every attempt)
   const currentRoundTopic = roundId ? getRoundTopic(roundId) : null;
 
-  const generateExamQuestions = (): QuizQuestion[] => {
-    if (roundId) {
-      return getQuestionsForRound(roundId, true);
-    }
-    // General Mock test: pick 30 random questions from ALL_200_QUESTIONS
-    const shuffled = shuffleQuestions(ALL_200_QUESTIONS);
-    return shuffled.slice(0, 30);
-  };
-
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [answers, setAnswers] = useState<Record<number, boolean>>({});
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(20 * 60); // 20 minutes
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [isStarted, setIsStarted] = useState<boolean>(false);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState<boolean>(false);
 
   // When roundId changes, reset and auto-start or prepare round questions
   useEffect(() => {
@@ -69,15 +62,37 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
     }
   }, [roundId]);
 
-  const startNewExam = () => {
-    setQuestions(generateExamQuestions());
-    setAnswers({});
-    setCurrentIdx(0);
-    setTimeLeftSeconds(20 * 60);
-    setIsSubmitted(false);
-    setIsStarted(true);
-    trackExamStart(roundId || undefined);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const startNewExam = async () => {
+    if (roundId) {
+      setQuestions(getQuestionsForRound(roundId, true));
+      setAnswers({});
+      setCurrentIdx(0);
+      setTimeLeftSeconds(20 * 60);
+      setIsSubmitted(false);
+      setIsStarted(true);
+      trackExamStart(roundId);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // General Mock test: fetch 30 randomized questions from MongoDB 7,165 question bank
+    setIsLoadingQuestions(true);
+    try {
+      const qList = await fetchSimulationExamQuestions(30);
+      setQuestions(qList);
+    } catch {
+      const fallback = shuffleQuestions(ALL_200_QUESTIONS).slice(0, 30);
+      setQuestions(fallback);
+    } finally {
+      setIsLoadingQuestions(false);
+      setAnswers({});
+      setCurrentIdx(0);
+      setTimeLeftSeconds(20 * 60);
+      setIsSubmitted(false);
+      setIsStarted(true);
+      trackExamStart(undefined);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Timer countdown
@@ -251,14 +266,25 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
 
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 max-w-xl mx-auto text-xs text-slate-700 dark:text-slate-300 text-left">
           💡 <strong>আমাদের বিশেষ সুবিধা:</strong> পরীক্ষার সময় বা পরীক্ষা শেষে প্রতিটি প্রশ্নের নিচে <strong>[বাংলা অর্থ ও বিস্তারিত ব্যাখ্যা]</strong> দেখতে পারবেন, যাতে বুঝতে পারেন কেন ভুল হলো।
+          <div className="mt-1.5 text-[11px] text-[#FB6C00] font-semibold">
+            ✨ সম্পূর্ণ ৭,১৬৫টি সরকারি প্রশ্নভাণ্ডার থেকে সরাসরি লাইভ প্রশ্ন লোড হয়।
+          </div>
         </div>
 
         <button
           type="button"
           onClick={startNewExam}
-          className="py-3.5 px-8 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-base shadow-lg shadow-[#FB6C00]/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          disabled={isLoadingQuestions}
+          className="py-3.5 px-8 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] disabled:opacity-70 text-white font-black text-base shadow-lg shadow-[#FB6C00]/25 transition-all hover:scale-105 active:scale-95 cursor-pointer inline-flex items-center gap-2"
         >
-          পরীক্ষা শুরু করুন (Inizia Esame) 🚀
+          {isLoadingQuestions ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>প্রশ্ন তৈরি হচ্ছে...</span>
+            </>
+          ) : (
+            <span>পরীক্ষা শুরু করুন (Inizia Esame) 🚀</span>
+          )}
         </button>
       </div>
     );
