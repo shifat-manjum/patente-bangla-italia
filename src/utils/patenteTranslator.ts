@@ -662,10 +662,17 @@ export const getBanglaTranslation = (questionIt: string, rawQuestionBn?: string)
     }
 
     if (!matched) {
-      // 5. Clean default fallback
-      bnResult = rawQuestionBn && containsBengali(rawQuestionBn) 
-        ? polishBengaliTranslation(rawQuestionBn.trim()) 
-        : 'প্রশ্নটির সহজ বাংলা ভাবার্থ শীঘ্রই যুক্ত করা হচ্ছে।';
+      // 5. Clean default fallback: if raw Bengali is available use it, else synthesize from phrase dictionary or traffic term dictionary
+      if (rawQuestionBn && containsBengali(rawQuestionBn) && !rawQuestionBn.includes('শীঘ্রই')) {
+        bnResult = polishBengaliTranslation(rawQuestionBn.trim());
+      } else {
+        // Synthesize meaning by translating known driving keywords
+        let synth = cleanIt;
+        for (const [pattern, bnMeaning] of TERM_REPLACEMENTS) {
+          synth = synth.replace(pattern, ` ${bnMeaning} `);
+        }
+        bnResult = polishBengaliTranslation(synth.trim());
+      }
     }
   }
 
