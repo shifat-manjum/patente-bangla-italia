@@ -29,3 +29,4 @@ export async function fetchSimulationExamQuestions(count: number = 30): Promise<
   const shuffled = shuffleQuestions(ALL_200_QUESTIONS);
   return shuffled.slice(0, count);
 }
+

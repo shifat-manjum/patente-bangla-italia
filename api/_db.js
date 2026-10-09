@@ -1,8 +1,10 @@
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  'mongodb+srv://khshifatmanjum_db_user:Dtmkv5WKtSMqpTEh@cluster0.h8ljzpx.mongodb.net/patente_bangla?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.warn('Warning: MONGODB_URI environment variable is not defined.');
+}
 
 const DB_NAME = 'patente_bangla';
 

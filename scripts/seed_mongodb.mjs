@@ -1,7 +1,12 @@
 import fs from 'fs';
 import { MongoClient } from 'mongodb';
 
-const uri = 'mongodb+srv://khshifatmanjum_db_user:Dtmkv5WKtSMqpTEh@cluster0.h8ljzpx.mongodb.net/patente_bangla?retryWrites=true&w=majority';
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  console.error('Error: Please provide MONGODB_URI in your environment or .env file before running seed.');
+  process.exit(1);
+}
 
 async function seed() {
   const client = new MongoClient(uri);
