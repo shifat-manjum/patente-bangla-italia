@@ -106,6 +106,7 @@ export const TERM_REPLACEMENTS: Array<[RegExp, string]> = [
 ];
 
 import { PATENTE_TRANSLATIONS_BN } from '../data/patenteTranslationsBn';
+import { PATENTE_TRANSLATIONS_EN } from '../data/patenteTranslationsEn';
 
 /**
  * Checks whether text contains Bengali characters
@@ -678,6 +679,27 @@ export const getBanglaTranslation = (questionIt: string, rawQuestionBn?: string)
 
   // 6. Enrich with Italian technical terms in brackets
   return enrichBilingualKeywords(bnResult, cleanIt);
+};
+
+/**
+  * Retrieves official English translation for any Italian question
+  */
+export const getEnglishTranslation = (questionIt: string, fallbackEn?: string): string => {
+  if (fallbackEn && fallbackEn.trim().length > 3) {
+    return fallbackEn.trim();
+  }
+  const clean = (questionIt || '').trim();
+  if (PATENTE_TRANSLATIONS_EN[clean]) {
+    return PATENTE_TRANSLATIONS_EN[clean];
+  }
+  // Try case-insensitive / trimmed lookup
+  const lower = clean.toLowerCase();
+  for (const [key, val] of Object.entries(PATENTE_TRANSLATIONS_EN)) {
+    if (key.toLowerCase() === lower) {
+      return val;
+    }
+  }
+  return '';
 };
 
 

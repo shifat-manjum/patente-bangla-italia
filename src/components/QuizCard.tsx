@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
 import { RoadSign } from './RoadSign';
-import { getBanglaTranslation } from '../utils/patenteTranslator';
+import { getBanglaTranslation, getEnglishTranslation } from '../utils/patenteTranslator';
 import { speakItalian as playItalianFemaleVoice, stopSpeech } from '../utils/italianSpeech';
 
 interface QuizCardProps {
@@ -37,6 +37,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   hideAnswerButtonsOnMobile = false,
 }) => {
   const [showBanglaTranslation, setShowBanglaTranslation] = useState(true);
+  const [showEnglishTranslation, setShowEnglishTranslation] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0); // Regular human reading speed
   const [isCopied, setIsCopied] = useState(false);
@@ -136,6 +137,21 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               <span>{isSpeaking ? 'Playing...' : 'Audio'}</span>
             </button>
 
+            {/* English Translation Toggle */}
+            <button
+              type="button"
+              onClick={() => setShowEnglishTranslation(!showEnglishTranslation)}
+              title="Toggle English Translation"
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
+                showEnglishTranslation
+                  ? 'bg-blue-600 text-white border-transparent shadow-sm shadow-blue-500/20'
+                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10'
+              }`}
+            >
+              <span className="text-xs">🇬🇧</span>
+              <span>{showEnglishTranslation ? 'English: ON' : 'English: OFF'}</span>
+            </button>
+
             {/* Bangla Translation Toggle */}
             <button
               type="button"
@@ -215,6 +231,21 @@ export const QuizCard: React.FC<QuizCardProps> = ({
                 "{question.questionIt}"
               </p>
             </div>
+
+            {/* Clean English Translation Box */}
+            {showEnglishTranslation && (question.questionEn || getEnglishTranslation(question.questionIt)) && (
+              <div className="p-3.5 sm:p-4 rounded-xl bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200/80 dark:border-blue-900/30">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-[11px] font-black px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50 flex items-center gap-1">
+                    <span>🇬🇧</span>
+                    <span>English Translation</span>
+                  </span>
+                </div>
+                <p className="text-sm sm:text-lg font-semibold text-slate-800 dark:text-slate-100 leading-relaxed">
+                  "{question.questionEn || getEnglishTranslation(question.questionIt)}"
+                </p>
+              </div>
+            )}
 
             {/* Prominent Bangla Translation Box */}
             {showBanglaTranslation && (

@@ -10,6 +10,7 @@ export interface QuizQuestion {
   chapterTitleBn: string;
   questionIt: string;
   questionBn: string;
+  questionEn?: string;
   isCorrect: boolean; // true = VERO, false = FALSO
   explanationBn: string;
   trapTipBn?: string;

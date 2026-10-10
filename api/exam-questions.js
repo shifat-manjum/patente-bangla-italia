@@ -57,6 +57,7 @@ export default async function handler(req, res) {
         chapterTitleIt: 1,
         questionIt: 1,
         questionBn: 1,
+        questionEn: 1,
         isCorrect: 1,
         image: 1,
         type: 1,
@@ -74,6 +75,7 @@ export default async function handler(req, res) {
       chapterTitleBn: `চ্যাপ্টার ${q.chapterNum}: ${q.chapterTitleIt}`,
       questionIt: q.questionIt,
       questionBn: q.questionBn || '',
+      questionEn: q.questionEn || '',
       isCorrect: q.isCorrect,
       explanationBn: q.isCorrect
         ? 'সঠিক (VERO)! ইতালির অফিশিয়াল ট্রাফিক কোড (Codice della Strada) অনুযায়ী এই বক্তব্যটি শতভাগ আইনসম্মত ও সত্য।'
