@@ -78,13 +78,14 @@ export default async function handler(req, res) {
     }
 
     // Determine origin for redirection
+    const host = req.headers.host || '';
+    const protocol = host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
     const origin =
       req.headers.origin ||
-      (req.headers.host ? `https://${req.headers.host}` : null) ||
+      (host ? `${protocol}://${host}` : null) ||
       'https://www.patenteguru.it';
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'link'],
       mode: 'payment',
       customer_email: studentEmail.trim().toLowerCase(),
       client_reference_id: studentEmail.trim().toLowerCase(),
@@ -94,10 +95,9 @@ export default async function handler(req, res) {
             currency: 'eur',
             unit_amount: Math.round(priceEur * 100),
             product_data: {
-              name: 'Corso Completo Patente B 2026 - PatenteGuru.it',
+              name: 'Corso Completo Patente B 2026 - PatenteGuru',
               description:
                 'Accesso Illimitato a 240 Round con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica fino al superamento dell’esame.',
-              images: ['https://www.patenteguru.it/patente-guru-logo.jpg'],
             },
           },
           quantity: 1,

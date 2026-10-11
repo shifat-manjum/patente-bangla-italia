@@ -10,12 +10,9 @@ import {
   Check, 
   Loader2,
   FileText,
-  AlertCircle
+  AlertCircle,
+  MessageCircle
 } from 'lucide-react';
-import { 
-  createInvoiceRecord, 
-  saveInvoice 
-} from '../services/paymentService';
 import type { 
   PaymentMethodType, 
   PaymentFormData, 
@@ -25,6 +22,7 @@ import {
   getAppSettings, 
   SETTINGS_CHANGE_EVENT 
 } from '../services/appSettingsService';
+import { WHATSAPP_SUPPORT_NUMBER } from '../config/constants';
 import { trackInitiateCheckout } from '../utils/metaPixel';
 
 interface CoursePaymentModalProps {
@@ -44,7 +42,7 @@ interface CoursePaymentModalProps {
 export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
   isOpen,
   onClose,
-  onSuccess,
+  onSuccess: _onSuccess,
   initialStudent,
   attemptedRound = 21,
   academyPriceEur,
@@ -65,6 +63,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copiedIban, setCopiedIban] = useState(false);
+  const [bonificoPendingSent, setBonificoPendingSent] = useState(false);
 
   // Form Fields
   const [formData, setFormData] = useState<PaymentFormData>({
@@ -126,27 +125,26 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
       return;
     }
 
-    setIsProcessing(true);
-
-    // If Bonifico Bancario, complete local invoice workflow
+    // If Bonifico Bancario: DO NOT create a free Fattura or unlock VIP automatically!
+    // Require student to send actual bank transfer receipt (CRO/Ricevuta) on WhatsApp so Admin verifies money arrived first.
     if (selectedMethod === 'bonifico') {
-      try {
-        const payload: PaymentFormData = {
-          ...formData,
-          paymentMethod: selectedMethod,
-        };
-        const invoice = createInvoiceRecord(payload, activePrice);
-        saveInvoice(invoice);
-        setIsProcessing(false);
-        onSuccess(invoice);
-      } catch (err: any) {
-        setIsProcessing(false);
-        setErrorMessage(err?.message || 'পেমেন্ট প্রসেস করতে সাময়িক সমস্যা হয়েছে।');
-      }
+      setBonificoPendingSent(true);
+      const waNumber = WHATSAPP_SUPPORT_NUMBER.replace(/[^0-9]/g, '');
+      const waText = encodeURIComponent(
+        `Ciao PatenteGuru! Ho scelto il pagamento tramite Bonifico Bancario SEPA di €${activePrice},00 per il Corso Completo Patente B (240 Round).\n\n` +
+        `👤 Nome: ${formData.studentName.trim()}\n` +
+        `📧 Email: ${formData.studentEmail.trim().toLowerCase()}\n` +
+        `📱 Telefono: ${formData.studentPhone.trim()}\n` +
+        `🏛️ Codice Fiscale: ${formData.codiceFiscale.trim() || 'N/A'}\n\n` +
+        `Invio qui la ricevuta contabile (CRO/TRN) del bonifico per l'attivazione del mio account VIP e l'emissione della Fattura.`
+      );
+      window.open(`https://wa.me/${waNumber}?text=${waText}`, '_blank', 'noopener,noreferrer');
       return;
     }
 
-    // Real Stripe Checkout for Card, PostePay, Apple Pay, Google Pay, and PayPal
+    setIsProcessing(true);
+
+    // Real Stripe Checkout for Card, PostePay, Apple Pay, Google Pay, Satispay, Klarna
     try {
       trackInitiateCheckout(activePrice, 'EUR', 'Patente Bangla Pro Pass');
       const res = await fetch('/api/create-checkout-session', {
@@ -464,8 +462,8 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                   <Building2 className="w-4 h-4 text-emerald-600" />
                   <span>Dati per il Bonifico Bancario SEPA</span>
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  Accredito Diretto
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                  Verifica Contabile Richiesta
                 </span>
               </div>
 
@@ -505,9 +503,15 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                 </div>
               </div>
 
-              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                * বোনিফিকো সম্পন্ন করার পর নিচের বাটনে ক্লিক করুন। সাথে সাথে আপনার অফিশিয়াল রসিদ জেনারেট হয়ে যাবে এবং ২৪০টি রাউন্ড ওপেন হবে।
-              </p>
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
+                <strong>⚠️ গুরুত্বপূর্ণ নির্দেশনা:</strong> বনিফিকো (Bank Transfer) পেমেন্ট আমাদের ব্যাংকে জমা হওয়ার আগে কোনো ফ্রি ফাত্তুরা (Fattura) বা ২৪০ রাউন্ড (VIP Pass) স্বয়ংক্রিয়ভাবে চালু হবে না। ব্যাংক থেকে <strong>€{activePrice},00</strong> পাঠানোর পর নিচের বাটনে ক্লিক করে আমাদের WhatsApp-এ রসিদ (Ricevuta / CRO) পাঠান। পেমেন্ট নিশ্চিত হওয়ার সাথে সাথে আপনার VIP অ্যাকাউন্ট ও অফিশিয়াল Fattura সক্রিয় করে দেওয়া হবে।
+              </div>
+
+              {bonificoPendingSent && (
+                <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-300 dark:border-emerald-700 text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                  ✓ WhatsApp ওপেন হয়েছে! অনুগ্রহ করে আপনার ব্যাংক ট্রান্সফারের রসিদ (Ricevuta / Screenshot) চ্যাটে পাঠিয়ে দিন। পেমেন্ট যাচাই সম্পন্ন হলেই আপনার VIP Pass ও Fattura চালু হবে।
+                </div>
+              )}
             </div>
           )}
 
@@ -515,7 +519,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
           <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800">
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Attivazione Istantanea 240 Round</span>
+              <span>Attivazione Istantanea 240 Round (con Stripe)</span>
             </span>
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
@@ -537,8 +541,8 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                 </>
               ) : selectedMethod === 'bonifico' ? (
                 <>
-                  <Building2 className="w-4.5 h-4.5" />
-                  <span>বোনিফিকো তথ্য নিশ্চিত করুন • Conferma Bonifico €{activePrice},00</span>
+                  <MessageCircle className="w-4.5 h-4.5" />
+                  <span>WhatsApp-এ বনিফিকো রসিদ পাঠান • Invia Ricevuta (€{activePrice},00)</span>
                 </>
               ) : (
                 <>

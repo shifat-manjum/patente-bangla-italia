@@ -196,7 +196,7 @@ export function App() {
     return () => unsubscribe();
   }, []);
 
-  // Cross-device check with MongoDB Atlas for VIP status
+  // Cross-device check with MongoDB Atlas for VIP status (authoritative server check)
   useEffect(() => {
     if (currentUser?.email) {
       fetchStudentFromServerDb(currentUser.email)
@@ -206,6 +206,11 @@ export function App() {
               setIsVip(true);
               try {
                 localStorage.setItem('patente_bangla_is_vip', 'true');
+              } catch {}
+            } else {
+              setIsVip(false);
+              try {
+                localStorage.removeItem('patente_bangla_is_vip');
               } catch {}
             }
             if (typeof remote.unlockedRound === 'number' && remote.unlockedRound > unlockedRound) {
@@ -539,6 +544,10 @@ export function App() {
   }, []);
 
   const handleOpenInvoice = () => {
+    if (!isVip) {
+      setIsPaymentModalOpen(true);
+      return;
+    }
     let inv = activeInvoice || getLatestInvoice(currentUser?.email);
     if (!inv) {
       inv = createInvoiceRecord({
@@ -549,7 +558,7 @@ export function App() {
         address: 'Italia',
         city: 'Bolzano',
         paymentMethod: 'card',
-      });
+      }, appSettings.academyPriceEur || 49);
       saveInvoice(inv);
       setActiveInvoice(inv);
     }
