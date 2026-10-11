@@ -89,6 +89,22 @@ export default async function handler(req, res) {
       mode: 'payment',
       customer_email: studentEmail.trim().toLowerCase(),
       client_reference_id: studentEmail.trim().toLowerCase(),
+      branding_settings: {
+        display_name: 'PatenteGuru Italia',
+        background_color: '#0D1117',
+        button_color: '#FB6C00',
+        border_style: 'rounded',
+        icon: {
+          type: 'file',
+          file: 'file_1UPPLw0lRuQcN4CldLir3C5Z',
+        },
+      },
+      custom_text: {
+        submit: {
+          message:
+            'Attivazione immediata di tutti i 240 Round (7.165 Quiz) + Ricevuta Fiscale Ufficiale (Fattura PDF).',
+        },
+      },
       line_items: [
         {
           price_data: {
@@ -98,6 +114,7 @@ export default async function handler(req, res) {
               name: 'Corso Completo Patente B 2026 - PatenteGuru',
               description:
                 'Accesso Illimitato a 240 Round con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica fino al superamento dell’esame.',
+              images: ['https://patente-bangla-italia.vercel.app/car-logo.png'],
             },
           },
           quantity: 1,
