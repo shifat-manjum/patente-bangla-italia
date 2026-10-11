@@ -1,3 +1,6 @@
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+
 export interface StudentProfile {
   uid: string;
   name: string;
@@ -284,6 +287,70 @@ export const loginStudent = async (
   cacheStudentLocally(localProfile);
   notifyAuthChange(localProfile);
   return localProfile;
+};
+
+// One-click Sign in / Register with Google (Gmail) and sync to MongoDB /api/auth
+export const loginStudentWithGoogle = async (): Promise<{
+  student: StudentProfile;
+  isNewStudent: boolean;
+}> => {
+  if (!auth) {
+    throw new Error('Google Sign-In is currently unavailable. Please use Email & Password.');
+  }
+
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+
+  const credential = await signInWithPopup(auth, provider);
+  const user = credential.user;
+  const cleanEmail = (user.email || '').trim().toLowerCase();
+  const cleanName = (user.displayName || cleanEmail.split('@')[0] || 'Student').trim();
+
+  if (!cleanEmail) {
+    throw new Error('Could not retrieve email address from Google account.');
+  }
+
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'google',
+        email: cleanEmail,
+        name: cleanName,
+        googleUid: user.uid,
+      }),
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      if (res.ok && data.student) {
+        const safeProfile = sanitizeStudentProfile(data.student);
+        cacheStudentLocally(safeProfile, data.token);
+        notifyAuthChange(safeProfile);
+        return {
+          student: safeProfile,
+          isNewStudent: Boolean(data.isNewStudent),
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('MongoDB /api/auth google sync fallback notice:', err);
+  }
+
+  // Fallback local profile if offline
+  const fallbackProfile = sanitizeStudentProfile({
+    uid: user.uid || 'std_' + Date.now(),
+    name: cleanName,
+    email: cleanEmail,
+    phone: 'Google Verified',
+    unlockedRound: 1,
+    isVip: false,
+  });
+  cacheStudentLocally(fallbackProfile);
+  notifyAuthChange(fallbackProfile);
+  return { student: fallbackProfile, isNewStudent: false };
 };
 
 // Log out student

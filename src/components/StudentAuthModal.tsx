@@ -17,7 +17,12 @@ import {
   EyeOff,
   MessageCircle,
 } from 'lucide-react';
-import { registerStudent, loginStudent, sendRegistrationOtp } from '../services/studentService';
+import {
+  registerStudent,
+  loginStudent,
+  sendRegistrationOtp,
+  loginStudentWithGoogle,
+} from '../services/studentService';
 import type { StudentProfile } from '../services/studentService';
 import { WHATSAPP_GROUP_URL } from '../config/constants';
 import { trackWhatsAppJoin } from '../services/analytics';
@@ -56,6 +61,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // 2-Step Email OTP Verification state
   const [isOtpStep, setIsOtpStep] = useState(false);
@@ -273,6 +279,31 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setError('');
+    try {
+      setIsGoogleLoading(true);
+      const { student, isNewStudent } = await loginStudentWithGoogle();
+      setIsGoogleLoading(false);
+      if (isNewStudent) {
+        setRegisteredStudent(student);
+        try {
+          window.open(WHATSAPP_GROUP_URL, '_blank', 'noopener,noreferrer');
+          trackWhatsAppJoin('auto_popup_on_google_register');
+        } catch {}
+      } else {
+        onLoginSuccess(student);
+        onClose();
+      }
+    } catch (err: any) {
+      setIsGoogleLoading(false);
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+        return;
+      }
+      setError(getFirebaseErrorMessage(err));
+    }
+  };
+
   const handleWelcomeContinue = () => {
     if (registeredStudent) {
       onLoginSuccess(registeredStudent);
@@ -440,6 +471,55 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                 <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <span className="leading-snug">{error}</span>
+                </div>
+              )}
+
+              {/* One-Click Google Sign-In Button + OR EMAIL Divider */}
+              {!isOtpStep && (
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    disabled={isGoogleLoading || isLoading}
+                    onClick={handleGoogleSignIn}
+                    className="w-full py-2.5 px-4 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-[#161B22] hover:bg-slate-50 dark:hover:bg-white/10 disabled:opacity-60 text-slate-900 dark:text-white font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2.5 cursor-pointer shadow-xs active:scale-98"
+                  >
+                    {isGoogleLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-[#FB6C00]" />
+                        <span>Connecting with Google...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                          <path
+                            fill="#4285F4"
+                            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                          />
+                          <path
+                            fill="#34A853"
+                            d="M12 24c3.3 0 6.08-1.09 8.1-2.96l-3.88-3.05c-1.08.72-2.45 1.16-4.22 1.16-3.24 0-5.99-2.19-6.97-5.14H1.02v3.14C3.04 21.16 7.21 24 12 24z"
+                          />
+                          <path
+                            fill="#FBBC05"
+                            d="M5.03 14.01c-.25-.72-.39-1.5-.39-2.31s.14-1.59.39-2.31V6.25H1.02A11.98 11.98 0 0 0 0 11.7c0 1.94.46 3.77 1.02 5.45l4.01-3.14z"
+                          />
+                          <path
+                            fill="#EA4335"
+                            d="M12 4.75c1.8 0 3.41.62 4.68 1.84l3.51-3.51C18.07 1.19 15.3 0 12 0 7.21 0 3.04 2.84 1.02 6.85l4.01 3.14c.98-2.95 3.73-5.24 6.97-5.24z"
+                          />
+                        </svg>
+                        <span>Continue with Google</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-full border-t border-slate-200 dark:border-white/10" />
+                    <span className="px-3 bg-white dark:bg-[#11151C] text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500">
+                      OR EMAIL
+                    </span>
+                    <div className="w-full border-t border-slate-200 dark:border-white/10" />
+                  </div>
                 </div>
               )}
 

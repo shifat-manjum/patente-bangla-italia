@@ -625,6 +625,83 @@ export default async function handler(req, res) {
         });
       }
 
+      // GOOGLE SIGN-IN / ONE-CLICK GMAIL LOGIN & REGISTRATION
+      if (action === 'google') {
+        const cleanEmail = String(body.email || '').trim().toLowerCase();
+        const rawName = String(body.name || '').trim();
+        const cleanName = rawName || cleanEmail.split('@')[0] || 'Student';
+        const googleUid = String(body.googleUid || '').trim();
+
+        if (!cleanEmail || !cleanEmail.includes('@')) {
+          return res.status(400).json({
+            code: 'auth/invalid-email',
+            error: 'Valid Google email is required',
+          });
+        }
+
+        const nowIso = new Date().toISOString();
+        const existingStudent = await col.findOne({ email: cleanEmail });
+
+        if (existingStudent) {
+          const uid = existingStudent.uid || googleUid || 'std_' + existingStudent._id.toString();
+          await col.updateOne(
+            { _id: existingStudent._id },
+            {
+              $set: {
+                uid,
+                emailVerified: true,
+                lastLoginAt: nowIso,
+                updatedAt: nowIso,
+              },
+            }
+          );
+
+          const updatedStudent = {
+            ...existingStudent,
+            uid,
+            emailVerified: true,
+            lastLoginAt: nowIso,
+          };
+
+          const token = signToken({ uid, email: cleanEmail, name: existingStudent.name || cleanName });
+          return res.status(200).json({
+            success: true,
+            isNewStudent: false,
+            token,
+            student: sanitizePublicStudent(updatedStudent),
+          });
+        }
+
+        // First-time Google sign-in: create verified student profile in MongoDB
+        const uid = googleUid || 'std_' + crypto.randomBytes(10).toString('hex');
+        const newStudentDoc = {
+          uid,
+          name: cleanName,
+          email: cleanEmail,
+          phone: String(body.phone || 'Google Verified').trim(),
+          unlockedRound: 1,
+          isVip: false,
+          totalQuestionsAnswered: 0,
+          correctAnswers: 0,
+          mistakesCount: 0,
+          emailVerified: true,
+          authProvider: 'google',
+          createdAt: nowIso,
+          lastLoginAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+        await col.insertOne(newStudentDoc);
+
+        const token = signToken({ uid, email: cleanEmail, name: cleanName });
+        return res.status(201).json({
+          success: true,
+          isNewStudent: true,
+          token,
+          student: sanitizePublicStudent(newStudentDoc),
+        });
+      }
+
       // ADMIN LOGIN VERIFICATION
       if (action === 'admin-login') {
         const cleanEmail = String(body.email || '').trim().toLowerCase();
