@@ -9,6 +9,7 @@ function apiHandlerPlugin(): Plugin {
         const url = req.url?.split('?')[0]
 
         if (
+          url === '/api/auth' ||
           url === '/api/students' ||
           url === '/api/settings' ||
           url === '/api/create-checkout-session' ||
@@ -30,6 +31,12 @@ function apiHandlerPlugin(): Plugin {
           }
 
           try {
+            if (url === '/api/auth') {
+              // @ts-ignore
+              const { default: authHandler } = await import('./api/auth.js')
+              await authHandler(req as any, wrappedRes)
+              return
+            }
             if (url === '/api/students') {
               // @ts-ignore
               const { default: studentsHandler } = await import('./api/students.js')

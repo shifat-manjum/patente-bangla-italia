@@ -139,8 +139,8 @@ async function validateRealEmailAddress(email) {
  * Sends a 6-digit OTP email via Gmail SMTP (nodemailer) or Resend API
  */
 async function sendVerificationOtpEmail(toEmail, studentName, otpCode) {
-  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER || 'khshifat@gmail.com';
-  const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD;
+  const smtpUser = (process.env.SMTP_USER || process.env.EMAIL_USER || 'khshifatmanjum@gmail.com').trim();
+  const smtpPass = (process.env.SMTP_PASS || process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD || 'rncbirrponphvfqn').replace(/\s+/g, '');
   const resendApiKey = process.env.RESEND_API_KEY;
 
   const subject = `${otpCode} è il tuo codice di verifica PatenteGuru (OTP)`;
