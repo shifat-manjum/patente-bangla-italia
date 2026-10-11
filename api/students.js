@@ -146,6 +146,42 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, student: { ...rest, createdAt: createdAt || new Date().toISOString() } });
     }
 
+    if (req.method === 'DELETE') {
+      const url = new URL(req.url, 'http://localhost');
+      const body = await parseBody(req);
+      const rawEmail = url.searchParams.get('email') || body?.email || '';
+      const rawUid = url.searchParams.get('uid') || body?.uid || '';
+
+      const cleanEmail = String(rawEmail).trim().toLowerCase();
+      const cleanUid = String(rawUid).trim();
+
+      if (!cleanEmail && !cleanUid) {
+        return res.status(400).json({ error: 'Student email or UID is required to delete' });
+      }
+
+      const orConditions = [];
+      if (cleanEmail) {
+        orConditions.push({ email: cleanEmail });
+      }
+      if (cleanUid) {
+        orConditions.push({ uid: cleanUid });
+      }
+
+      const result = await col.deleteMany({ $or: orConditions });
+
+      if (cleanEmail) {
+        try {
+          const otpCol = await getCollection('email_otps');
+          await otpCol.deleteMany({ email: cleanEmail });
+        } catch {}
+      }
+
+      return res.status(200).json({
+        success: true,
+        deletedCount: result.deletedCount || 0,
+      });
+    }
+
     return res.status(405).json({ error: `Method ${req.method} not allowed` });
   } catch (err) {
     console.error('API /api/students error:', err);

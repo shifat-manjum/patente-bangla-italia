@@ -14,7 +14,8 @@ import {
   FileText,
   Sliders,
   Check,
-  Save
+  Save,
+  Trash2
 } from 'lucide-react';
 import type { StudentProfile } from '../services/studentService';
 import { AdminQuestionExplorer } from './AdminQuestionExplorer';
@@ -343,6 +344,53 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
     } catch (err: any) {
       console.error('Failed to sync VIP status:', err);
       alert('লোকাল স্ট্যাটাস আপডেট হয়েছে।');
+    }
+  };
+
+  // Permanently remove a student from CRM & MongoDB database
+  const handleRemoveStudent = async (student: StudentProfile) => {
+    const cleanEmail = (student.email || '').trim().toLowerCase();
+    const confirmDelete = window.confirm(
+      `আপনি কি নিশ্চিত যে আপনি "${student.name || cleanEmail}" (${cleanEmail}) স্টুডেন্টকে CRM ও ডাটাবেস থেকে স্থায়ীভাবে মুছে ফেলতে (Remove) চান?`
+    );
+    if (!confirmDelete) return;
+
+    // 1. Remove immediately from React state
+    const updated = students.filter(
+      (s) =>
+        (s.email || '').trim().toLowerCase() !== cleanEmail &&
+        (!student.uid || s.uid !== student.uid)
+    );
+    setStudents(updated);
+
+    try {
+      // 2. Clean local storage caches so the deleted user doesn't reappear
+      localStorage.setItem('patente_registered_students', JSON.stringify(updated));
+
+      const currentStored = localStorage.getItem('patente_student_user');
+      if (currentStored) {
+        const parsed = JSON.parse(currentStored);
+        if ((parsed.email || '').trim().toLowerCase() === cleanEmail) {
+          localStorage.removeItem('patente_student_user');
+          localStorage.removeItem('patente_student_jwt');
+        }
+      }
+
+      const leadStored = localStorage.getItem('patente_bangla_student_lead');
+      if (leadStored) {
+        const parsedLead = JSON.parse(leadStored);
+        if ((parsedLead.email || '').trim().toLowerCase() === cleanEmail) {
+          localStorage.removeItem('patente_bangla_student_lead');
+        }
+      }
+
+      // 3. Delete from MongoDB Atlas (/api/students)
+      await fetch(
+        `/api/students?email=${encodeURIComponent(cleanEmail)}&uid=${encodeURIComponent(student.uid || '')}`,
+        { method: 'DELETE' }
+      );
+    } catch (err) {
+      console.error('Failed to delete student from server:', err);
     }
   };
 
@@ -1127,6 +1175,16 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                                     <span>🎁 সব ২৪০ রাউন্ড ফ্রি (VIP Pass)</span>
                                   </>
                                 )}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveStudent(student)}
+                                className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-[11px] transition cursor-pointer border border-rose-200 dark:border-rose-800/70 flex items-center gap-1 shadow-2xs"
+                                title="এই স্টুডেন্টকে স্থায়ীভাবে মুছে ফেলুন (Remove Student)"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Remove</span>
                               </button>
                             </div>
                           </td>
