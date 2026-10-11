@@ -369,9 +369,17 @@ export const syncStudentProgressToCloud = async (
 ): Promise<void> => {
   try {
     const current = getCachedStudent();
-    if (current && (current.uid === uid || !uid)) {
-      const updatedStudent = sanitizeStudentProfile({ ...current, ...progress });
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedStudent));
+    if (current && (current.uid === uid || !uid || (progress.email && current.email === progress.email))) {
+      const mergedCompletedRounds = {
+        ...(current.completedRounds || {}),
+        ...(progress.completedRounds || {}),
+      };
+      const updatedStudent = sanitizeStudentProfile({
+        ...current,
+        ...progress,
+        completedRounds: mergedCompletedRounds,
+      });
+      cacheStudentLocally(updatedStudent);
       await syncStudentToServerDb(updatedStudent);
     }
   } catch (err) {
@@ -404,9 +412,13 @@ export const subscribeToAuthChanges = (
                 cached.totalQuestionsAnswered || 0,
                 data.student.totalQuestionsAnswered || 0
               ),
+              completedRounds: {
+                ...(data.student.completedRounds || {}),
+                ...(cached.completedRounds || {}),
+              },
               isVip: Boolean(cached.isVip || data.student.isVip),
             });
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
+            cacheStudentLocally(merged);
             callback(merged);
           }
         }

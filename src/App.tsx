@@ -47,14 +47,22 @@ const CoursePaymentModal = lazy(() => import('./components/CoursePaymentModal').
 const CourseInvoiceModal = lazy(() => import('./components/CourseInvoiceModal').then(m => ({ default: m.CourseInvoiceModal })));
 const StudentLeadModal = lazy(() => import('./components/StudentLeadModal').then(m => ({ default: m.StudentLeadModal })));
 
-// Calculate true sequential progress: a student can only reach Round N if rounds 1..N-1 are passed
+// Calculate true progress: sequential passed rounds or highest completed round reached
 export const getSequentialUnlockedRound = (completed?: Record<number, { passed: boolean }> | null): number => {
   if (!completed || typeof completed !== 'object') return 1;
   let r = 1;
   while (completed[r]?.passed === true && r < 240) {
     r++;
   }
-  return r;
+  const completedKeys = Object.keys(completed)
+    .map(Number)
+    .filter((n) => Number.isFinite(n) && n >= 1 && n <= 240);
+  if (completedKeys.length === 0) return r;
+  const highestCompleted = Math.max(...completedKeys);
+  const highestNext = completed[highestCompleted]?.passed
+    ? Math.min(240, highestCompleted + 1)
+    : highestCompleted;
+  return Math.max(r, highestNext);
 };
 
 export function App() {
@@ -196,7 +204,7 @@ export function App() {
     return () => unsubscribe();
   }, []);
 
-  // Cross-device check with MongoDB Atlas for VIP status (authoritative server check)
+  // Cross-device check with MongoDB Atlas for VIP status & progress (authoritative server check)
   useEffect(() => {
     if (currentUser?.email) {
       fetchStudentFromServerDb(currentUser.email)
@@ -215,6 +223,12 @@ export function App() {
             }
             if (typeof remote.unlockedRound === 'number' && remote.unlockedRound > unlockedRound) {
               setUnlockedRound(remote.unlockedRound);
+            }
+            if (typeof remote.totalQuestionsAnswered === 'number' && remote.totalQuestionsAnswered > totalQuestionsAnswered) {
+              setTotalQuestionsAnswered(remote.totalQuestionsAnswered);
+            }
+            if (remote.completedRounds && typeof remote.completedRounds === 'object' && !Array.isArray(remote.completedRounds)) {
+              setCompletedRounds((prev) => ({ ...remote.completedRounds, ...(prev || {}) }));
             }
           }
         })
@@ -336,15 +350,18 @@ export function App() {
     localStorage.setItem('patente_bangla_answered_count', String(totalQuestionsAnswered));
   }, [totalQuestionsAnswered]);
 
-  // Effective sequential unlocked round derived strictly from passed rounds
-  const effectiveUnlockedRound = getSequentialUnlockedRound(completedRounds);
+  // Effective unlocked round derived from completed rounds and current unlockedRound
+  const effectiveUnlockedRound = Math.max(unlockedRound, getSequentialUnlockedRound(completedRounds));
 
-  // Sync unlockedRound with real sequential progress (cleans up any previous bug data)
+  // Sync unlockedRound with real progress without resetting backwards
   useEffect(() => {
-    setUnlockedRound(effectiveUnlockedRound);
-    try {
-      localStorage.setItem('patente_bangla_unlocked_round', String(effectiveUnlockedRound));
-    } catch {}
+    setUnlockedRound((prev) => {
+      const nextVal = Math.max(prev, effectiveUnlockedRound);
+      try {
+        localStorage.setItem('patente_bangla_unlocked_round', String(nextVal));
+      } catch {}
+      return nextVal;
+    });
   }, [effectiveUnlockedRound]);
 
   // Persist completed rounds
@@ -357,10 +374,11 @@ export function App() {
     localStorage.setItem('patente_bangla_mistakes', JSON.stringify(mistakeIds));
   }, [mistakeIds]);
 
-  // Sync student progress to Cloud Firestore whenever progress changes
+  // Sync student progress to MongoDB Atlas whenever progress changes
   useEffect(() => {
-    if (currentUser?.uid) {
+    if (currentUser?.uid || currentUser?.email) {
       syncStudentProgressToCloud(currentUser.uid, {
+        email: currentUser.email,
         unlockedRound,
         totalQuestionsAnswered,
         completedRounds,
@@ -368,7 +386,7 @@ export function App() {
         isVip,
       });
     }
-  }, [unlockedRound, totalQuestionsAnswered, completedRounds, mistakeIds, isVip, currentUser?.uid]);
+  }, [unlockedRound, totalQuestionsAnswered, completedRounds, mistakeIds, isVip, currentUser?.uid, currentUser?.email]);
 
   const incrementAnsweredCount = (amount: number = 1) => {
     try {
@@ -402,38 +420,50 @@ export function App() {
   };
 
   const handleSaveExamMistakes = (newIds: string[], finishedRoundId?: number | null) => {
+    const updatedTotalQuestions = totalQuestionsAnswered + 30;
     incrementAnsweredCount(30);
 
-    setMistakeIds((prev) => {
-      const set = new Set([...prev, ...newIds]);
-      return Array.from(set);
-    });
+    const updatedMistakes = Array.from(new Set([...mistakeIds, ...newIds]));
+    setMistakeIds(updatedMistakes);
 
-    const activeRoundNum = finishedRoundId || currentRoundId;
+    const fallbackRoundNum = Math.min(240, Math.max(1, Math.floor(updatedTotalQuestions / 30)));
+    const activeRoundNum = finishedRoundId || currentRoundId || fallbackRoundNum;
 
-    if (activeRoundNum) {
-      // Check if current round passed (<= 3 errors)
-      const errorCount = newIds.length;
-      const passed = errorCount <= 3;
+    const errorCount = newIds.length;
+    const passed = errorCount <= 3;
 
-      setCompletedRounds((prev) => ({
-        ...prev,
-        [activeRoundNum]: { errors: errorCount, passed }
-      }));
+    const updatedCompletedRounds = {
+      ...completedRounds,
+      [activeRoundNum]: { errors: errorCount, passed },
+    };
+    setCompletedRounds(updatedCompletedRounds);
 
-      if (passed) {
-        setUnlockedRound((prev) => {
-          const nextRound = activeRoundNum + 1;
-          const newHighest = Math.max(prev, nextRound);
-          // If student passed the dynamic free round limit, prompt the €49 lifetime paywall for next round!
-          if (activeRoundNum === appSettings.freeRoundsLimit && !isVip && appSettings.freeRoundsLimit < 240) {
-            setTimeout(() => {
-              setIsPaywallOpen(true);
-            }, 1800);
-          }
-          return newHighest;
-        });
-      }
+    const nextUnlocked = passed ? Math.min(240, activeRoundNum + 1) : activeRoundNum;
+    const updatedUnlockedRound = Math.max(unlockedRound, activeRoundNum, nextUnlocked);
+    setUnlockedRound(updatedUnlockedRound);
+
+    try {
+      localStorage.setItem('patente_bangla_unlocked_round', String(updatedUnlockedRound));
+      localStorage.setItem('patente_bangla_completed_rounds', JSON.stringify(updatedCompletedRounds));
+      localStorage.setItem('patente_bangla_answered_count', String(updatedTotalQuestions));
+    } catch {}
+
+    if (passed && activeRoundNum === appSettings.freeRoundsLimit && !isVip && appSettings.freeRoundsLimit < 240) {
+      setTimeout(() => {
+        setIsPaywallOpen(true);
+      }, 1800);
+    }
+
+    // Immediately sync completed round & quiz count to MongoDB Atlas so CRM updates in real time
+    if (currentUser?.uid || currentUser?.email) {
+      syncStudentProgressToCloud(currentUser.uid, {
+        email: currentUser.email,
+        unlockedRound: updatedUnlockedRound,
+        totalQuestionsAnswered: updatedTotalQuestions,
+        completedRounds: updatedCompletedRounds,
+        mistakeIds: updatedMistakes,
+        isVip,
+      });
     }
   };
 

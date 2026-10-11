@@ -15,7 +15,8 @@ import {
   Sliders,
   Check,
   Save,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import type { StudentProfile } from '../services/studentService';
 import { AdminQuestionExplorer } from './AdminQuestionExplorer';
@@ -38,6 +39,31 @@ interface AdminCrmDashboardProps {
   onExitAdmin: () => void;
 }
 
+// Calculate the accurate completed round number for a student
+const getStudentCompletedRound = (student: StudentProfile): number => {
+  const completedObj =
+    student.completedRounds &&
+    typeof student.completedRounds === 'object' &&
+    !Array.isArray(student.completedRounds)
+      ? student.completedRounds
+      : {};
+  const completedKeys = Object.keys(completedObj)
+    .map(Number)
+    .filter((n) => Number.isFinite(n) && n >= 1 && n <= 240);
+  const highestCompletedKey = completedKeys.length > 0 ? Math.max(...completedKeys) : 0;
+  const completedCount = completedKeys.length;
+  const roundsFromQuizzes = Math.min(240, Math.floor((student.totalQuestionsAnswered || 0) / 30));
+  const unlockedCompleted =
+    typeof student.unlockedRound === 'number' && student.unlockedRound > 1
+      ? Math.min(240, student.unlockedRound - 1)
+      : 0;
+
+  return Math.min(
+    240,
+    Math.max(highestCompletedKey, completedCount, roundsFromQuizzes, unlockedCompleted)
+  );
+};
+
 // Helper for instantaneous local cache retrieval (0ms initial render)
 const getInitialCachedStudents = (): StudentProfile[] => {
   try {
@@ -55,13 +81,44 @@ const getInitialCachedStudents = (): StudentProfile[] => {
       }
     } catch {}
 
-    // 2. Currently logged-in student user
+    // 2. Currently logged-in student user + active local round progress
     try {
       const current = localStorage.getItem('patente_student_user');
       if (current) {
         const curObj = JSON.parse(current);
         if (curObj?.email) {
-          map.set(curObj.email.toLowerCase(), { ...map.get(curObj.email.toLowerCase()), ...curObj });
+          const emailKey = curObj.email.toLowerCase();
+          const existing = map.get(emailKey);
+          let localAnswered = 0;
+          let localUnlocked = 1;
+          let localCompleted: Record<number, { errors: number; passed: boolean }> = {};
+          try {
+            localAnswered = parseInt(localStorage.getItem('patente_bangla_answered_count') || '0', 10) || 0;
+            localUnlocked = parseInt(localStorage.getItem('patente_bangla_unlocked_round') || '1', 10) || 1;
+            const rawComp = localStorage.getItem('patente_bangla_completed_rounds');
+            if (rawComp) {
+              const parsedComp = JSON.parse(rawComp);
+              if (parsedComp && typeof parsedComp === 'object' && !Array.isArray(parsedComp)) {
+                localCompleted = parsedComp;
+              }
+            }
+          } catch {}
+
+          map.set(emailKey, {
+            ...existing,
+            ...curObj,
+            unlockedRound: Math.max(existing?.unlockedRound || 1, curObj.unlockedRound || 1, localUnlocked),
+            totalQuestionsAnswered: Math.max(
+              existing?.totalQuestionsAnswered || 0,
+              curObj.totalQuestionsAnswered || 0,
+              localAnswered
+            ),
+            completedRounds: {
+              ...(existing?.completedRounds || {}),
+              ...(curObj.completedRounds || {}),
+              ...localCompleted,
+            },
+          });
         }
       }
     } catch {}
@@ -111,6 +168,9 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const [newStudentPhone, setNewStudentPhone] = useState('');
   const [newStudentIsVip, setNewStudentIsVip] = useState(false);
   const [viewInvoice, setViewInvoice] = useState<InvoiceRecord | null>(null);
+  const [selectedProgressStudent, setSelectedProgressStudent] = useState<StudentProfile | null>(null);
+  const [manualRoundInput, setManualRoundInput] = useState<number>(1);
+  const [isSavingRound, setIsSavingRound] = useState<boolean>(false);
 
   // Marketing & Free Rounds Policy Settings
   const [settings, setSettings] = useState<AppSettings>(() => getAppSettings());
@@ -228,15 +288,36 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       console.warn('MongoDB Atlas database fetch notice:', e);
     }
 
-    // 3. Merge without duplicates (keyed by email or uid), prioritizing server records
+    // 3. Merge without duplicates (keyed by email or uid), preserving highest progress & server records
+    const mergeRecord = (existing: StudentProfile | undefined, incoming: StudentProfile): StudentProfile => {
+      if (!existing) return incoming;
+      return {
+        ...existing,
+        ...incoming,
+        unlockedRound: Math.max(existing.unlockedRound || 1, incoming.unlockedRound || 1),
+        totalQuestionsAnswered: Math.max(
+          existing.totalQuestionsAnswered || 0,
+          incoming.totalQuestionsAnswered || 0
+        ),
+        completedRounds: {
+          ...(existing.completedRounds || {}),
+          ...(incoming.completedRounds || {}),
+        },
+      };
+    };
+
     const map = new Map<string, StudentProfile>();
     localStudents.forEach((s) => {
       if (s.email) map.set(s.email.toLowerCase(), s);
       else if (s.uid) map.set(s.uid, s);
     });
     serverStudents.forEach((s) => {
-      if (s.email) map.set(s.email.toLowerCase(), { ...map.get(s.email.toLowerCase()), ...s });
-      else if (s.uid) map.set(s.uid, { ...map.get(s.uid), ...s });
+      if (s.email) {
+        const key = s.email.toLowerCase();
+        map.set(key, mergeRecord(map.get(key), s));
+      } else if (s.uid) {
+        map.set(s.uid, mergeRecord(map.get(s.uid), s));
+      }
     });
 
     const merged = Array.from(map.values());
@@ -249,6 +330,57 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
 
     setIsLoading(false);
     setIsRefreshing(false);
+  };
+
+  // Allow Admin to manually update or sync a student's completed round in CRM & MongoDB
+  const handleUpdateStudentRound = async (student: StudentProfile, targetCompletedRound: number) => {
+    const validRound = Math.max(0, Math.min(240, Math.round(targetCompletedRound)));
+    setIsSavingRound(true);
+    try {
+      const updatedCompletedRounds: Record<number, { errors: number; passed: boolean }> = {
+        ...(student.completedRounds || {}),
+      };
+      for (let r = 1; r <= validRound; r++) {
+        if (!updatedCompletedRounds[r]) {
+          updatedCompletedRounds[r] = { errors: 0, passed: true };
+        }
+      }
+      // Remove rounds higher than validRound if admin lowered the round number
+      Object.keys(updatedCompletedRounds).forEach((k) => {
+        const rNum = Number(k);
+        if (rNum > validRound) {
+          delete updatedCompletedRounds[rNum];
+        }
+      });
+
+      const updatedStudent: StudentProfile = {
+        ...student,
+        unlockedRound: Math.min(240, Math.max(1, validRound + 1)),
+        totalQuestionsAnswered: Math.max(student.totalQuestionsAnswered || 0, validRound * 30),
+        completedRounds: updatedCompletedRounds,
+      };
+
+      setStudents((prev) => {
+        const nextList = prev.map((s) =>
+          s.email.toLowerCase() === student.email.toLowerCase() ? updatedStudent : s
+        );
+        try {
+          localStorage.setItem('patente_registered_students', JSON.stringify(nextList));
+        } catch {}
+        return nextList;
+      });
+      setSelectedProgressStudent(updatedStudent);
+
+      await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedStudent),
+      });
+    } catch (err) {
+      console.warn('Round update error:', err);
+    } finally {
+      setIsSavingRound(false);
+    }
   };
 
   useEffect(() => {
@@ -1112,13 +1244,40 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                           </td>
 
                           {/* Progress */}
-                          <td className="py-3.5 px-4 space-y-0.5">
-                            <div className="font-bold text-slate-800 dark:text-slate-200">
-                              Round {student.unlockedRound || 1} / 240
-                            </div>
-                            <div className="text-[10px] text-slate-500">
-                              {student.totalQuestionsAnswered || 0} কুইজ সমাধান
-                            </div>
+                          <td className="py-3.5 px-4">
+                            {(() => {
+                              const completedRound = getStudentCompletedRound(student);
+                              const progressPct = Math.min(100, Math.round((completedRound / 240) * 100));
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedProgressStudent(student);
+                                    setManualRoundInput(completedRound);
+                                  }}
+                                  className="group text-left px-2.5 py-1.5 rounded-xl bg-slate-100/80 hover:bg-orange-500/10 dark:bg-slate-800/70 dark:hover:bg-orange-500/15 border border-slate-200 dark:border-slate-700 hover:border-[#FB6C00]/50 transition cursor-pointer min-w-[130px]"
+                                  title="Click to view or update student's completed rounds"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="font-black text-xs text-slate-900 dark:text-white group-hover:text-[#FB6C00] transition">
+                                      Round {completedRound} / 240
+                                    </span>
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-500/15 text-[#FB6C00]">
+                                      {progressPct}%
+                                    </span>
+                                  </div>
+                                  <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden my-1">
+                                    <div
+                                      className="h-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] rounded-full transition-all duration-300"
+                                      style={{ width: `${Math.max(completedRound > 0 ? 4 : 0, progressPct)}%` }}
+                                    />
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                                    {student.totalQuestionsAnswered || completedRound * 30} কুইজ সমাধান
+                                  </div>
+                                </button>
+                              );
+                            })()}
                           </td>
 
                           {/* Membership Status */}
@@ -1290,6 +1449,143 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Student Round Progress Monitor Modal */}
+      {selectedProgressStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>📊 Student Round Progress Monitor</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {selectedProgressStudent.name} • {selectedProgressStudent.email}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedProgressStudent(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {(() => {
+              const completedRound = getStudentCompletedRound(selectedProgressStudent);
+              const completedMap =
+                selectedProgressStudent.completedRounds &&
+                typeof selectedProgressStudent.completedRounds === 'object'
+                  ? selectedProgressStudent.completedRounds
+                  : {};
+              const completedKeys = Object.keys(completedMap)
+                .map(Number)
+                .filter((n) => Number.isFinite(n) && n >= 1 && n <= 240)
+                .sort((a, b) => a - b);
+
+              return (
+                <div className="space-y-4">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-center">
+                      <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
+                        Completed Round
+                      </div>
+                      <div className="text-lg font-black text-[#FB6C00] mt-0.5">
+                        {completedRound} / 240
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-center">
+                      <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
+                        Quizzes Solved
+                      </div>
+                      <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+                        {selectedProgressStudent.totalQuestionsAnswered || completedRound * 30}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                      <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
+                        Next Round
+                      </div>
+                      <div className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+                        Round {Math.min(240, completedRound + 1)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Completed Rounds Breakdown */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      সম্পন্ন হওয়া রাউন্ডসমূহ (Completed Rounds History):
+                    </div>
+                    {completedKeys.length === 0 && completedRound === 0 ? (
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500">
+                        এই স্টুডেন্ট এখনো কোনো রাউন্ড সম্পন্ন করেনি (0 rounds completed).
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
+                        {Array.from(
+                          new Set([
+                            ...completedKeys,
+                            ...Array.from({ length: completedRound }, (_, i) => i + 1),
+                          ])
+                        )
+                          .sort((a, b) => a - b)
+                          .map((rNum) => {
+                            const info = completedMap[rNum];
+                            const passed = info ? info.passed : true;
+                            const errors = info ? info.errors : 0;
+                            return (
+                              <div
+                                key={rNum}
+                                className={`p-2 rounded-xl border text-xs flex flex-col justify-between ${
+                                  passed
+                                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                                    : 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300'
+                                }`}
+                              >
+                                <div className="font-black">Round #{rNum}</div>
+                                <div className="text-[10px] opacity-85 mt-0.5">
+                                  {info ? `${errors} ভুল (${passed ? 'Pass' : 'Retry'})` : 'Completed ✓'}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Admin Manual Round Update Control */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                      রাউন্ড প্রগ্রেস আপডেট করুন (Set Completed Round 0 – 240):
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        max={240}
+                        value={manualRoundInput}
+                        onChange={(e) => setManualRoundInput(Number(e.target.value))}
+                        className="w-28 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-black text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FB6C00]"
+                      />
+                      <button
+                        type="button"
+                        disabled={isSavingRound}
+                        onClick={() => handleUpdateStudentRound(selectedProgressStudent, manualRoundInput)}
+                        className="px-4 py-2 rounded-xl bg-[#FB6C00] hover:bg-[#e05e00] disabled:opacity-50 text-white font-black text-xs transition cursor-pointer shadow-sm"
+                      >
+                        {isSavingRound ? 'Saving...' : 'Save Round Progress'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
