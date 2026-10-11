@@ -17,7 +17,7 @@ import {
   EyeOff,
   MessageCircle,
 } from 'lucide-react';
-import { registerStudent, loginStudent } from '../services/studentService';
+import { registerStudent, loginStudent, sendRegistrationOtp } from '../services/studentService';
 import type { StudentProfile } from '../services/studentService';
 import { WHATSAPP_GROUP_URL } from '../config/constants';
 import { trackWhatsAppJoin } from '../services/analytics';
@@ -31,6 +31,14 @@ interface StudentAuthModalProps {
   initialMode?: 'login' | 'register';
   forcedMessage?: string;
 }
+
+const DISPOSABLE_DOMAINS = new Set([
+  'tempmail.com', 'temp-mail.org', 'temp-mail.io', '10minutemail.com', '10minutemail.net',
+  'guerrillamail.com', 'sharklasers.com', 'mailinator.com', 'yopmail.com', 'yopmail.fr',
+  'trashmail.com', 'getnada.com', 'fakeinbox.com', 'maildrop.cc', 'dispostable.com',
+  'mohmal.com', 'emailondeck.com', 'throwawaymail.com', 'mailnesia.com', 'mytemp.email',
+  'tempail.com', 'burnermail.io', 'example.com', 'example.it', 'test.com', 'test.it', 'fake.com'
+]);
 
 export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
   isOpen,
@@ -48,6 +56,12 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // 2-Step Email OTP Verification state
+  const [isOtpStep, setIsOtpStep] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpEmailSent, setOtpEmailSent] = useState(true);
+  const [fallbackOtpHint, setFallbackOtpHint] = useState<string | null>(null);
 
   // Success screen state after successful registration
   const [registeredStudent, setRegisteredStudent] = useState<StudentUser | null>(null);
@@ -73,7 +87,15 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
   };
 
   const isEmailValid = (val: string) => {
-    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val.trim());
+    const clean = val.trim().toLowerCase();
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(clean)) return false;
+    const [localPart, domain] = clean.split('@');
+    if (!localPart || !domain || localPart.length < 2) return false;
+    if (/^([a-z0-9])\1{3,}$/.test(localPart)) return false;
+    if (['test', 'asdf', 'qwerty', 'fake', 'none', 'user'].includes(localPart)) return false;
+    if (DISPOSABLE_DOMAINS.has(domain)) return false;
+    if (/(tempmail|throwaway|mailinator|guerrilla|yopmail|10minute|trashmail|fakeinbox)/i.test(domain)) return false;
+    return true;
   };
 
   const isPhoneValid = (prefix: string, rawNumber: string) => {
@@ -123,6 +145,15 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     if (code === 'auth/phone-already-in-use') {
       return 'এই মোবাইল নম্বরটি দিয়ে ইতোমধ্যে অন্য একজন স্টুডেন্ট নিবন্ধিত রয়েছেন। প্রতিটি অ্যাকাউন্টের জন্য ইউনিক নম্বর বাধ্যতামূলক।';
     }
+    if (code === 'auth/disposable-email-blocked' || code === 'auth/invalid-email-domain') {
+      return 'ভুয়া বা অস্থায়ী (Temporary) ইমেইল গ্রহণযোগ্য নয়। দয়া করে আপনার আসল ইমেইল (যেমন: Gmail, iCloud, Outlook, Yahoo বা Libero) ব্যবহার করুন।';
+    }
+    if (code === 'auth/invalid-otp') {
+      return 'ভুল ৬-ডিজিটের OTP কোড দেওয়া হয়েছে। অনুগ্রহ করে সঠিক কোডটি লিখুন।';
+    }
+    if (code === 'auth/otp-expired') {
+      return 'OTP কোডের মেয়াদ শেষ হয়ে গেছে। দয়া করে "আবার কোড পাঠান" বাটনে ক্লিক করুন।';
+    }
     if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
       return 'ভুল ইমেইল বা পাসওয়ার্ড দেওয়া হয়েছে। দয়া করে আবার সঠিক তথ্য দিয়ে চেষ্টা করুন।';
     }
@@ -138,7 +169,8 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     return err?.message || 'একটি ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।';
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  // Step 1: Validate fields & send 6-digit OTP to the student's email
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -148,9 +180,9 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       return;
     }
 
-    // 2. Validate Email Group Policy
+    // 2. Validate Email Group Policy (Strict Real Provider Check)
     if (!isEmailValid(email)) {
-      setError('সঠিক ইমেইল ঠিকানা দিন (যেমন: marco.rossi@gmail.com)।');
+      setError('ভুয়া বা ভুল ইমেইল গ্রহণযোগ্য নয়। দয়া করে আপনার সচল আসল ইমেইল ঠিকানা দিন (যেমন: marco.rossi@gmail.com)।');
       return;
     }
 
@@ -170,58 +202,40 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       return;
     }
 
-    const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = `${phoneCountry} ${phoneNumber.trim()}`;
-    const rawDigits = phoneNumber.replace(/\D/g, '');
 
-    // 5. Duplicate Check Policy: Email and Phone cannot be repeated!
     try {
-      // A. Check local directory
-      const localList: any[] = JSON.parse(localStorage.getItem('patente_registered_students') || '[]');
-      const emailTakenLocal = localList.some((s) => (s?.email || '').toLowerCase() === cleanEmail);
-      if (emailTakenLocal) {
-        setError('এই ইমেইল ঠিকানা দিয়ে ইতোমধ্যেই একটি অ্যাকাউন্ট রয়েছে। দয়া করে Sign In (লগইন) করুন।');
-        return;
-      }
-      const phoneTakenLocal = localList.some((s) => {
-        const d = (s?.phone || '').replace(/\D/g, '');
-        return d && d.length >= 8 && d.endsWith(rawDigits.slice(-8));
-      });
-      if (phoneTakenLocal) {
-        setError('এই মোবাইল নম্বরটি দিয়ে ইতোমধ্যে অন্য একজন স্টুডেন্ট নিবন্ধিত রয়েছেন। প্রতিটি অ্যাকাউন্টের জন্য ইউনিক নম্বর বাধ্যতামূলক।');
-        return;
-      }
-
-      // B. Check MongoDB Atlas cloud directory
       setIsLoading(true);
-      const cloudCheck = await fetch(`/api/students?email=${encodeURIComponent(cleanEmail)}`);
-      if (cloudCheck.ok) {
-        const cloudUser = await cloudCheck.json();
-        if (cloudUser && cloudUser.email) {
-          setIsLoading(false);
-          setError('এই ইমেইল দিয়ে ইতোমধ্যেই PatenteGuru-তে অ্যাকাউন্ট রয়েছে। দয়া করে Sign In (লগইন) করুন।');
-          return;
-        }
-      }
+      const otpRes = await sendRegistrationOtp(name.trim(), email.trim(), cleanPhone);
+      setIsLoading(false);
+      setOtpEmailSent(otpRes.emailSent);
+      setFallbackOtpHint(otpRes.fallbackOtp || null);
+      setOtpCode('');
+      setIsOtpStep(true);
+    } catch (err: any) {
+      setIsLoading(false);
+      setError(getFirebaseErrorMessage(err));
+    }
+  };
 
-      // Check phone in cloud
-      const cloudPhoneCheck = await fetch(`/api/students?phone=${encodeURIComponent(rawDigits)}`);
-      if (cloudPhoneCheck.ok) {
-        const cloudPhoneUser = await cloudPhoneCheck.json();
-        if (cloudPhoneUser && cloudPhoneUser.phone) {
-          setIsLoading(false);
-          setError('এই মোবাইল নম্বরটি দিয়ে ইতোমধ্যে PatenteGuru-তে অন্য অ্যাকাউন্ট খোলা আছে। দয়া করে আপনার নিজস্ব সঠিক নম্বর দিন।');
-          return;
-        }
-      }
-    } catch (checkErr) {
-      console.warn('Duplicate check warning:', checkErr);
+  // Step 2: Verify 6-digit OTP & create student account
+  const handleVerifyOtpAndRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    const cleanOtp = otpCode.replace(/\D/g, '');
+    if (cleanOtp.length !== 6) {
+      setError('আপনার ইমেইলে পাঠানো ৬-ডিজিটের OTP কোডটি সঠিকভাবে লিখুন।');
+      return;
     }
 
+    const cleanPhone = `${phoneCountry} ${phoneNumber.trim()}`;
+
     try {
       setIsLoading(true);
-      const student = await registerStudent(name.trim(), email.trim(), cleanPhone, password);
+      const student = await registerStudent(name.trim(), email.trim(), cleanPhone, password, cleanOtp);
       setIsLoading(false);
+      setIsOtpStep(false);
       setRegisteredStudent(student);
       // Auto-trigger WhatsApp group join in a new window/tab
       try {
@@ -510,9 +524,103 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                 </form>
               )}
 
-              {/* REGISTRATION FORM */}
-              {mode === 'register' && (
-                <form onSubmit={handleRegister} className="space-y-3">
+              {/* REGISTRATION FORM (2-STEP WITH EMAIL OTP VERIFICATION) */}
+              {mode === 'register' && isOtpStep ? (
+                <form onSubmit={handleVerifyOtpAndRegister} className="space-y-4 animate-fadeIn">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        Step 2 of 2 • ইমেইল OTP যাচাইকরণ
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsOtpStep(false);
+                          setError('');
+                        }}
+                        className="text-[11px] font-bold text-[#FB6C00] hover:underline cursor-pointer"
+                      >
+                        ইমেইল পরিবর্তন করুন
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                      আপনার ইমেইল <strong>{email.trim().toLowerCase()}</strong> ঠিকানায় একটি ৬-ডিজিটের ভেরিফিকেশন কোড (OTP) পাঠানো হয়েছে। নিচে কোডটি লিখুন:
+                    </p>
+                  </div>
+
+                  {!otpEmailSent && fallbackOtpHint && (
+                    <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 flex items-center justify-between gap-2">
+                      <div>
+                        <span className="font-bold block">আপনার তাৎক্ষণিক ভেরিফিকেশন কোড (OTP):</span>
+                        <span className="text-[11px] opacity-80">নিচের কোডটি বক্সে লিখুন অথবা পাশের বাটনে ক্লিক করুন</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setOtpCode(fallbackOtpHint)}
+                        className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-mono font-black text-sm tracking-widest cursor-pointer shrink-0 shadow-xs"
+                      >
+                        {fallbackOtpHint}
+                      </button>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 text-center">
+                      6-Digit Verification Code (OTP) *
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      required
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="• • • • • •"
+                      className="w-full py-3.5 px-4 text-center font-mono text-2xl font-black tracking-[0.5em] rounded-2xl border-2 border-[#FB6C00]/60 bg-slate-50 dark:bg-[#0D1117] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FB6C00] focus:border-[#FB6C00] transition-colors"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading || otpCode.length !== 6}
+                    className="w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-black text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-98"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Verifying OTP & Creating Account...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Verify OTP & Create Account (অ্যাকাউন্ট খুলুন)</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="flex items-center justify-between pt-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsOtpStep(false);
+                        setError('');
+                      }}
+                      className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-bold cursor-pointer"
+                    >
+                      &larr; পেছনে যান (Back)
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isLoading}
+                      onClick={handleSendOtp}
+                      className="font-bold text-[#FB6C00] hover:underline cursor-pointer disabled:opacity-50"
+                    >
+                      আবার কোড পাঠান (Resend OTP)
+                    </button>
+                  </div>
+                </form>
+              ) : mode === 'register' ? (
+                <form onSubmit={handleSendOtp} className="space-y-3">
                   {/* Full Legal Name */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
@@ -542,11 +650,11 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                        Email Address *
+                        Real Email Address (OTP যাবে) *
                       </label>
                       {email && (
-                        <span className={`text-[10px] font-bold ${isEmailValid(email) ? 'text-emerald-600' : 'text-slate-400'}`}>
-                          {isEmailValid(email) ? '✓ Valid' : 'Invalid format'}
+                        <span className={`text-[10px] font-bold ${isEmailValid(email) ? 'text-emerald-600' : 'text-rose-500'}`}>
+                          {isEmailValid(email) ? '✓ Valid Email' : 'Only real email allowed'}
                         </span>
                       )}
                     </div>
@@ -557,7 +665,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="info@example.it"
+                        placeholder="yourname@gmail.com"
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-[#0D1117] text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FB6C00] focus:border-[#FB6C00] transition-colors"
                       />
                     </div>
@@ -610,7 +718,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                       </label>
                       {password && (
                         <span className={`text-[10px] font-bold ${isPasswordValid(password) ? 'text-emerald-600' : 'text-amber-500'}`}>
-                          {isPasswordValid(password) ? '✓ Strong' : 'Min 6 (Letters + Numbers)'}
+                          {isPasswordValid(password) ? '✓ Strong' : 'Min 8 (Letters + Numbers)'}
                         </span>
                       )}
                     </div>
@@ -661,11 +769,11 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Creating Account & Unlocking Round 1...</span>
+                        <span>Sending 6-Digit OTP to Email...</span>
                       </>
                     ) : (
                       <>
-                        <span>Create Account</span>
+                        <span>Send Verification Code (OTP পাঠান)</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
@@ -687,7 +795,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                     </p>
                   </div>
                 </form>
-              )}
+              ) : null}
             </div>
           </>
         )}

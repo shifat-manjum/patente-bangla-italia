@@ -139,12 +139,51 @@ const cacheStudentLocally = (student: StudentProfile, token?: string) => {
   }
 };
 
-// Register a new student directly in MongoDB via /api/auth
+// Step 1 of Registration: Validate real email & send 6-digit OTP code
+export const sendRegistrationOtp = async (
+  name: string,
+  email: string,
+  phone: string
+): Promise<{ emailSent: boolean; fallbackOtp?: string }> => {
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanName = name.trim();
+  const cleanPhone = phone.trim();
+
+  const res = await fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'send-otp',
+      name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+    }),
+  });
+
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await res.json();
+    if (!res.ok) {
+      const authErr: any = new Error(data.error || 'Failed to send verification code');
+      authErr.code = data.code || 'auth/otp-send-failed';
+      throw authErr;
+    }
+    return {
+      emailSent: Boolean(data.emailSent),
+      fallbackOtp: data.fallbackOtp,
+    };
+  }
+
+  throw new Error('Verification server unavailable');
+};
+
+// Step 2 of Registration: Verify 6-digit OTP and create student account in MongoDB
 export const registerStudent = async (
   name: string,
   email: string,
   phone: string,
-  password: string
+  password: string,
+  otp?: string
 ): Promise<StudentProfile> => {
   const cleanEmail = email.trim().toLowerCase();
   const cleanName = name.trim();
@@ -160,6 +199,7 @@ export const registerStudent = async (
         email: cleanEmail,
         phone: cleanPhone,
         password,
+        otp: otp ? otp.trim() : '',
       }),
     });
 
@@ -184,27 +224,10 @@ export const registerStudent = async (
       throw err;
     }
     console.warn('MongoDB /api/auth register fallback notice:', err);
+    throw err;
   }
 
-  // Graceful local-first fallback if offline or local dev server without /api
-  const fallbackProfile: StudentProfile = sanitizeStudentProfile({
-    uid: 'std_' + Date.now(),
-    name: cleanName,
-    email: cleanEmail,
-    phone: cleanPhone || undefined,
-    unlockedRound: 1,
-    totalQuestionsAnswered: 0,
-    completedRounds: {},
-    mistakeIds: [],
-    isVip: false,
-    createdAt: new Date().toISOString(),
-    lastLoginAt: new Date().toISOString(),
-  });
-
-  cacheStudentLocally(fallbackProfile);
-  await syncStudentToServerDb(fallbackProfile);
-  notifyAuthChange(fallbackProfile);
-  return fallbackProfile;
+  throw new Error('Registration failed');
 };
 
 // Login an existing student directly via MongoDB /api/auth
