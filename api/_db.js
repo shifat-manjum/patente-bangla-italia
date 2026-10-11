@@ -1,40 +1,31 @@
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const DEFAULT_MONGODB_URI =
+  'mongodb+srv://khshifatmanjum_db_user:Dtmkv5WKtSMqpTEh@cluster0.h8ljzpx.mongodb.net/patente_bangla?retryWrites=true&w=majority';
 
-if (!MONGODB_URI) {
-  console.warn('Warning: MONGODB_URI environment variable is not defined.');
-}
+const MONGODB_URI = (process.env.MONGODB_URI || DEFAULT_MONGODB_URI).trim();
 
 const DB_NAME = 'patente_bangla';
 
 const options = {
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 5000,
-  connectTimeoutMS: 5000,
+  serverSelectionTimeoutMS: 8000,
+  connectTimeoutMS: 8000,
 };
 
-let client;
-let clientPromise;
-
-if (process.env.NODE_ENV === 'development') {
-  // In development mode, use a global variable so the MongoClient is not repeated
+function getClientPromise() {
   if (!global._mongoClientPromise) {
-    client = new MongoClient(MONGODB_URI, options);
-    global._mongoClientPromise = client.connect();
+    const client = new MongoClient(MONGODB_URI, options);
+    global._mongoClientPromise = client.connect().catch((err) => {
+      global._mongoClientPromise = null;
+      throw err;
+    });
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  // In production mode, reuse cached client
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(MONGODB_URI, options);
-    global._mongoClientPromise = client.connect();
-  }
-  clientPromise = global._mongoClientPromise;
+  return global._mongoClientPromise;
 }
 
 export async function getDb() {
-  const connectedClient = await clientPromise;
+  const connectedClient = await getClientPromise();
   return connectedClient.db(DB_NAME);
 }
 
