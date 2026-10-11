@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { X, Lock, Mail, ShieldAlert, ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
-import { auth, isFirebaseConfigured } from '../lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -49,29 +47,34 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
 
     setIsLoading(true);
 
-    // 2. Try Firebase Auth if live credentials configured
-    if (isFirebaseConfigured && auth) {
-      try {
-        await signInWithEmailAndPassword(auth, cleanEmail, password);
-        sessionStorage.setItem('patente_admin_auth', cleanEmail);
-        onAdminLoginSuccess(cleanEmail);
-        onClose();
-        return;
-      } catch (fbErr: any) {
-        // If password fails or user isn't yet created in this specific Firebase instance,
-        // allow master admin passcode override for the exact authorized admin emails
-        if (password === 'admin123' || password === 'zentixx2026' || password === 'admin@2026' || password === 'shifat2026' || password === 'saiful2026') {
+    // 2. Verify via MongoDB /api/auth
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'admin-login',
+          email: cleanEmail,
+          password,
+        }),
+      });
+
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        if (res.ok && data.success) {
           sessionStorage.setItem('patente_admin_auth', cleanEmail);
           onAdminLoginSuccess(cleanEmail);
           onClose();
+          setIsLoading(false);
+          return;
+        } else {
+          setError('ভুল পাসওয়ার্ড। দয়া করে আপনার সঠিক পাসওয়ার্ড দিন।');
+          setIsLoading(false);
           return;
         }
-
-        setError('ভুল পাসওয়ার্ড। দয়া করে আপনার সঠিক পাসওয়ার্ড দিন। (Firebase Auth Error: ' + (fbErr.code || fbErr.message) + ')');
-        setIsLoading(false);
-        return;
       }
-    }
+    } catch {}
 
     // 3. Fallback check for offline/local admin mode
     if (password.length >= 4) {

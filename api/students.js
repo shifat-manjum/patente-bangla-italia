@@ -62,7 +62,7 @@ export default async function handler(req, res) {
         if (!doc) {
           return res.status(404).json({ error: 'Student not found' });
         }
-        const { _id, ...rest } = doc;
+        const { _id, passwordHash, ...rest } = doc;
         return res.status(200).json({
           ...rest,
           _id: _id.toString(),
@@ -75,7 +75,7 @@ export default async function handler(req, res) {
         .toArray();
 
       const students = docs.map((doc) => {
-        const { _id, ...rest } = doc;
+        const { _id, passwordHash, ...rest } = doc;
         return {
           ...rest,
           _id: _id.toString(),
@@ -98,7 +98,7 @@ export default async function handler(req, res) {
           if (!email && !uid) continue;
 
           const filter = email ? { email } : { uid };
-          const { createdAt, _id, ...rest } = item;
+          const { createdAt, _id, passwordHash, ...rest } = item;
           if (email) rest.email = email;
 
           await col.updateOne(
@@ -126,7 +126,7 @@ export default async function handler(req, res) {
       }
 
       const filter = email ? { email } : { uid };
-      const { createdAt, _id, ...rest } = data;
+      const { createdAt, _id, passwordHash, ...rest } = data;
       if (email) rest.email = email;
 
       await col.updateOne(

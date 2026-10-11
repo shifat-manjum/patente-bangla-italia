@@ -1,20 +1,3 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-  onAuthStateChanged,
-} from 'firebase/auth';
-import type { User as FirebaseUser } from 'firebase/auth';
-import {
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { auth, db, isFirebaseConfigured } from '../lib/firebase';
-
 export interface StudentProfile {
   uid: string;
   name: string;
@@ -71,7 +54,10 @@ export const sanitizeStudentProfile = (raw: any): StudentProfile => {
     city: typeof raw.city === 'string' ? raw.city : '',
     unlockedRound: Number.isFinite(raw.unlockedRound) ? Math.max(1, raw.unlockedRound) : 1,
     totalQuestionsAnswered: Number.isFinite(raw.totalQuestionsAnswered) ? Math.max(0, raw.totalQuestionsAnswered) : 0,
-    completedRounds: (raw.completedRounds && typeof raw.completedRounds === 'object' && !Array.isArray(raw.completedRounds)) ? raw.completedRounds : {},
+    completedRounds:
+      raw.completedRounds && typeof raw.completedRounds === 'object' && !Array.isArray(raw.completedRounds)
+        ? raw.completedRounds
+        : {},
     mistakeIds: Array.isArray(raw.mistakeIds) ? raw.mistakeIds : [],
     isVip: Boolean(raw.isVip),
     createdAt: raw.createdAt || new Date().toISOString(),
@@ -80,9 +66,17 @@ export const sanitizeStudentProfile = (raw: any): StudentProfile => {
 };
 
 const LOCAL_STORAGE_KEY = 'patente_student_user';
+const LOCAL_TOKEN_KEY = 'patente_student_token';
 const LOCAL_STUDENTS_LIST_KEY = 'patente_registered_students';
+const AUTH_CHANGE_EVENT = 'patente_auth_state_changed';
 
-// Helper to sync student to MongoDB Atlas (/api/students) for robust multi-device cross sync
+const notifyAuthChange = (student: StudentProfile | null) => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(AUTH_CHANGE_EVENT, { detail: student }));
+  }
+};
+
+// Helper to sync student to MongoDB Atlas (/api/students) for cross-device sync
 export const syncStudentToServerDb = async (student: StudentProfile): Promise<boolean> => {
   try {
     if (typeof window !== 'undefined') {
@@ -99,7 +93,7 @@ export const syncStudentToServerDb = async (student: StudentProfile): Promise<bo
   return false;
 };
 
-// Helper to fetch student profile from MongoDB Atlas (/api/students?email=...) for cross-device VIP sync
+// Helper to fetch student profile from MongoDB Atlas (/api/students?email=...)
 export const fetchStudentFromServerDb = async (email: string): Promise<Partial<StudentProfile> | null> => {
   try {
     if (typeof window !== 'undefined' && email) {
@@ -116,7 +110,7 @@ export const fetchStudentFromServerDb = async (email: string): Promise<Partial<S
   return null;
 };
 
-// Helper to get local mock user
+// Helper to get local cached user
 export const getCachedStudent = (): StudentProfile | null => {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -127,7 +121,25 @@ export const getCachedStudent = (): StudentProfile | null => {
   }
 };
 
-// Register a new student
+const cacheStudentLocally = (student: StudentProfile, token?: string) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(student));
+    if (token) {
+      localStorage.setItem(LOCAL_TOKEN_KEY, token);
+    }
+    if (student.isVip) {
+      localStorage.setItem('patente_bangla_is_vip', 'true');
+    }
+    const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
+    const filtered = all.filter((s: any) => s.email?.toLowerCase() !== student.email.toLowerCase());
+    filtered.unshift(student);
+    localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(filtered));
+  } catch (err) {
+    console.warn('Local student storage update notice:', err);
+  }
+};
+
+// Register a new student directly in MongoDB via /api/auth
 export const registerStudent = async (
   name: string,
   email: string,
@@ -138,76 +150,43 @@ export const registerStudent = async (
   const cleanName = name.trim();
   const cleanPhone = phone.trim();
 
-  // If Firebase is configured with valid credentials, use Firebase Auth + Firestore!
-  if (isFirebaseConfigured && auth && db) {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
-      const firebaseUser = userCredential.user;
-
-      // Update display name
-      try {
-        await updateProfile(firebaseUser, { displayName: cleanName });
-      } catch (profErr) {
-        console.warn('updateProfile notice:', profErr);
-      }
-
-      // Serializable profile for client UI
-      const clientProfile: StudentProfile = {
-        uid: firebaseUser.uid,
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'register',
         name: cleanName,
         email: cleanEmail,
-        phone: cleanPhone || undefined,
-        unlockedRound: 1,
-        totalQuestionsAnswered: 0,
-        completedRounds: {},
-        mistakeIds: [],
-        isVip: false,
-        createdAt: new Date().toISOString(),
-        lastLoginAt: new Date().toISOString(),
-      };
+        phone: cleanPhone,
+        password,
+      }),
+    });
 
-      // Save initial student progress in Cloud Firestore (with 3.5s timeout to guarantee UI never freezes)
-      try {
-        await Promise.race([
-          setDoc(doc(db, 'students', firebaseUser.uid), {
-            ...clientProfile,
-            createdAt: serverTimestamp(),
-            lastLoginAt: serverTimestamp(),
-          }),
-          new Promise((resolve) => setTimeout(resolve, 3500)),
-        ]);
-      } catch (dbErr) {
-        console.warn('Firestore setDoc notice:', dbErr);
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      if (!res.ok) {
+        const authErr: any = new Error(data.error || 'Registration failed');
+        authErr.code = data.code || 'auth/registration-failed';
+        throw authErr;
       }
 
-      const safeProfile = sanitizeStudentProfile(clientProfile);
-
-      // Cache locally and permanently log to registered students directory
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeProfile));
-        const all = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
-        const filtered = all.filter((s: any) => s.email?.toLowerCase() !== cleanEmail);
-        filtered.unshift(safeProfile);
-        localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(filtered));
-      } catch (storageErr) {
-        console.warn('Local student list update error:', storageErr);
+      if (data.student) {
+        const safeProfile = sanitizeStudentProfile(data.student);
+        cacheStudentLocally(safeProfile, data.token);
+        notifyAuthChange(safeProfile);
+        return safeProfile;
       }
-
-      // Immediately persist to MongoDB Atlas pipeline
-      try {
-        await syncStudentToServerDb(safeProfile);
-      } catch (syncErr) {
-        console.warn('MongoDB Atlas registration sync error:', syncErr);
-      }
-
-      return safeProfile;
-    } catch (err: any) {
-      console.error('Firebase registration error:', err);
+    }
+  } catch (err: any) {
+    if (err?.code?.startsWith('auth/')) {
       throw err;
     }
+    console.warn('MongoDB /api/auth register fallback notice:', err);
   }
 
-  // Graceful local-first fallback if Firebase credentials are not yet entered
+  // Graceful local-first fallback if offline or local dev server without /api
   const fallbackProfile: StudentProfile = sanitizeStudentProfile({
     uid: 'std_' + Date.now(),
     name: cleanName,
@@ -222,262 +201,141 @@ export const registerStudent = async (
     lastLoginAt: new Date().toISOString(),
   });
 
-  try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fallbackProfile));
-    const all = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
-    all.push(fallbackProfile);
-    localStorage.setItem(LOCAL_STUDENTS_LIST_KEY, JSON.stringify(all));
-  } catch {}
-
-  try {
-    await syncStudentToServerDb(fallbackProfile);
-  } catch {}
-
+  cacheStudentLocally(fallbackProfile);
+  await syncStudentToServerDb(fallbackProfile);
+  notifyAuthChange(fallbackProfile);
   return fallbackProfile;
 };
 
-// Login an existing student
+// Login an existing student directly via MongoDB /api/auth
 export const loginStudent = async (
   email: string,
   password: string
 ): Promise<StudentProfile> => {
   const cleanEmail = email.trim().toLowerCase();
 
-  if (isFirebaseConfigured && auth && db) {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
-      const firebaseUser = userCredential.user;
-
-      // Fetch student document from Firestore with safety timeout & graceful fallback
-      let profile: StudentProfile | null = null;
-      try {
-        const studentDocRef = doc(db, 'students', firebaseUser.uid);
-        const studentDocSnap = await Promise.race([
-          getDoc(studentDocRef),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
-        ]);
-
-        if (studentDocSnap && studentDocSnap.exists()) {
-          profile = studentDocSnap.data() as StudentProfile;
-          try {
-            await updateDoc(studentDocRef, {
-              lastLoginAt: serverTimestamp(),
-            });
-          } catch {}
-        }
-      } catch (fsErr) {
-        console.warn('Firestore fetch notice (using cached/fallback profile):', fsErr);
-      }
-
-      // Check local registered directory for student's profile (name, phone, rounds)
-      if (!profile) {
-        try {
-          const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
-          profile = all.find((s) => s.email?.toLowerCase() === cleanEmail) || null;
-        } catch {}
-      }
-
-      // If still not found, construct a clean student profile
-      if (!profile) {
-        profile = {
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName || cleanEmail.split('@')[0],
-          email: cleanEmail,
-          unlockedRound: 1,
-          totalQuestionsAnswered: 0,
-          completedRounds: {},
-          mistakeIds: [],
-          isVip: false,
-          lastLoginAt: new Date().toISOString(),
-        };
-      }
-
-      const safeProfile = sanitizeStudentProfile({
-        ...profile,
-        uid: firebaseUser.uid,
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'login',
         email: cleanEmail,
-        displayName: firebaseUser.displayName,
-      });
+        password,
+      }),
+    });
 
-      // Cross-check with MongoDB Atlas for VIP status
-      try {
-        const remoteDoc = await fetchStudentFromServerDb(cleanEmail);
-        if (remoteDoc) {
-          if (remoteDoc.isVip) {
-            safeProfile.isVip = true;
-            try {
-              localStorage.setItem('patente_bangla_is_vip', 'true');
-            } catch {}
-          }
-          if (typeof remoteDoc.unlockedRound === 'number' && remoteDoc.unlockedRound > safeProfile.unlockedRound) {
-            safeProfile.unlockedRound = remoteDoc.unlockedRound;
-          }
-        }
-      } catch {}
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      if (!res.ok) {
+        const authErr: any = new Error(data.error || 'Login failed');
+        authErr.code = data.code || 'auth/invalid-credential';
+        throw authErr;
+      }
 
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeProfile));
-      return safeProfile;
-    } catch (err: any) {
-      console.warn('Firebase login attempt notice:', err);
-
-      // Check if student exists in local registered students list
-      try {
-        const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
-        const localFound = all.find((s) => s.email?.toLowerCase() === cleanEmail);
-        if (localFound) {
-          const safeFound = sanitizeStudentProfile(localFound);
-          try {
-            const remoteDoc = await fetchStudentFromServerDb(cleanEmail);
-            if (remoteDoc?.isVip) {
-              safeFound.isVip = true;
-              localStorage.setItem('patente_bangla_is_vip', 'true');
-            }
-          } catch {}
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(safeFound));
-          return safeFound;
-        }
-      } catch {}
-
+      if (data.student) {
+        const safeProfile = sanitizeStudentProfile(data.student);
+        cacheStudentLocally(safeProfile, data.token);
+        notifyAuthChange(safeProfile);
+        return safeProfile;
+      }
+    }
+  } catch (err: any) {
+    if (err?.code?.startsWith('auth/')) {
       throw err;
     }
+    console.warn('MongoDB /api/auth login fallback notice:', err);
   }
 
-  // Local-first fallback login
-  let existingProfile: StudentProfile | null = null;
-  try {
-    const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
-    existingProfile = all.find((s) => s.email === cleanEmail) || null;
-  } catch {}
+  // Offline / local fallback check
+  const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
+  const existingProfile = all.find((s) => s.email?.toLowerCase() === cleanEmail);
+  if (!existingProfile) {
+    const notFoundErr: any = new Error('Account not found');
+    notFoundErr.code = 'auth/invalid-credential';
+    throw notFoundErr;
+  }
 
-  const localProfile: StudentProfile = sanitizeStudentProfile(existingProfile || {
-    uid: 'std_' + Date.now(),
-    name: cleanEmail.split('@')[0],
-    email: cleanEmail,
-    unlockedRound: 1,
-    totalQuestionsAnswered: 0,
-    completedRounds: {},
-    mistakeIds: [],
-    isVip: false,
-    lastLoginAt: new Date().toISOString(),
-  });
-
-  // Cross-check with MongoDB Atlas for VIP status
-  try {
-    const remoteDoc = await fetchStudentFromServerDb(cleanEmail);
-    if (remoteDoc) {
-      if (remoteDoc.isVip) {
-        localProfile.isVip = true;
-        try {
-          localStorage.setItem('patente_bangla_is_vip', 'true');
-        } catch {}
-      }
-      if (typeof remoteDoc.unlockedRound === 'number' && remoteDoc.unlockedRound > localProfile.unlockedRound) {
-        localProfile.unlockedRound = remoteDoc.unlockedRound;
-      }
-    }
-  } catch {}
-
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localProfile));
+  const localProfile = sanitizeStudentProfile(existingProfile);
+  cacheStudentLocally(localProfile);
+  notifyAuthChange(localProfile);
   return localProfile;
 };
 
 // Log out student
 export const logoutStudent = async (): Promise<void> => {
-  if (isFirebaseConfigured && auth) {
-    try {
-      await signOut(auth);
-    } catch (err) {
-      console.warn('Firebase signOut error:', err);
-    }
-  }
   try {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem(LOCAL_TOKEN_KEY);
   } catch {}
+  notifyAuthChange(null);
 };
 
-// Sync student progress to Cloud Firestore & MongoDB Atlas
+// Sync student progress to MongoDB Atlas
 export const syncStudentProgressToCloud = async (
   uid: string,
   progress: Partial<StudentProfile>
 ): Promise<void> => {
-  let updatedStudent: StudentProfile | null = null;
-  // Update local storage first
   try {
     const current = getCachedStudent();
-    if (current && current.uid === uid) {
-      updatedStudent = { ...current, ...progress };
+    if (current && (current.uid === uid || !uid)) {
+      const updatedStudent = sanitizeStudentProfile({ ...current, ...progress });
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedStudent));
-      syncStudentToServerDb(updatedStudent);
+      await syncStudentToServerDb(updatedStudent);
     }
-  } catch {}
-
-  // Update in Cloud Firestore if configured
-  if (isFirebaseConfigured && db && uid) {
-    try {
-      const docRef = doc(db, 'students', uid);
-      await setDoc(
-        docRef,
-        {
-          ...progress,
-          lastUpdated: serverTimestamp(),
-        },
-        { merge: true }
-      );
-    } catch (err) {
-      console.warn('Firestore sync error:', err);
-    }
+  } catch (err) {
+    console.warn('Progress sync notice:', err);
   }
 };
 
-// Subscribe to real-time auth changes
+// Subscribe to auth state changes & refresh student profile from MongoDB in background
 export const subscribeToAuthChanges = (
   callback: (student: StudentProfile | null) => void
 ): (() => void) => {
-  if (isFirebaseConfigured && auth && db) {
-    const currentDb = db;
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser && currentDb) {
-        try {
-          const studentDocSnap = await getDoc(doc(currentDb, 'students', firebaseUser.uid));
-          if (studentDocSnap.exists()) {
-            const rawData = studentDocSnap.data() || {};
-            const data = sanitizeStudentProfile({
-              ...rawData,
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || rawData.email,
-              displayName: firebaseUser.displayName,
-            });
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-            callback(data);
-            return;
-          }
-        } catch (err) {
-          console.warn('Error fetching Firestore student on auth change:', err);
-        }
-
-        // Default user if no doc yet
-        const defaultProfile: StudentProfile = sanitizeStudentProfile({
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Student',
-          email: firebaseUser.email || '',
-          unlockedRound: 1,
-          totalQuestionsAnswered: 0,
-          completedRounds: {},
-          mistakeIds: [],
-          isVip: false,
-        });
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultProfile));
-        callback(defaultProfile);
-      } else {
-        callback(null);
-      }
-    });
-
-    return unsubscribe;
-  }
-
-  // If Firebase not configured, return cached student once
   const cached = getCachedStudent();
   callback(cached);
-  return () => {};
+
+  // If student is logged in, refresh their latest VIP/progress status from MongoDB
+  if (cached && cached.email && typeof window !== 'undefined') {
+    const token = localStorage.getItem(LOCAL_TOKEN_KEY) || '';
+    fetch(`/api/auth?email=${encodeURIComponent(cached.email)}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.student) {
+            const merged = sanitizeStudentProfile({
+              ...cached,
+              ...data.student,
+              unlockedRound: Math.max(cached.unlockedRound || 1, data.student.unlockedRound || 1),
+              totalQuestionsAnswered: Math.max(
+                cached.totalQuestionsAnswered || 0,
+                data.student.totalQuestionsAnswered || 0
+              ),
+              isVip: Boolean(cached.isVip || data.student.isVip),
+            });
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
+            callback(merged);
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  const handleCustomEvent = (e: Event) => {
+    const custom = e as CustomEvent<StudentProfile | null>;
+    callback(custom.detail ?? getCachedStudent());
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener(AUTH_CHANGE_EVENT, handleCustomEvent);
+  }
+
+  return () => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleCustomEvent);
+    }
+  };
 };

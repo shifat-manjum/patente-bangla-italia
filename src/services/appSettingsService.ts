@@ -1,6 +1,4 @@
-// Dynamic Application Policy & Marketing Settings Service
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db, isFirebaseConfigured } from '../lib/firebase';
+// Dynamic Application Policy & Marketing Settings Service (MongoDB Atlas + LocalStorage)
 
 export interface AppSettings {
   freeRoundsLimit: number; // e.g. 0 (all paid), 5, 10, 20 (standard), 240 (all free)
@@ -66,7 +64,7 @@ export const getAppSettings = (): AppSettings => {
 };
 
 /**
- * Save settings locally, dispatch real-time UI event, and sync to Cloud & Server
+ * Save settings locally, dispatch real-time UI event, and sync to MongoDB Server
  */
 export const saveAppSettings = async (newSettings: Partial<AppSettings>): Promise<AppSettings> => {
   const current = getAppSettings();
@@ -89,10 +87,9 @@ export const saveAppSettings = async (newSettings: Partial<AppSettings>): Promis
     window.dispatchEvent(new CustomEvent(SETTINGS_CHANGE_EVENT, { detail: merged }));
   }
 
-  // 3. Non-blocking network sync with a strict 2-second timeout (guarantees UI NEVER hangs)
+  // 3. Non-blocking network sync with a strict 1.8-second timeout
   const syncPromises: Promise<any>[] = [];
 
-  // Sync to MongoDB serverless API (/api/settings)
   if (typeof window !== 'undefined') {
     const apiPromise = fetch('/api/settings', {
       method: 'POST',
@@ -104,20 +101,6 @@ export const saveAppSettings = async (newSettings: Partial<AppSettings>): Promis
     syncPromises.push(apiPromise);
   }
 
-  // Sync to Cloud Firestore if connected
-  if (isFirebaseConfigured && db) {
-    try {
-      const settingsRef = doc(db, 'settings', 'general');
-      const firestorePromise = setDoc(settingsRef, merged, { merge: true }).catch((err) => {
-        console.warn('Firestore settings sync notice:', err);
-      });
-      syncPromises.push(firestorePromise);
-    } catch (err) {
-      console.warn('Firestore ref error:', err);
-    }
-  }
-
-  // Wait max 1.8 seconds for network sync, then return immediately
   const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1800));
   await Promise.race([Promise.allSettled(syncPromises), timeoutPromise]);
 
@@ -126,7 +109,6 @@ export const saveAppSettings = async (newSettings: Partial<AppSettings>): Promis
 
 /**
  * Fetch latest settings with smart timestamp conflict resolution
- * (Prevents older remote data from overwriting freshly changed local settings)
  */
 export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
   const local = getAppSettings();
@@ -134,7 +116,7 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
 
   let remoteSettings: AppSettings | null = null;
 
-  // 1. Try Server API (MongoDB Atlas) first with 2.5-second timeout
+  // 1. Fetch from Server API (MongoDB Atlas) with 2.5-second timeout
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 2500);
@@ -149,23 +131,6 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
     }
   } catch (err) {
     console.warn('Settings API fetch notice:', err);
-  }
-
-  // 2. Try Firestore if no server settings (with 2.5s race timeout)
-  if (!remoteSettings && isFirebaseConfigured && db) {
-    try {
-      const firestorePromise = getDoc(doc(db, 'settings', 'general'));
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Firestore timeout')), 2500)
-      );
-      const snap = await Promise.race([firestorePromise, timeoutPromise]);
-      if (snap && snap.exists()) {
-        const data = snap.data() as AppSettings;
-        if (data && (typeof data.freeRoundsLimit === 'number' || typeof data.academyPriceEur === 'number')) {
-          remoteSettings = data;
-        }
-      }
-    } catch {}
   }
 
   // 3. Smart Conflict Resolution based on timestamps

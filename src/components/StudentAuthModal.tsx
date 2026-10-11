@@ -120,6 +120,9 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     if (code === 'auth/email-already-in-use') {
       return 'এই ইমেইল দিয়ে ইতোমধ্যে অ্যাকাউন্ট রয়েছে। দয়া করে Sign In (লগইন) করুন।';
     }
+    if (code === 'auth/phone-already-in-use') {
+      return 'এই মোবাইল নম্বরটি দিয়ে ইতোমধ্যে অন্য একজন স্টুডেন্ট নিবন্ধিত রয়েছেন। প্রতিটি অ্যাকাউন্টের জন্য ইউনিক নম্বর বাধ্যতামূলক।';
+    }
     if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
       return 'ভুল ইমেইল বা পাসওয়ার্ড দেওয়া হয়েছে। দয়া করে আবার সঠিক তথ্য দিয়ে চেষ্টা করুন।';
     }

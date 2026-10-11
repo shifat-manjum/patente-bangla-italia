@@ -16,8 +16,6 @@ import {
   Check,
   Save
 } from 'lucide-react';
-import { db, isFirebaseConfigured } from '../lib/firebase';
-import { collection, getDocs, doc, updateDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import type { StudentProfile } from '../services/studentService';
 import { AdminQuestionExplorer } from './AdminQuestionExplorer';
 import { CourseInvoiceModal } from './CourseInvoiceModal';
@@ -106,7 +104,6 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'free' | 'pro'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [firestoreStatus, setFirestoreStatus] = useState<'connected' | 'not_created' | 'offline'>('connected');
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentEmail, setNewStudentEmail] = useState('');
@@ -208,7 +205,6 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const fetchStudents = async () => {
     setIsRefreshing(true);
     let serverStudents: StudentProfile[] = [];
-    let firestoreStudents: StudentProfile[] = [];
 
     // 1. Read immediate local data first
     const localStudents = getInitialCachedStudents();
@@ -231,40 +227,13 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       console.warn('MongoDB Atlas database fetch notice:', e);
     }
 
-    // 3. Query Cloud Firestore with a 2.5-second race timeout (guarantees UI never freezes)
-    if (isFirebaseConfigured && db) {
-      try {
-        const firestorePromise = getDocs(collection(db, 'students'));
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Firestore timeout')), 2500)
-        );
-        const querySnapshot = await Promise.race([firestorePromise, timeoutPromise]);
-        querySnapshot.forEach((docSnap) => {
-          firestoreStudents.push(docSnap.data() as StudentProfile);
-        });
-        setFirestoreStatus('connected');
-      } catch (err: any) {
-        const msg = String(err?.message || err || '');
-        if (msg.includes('not found') || msg.includes('default') || msg.includes('FAILED_PRECONDITION')) {
-          setFirestoreStatus('not_created');
-        } else {
-          setFirestoreStatus('offline');
-        }
-        console.warn('Firestore fetch notice (using instantaneous server/cached records):', err);
-      }
-    }
-
-    // 4. Merge without duplicates (keyed by email or uid)
+    // 3. Merge without duplicates (keyed by email or uid), prioritizing server records
     const map = new Map<string, StudentProfile>();
-    serverStudents.forEach((s) => {
+    localStudents.forEach((s) => {
       if (s.email) map.set(s.email.toLowerCase(), s);
       else if (s.uid) map.set(s.uid, s);
     });
-    localStudents.forEach((s) => {
-      if (s.email) map.set(s.email.toLowerCase(), { ...map.get(s.email.toLowerCase()), ...s });
-      else if (s.uid) map.set(s.uid, { ...map.get(s.uid), ...s });
-    });
-    firestoreStudents.forEach((s) => {
+    serverStudents.forEach((s) => {
       if (s.email) map.set(s.email.toLowerCase(), { ...map.get(s.email.toLowerCase()), ...s });
       else if (s.uid) map.set(s.uid, { ...map.get(s.uid), ...s });
     });
@@ -274,15 +243,6 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       setStudents(merged);
       try {
         localStorage.setItem('patente_registered_students', JSON.stringify(merged));
-      } catch {}
-
-      // Sync merged records to server DB so mobile & desktop always have identical data
-      try {
-        await fetch('/api/students', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(merged),
-        });
       } catch {}
     }
 
@@ -295,37 +255,6 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
     fetchRemoteAppSettings().then((s) => {
       if (s) setSettings(s);
     });
-
-    // Listen to real-time updates if Firestore is active with error tolerance
-    if (isFirebaseConfigured && db) {
-      const unsubscribe = onSnapshot(
-        collection(db, 'students'),
-        (snapshot) => {
-          const updatedList: StudentProfile[] = [];
-          snapshot.forEach((d) => updatedList.push(d.data() as StudentProfile));
-          if (updatedList.length > 0) {
-            setStudents((prev) => {
-              const map = new Map<string, StudentProfile>();
-              prev.forEach((s) => { if (s.email) map.set(s.email.toLowerCase(), s); });
-              updatedList.forEach((s) => { if (s.email) map.set(s.email.toLowerCase(), s); });
-              const result = Array.from(map.values());
-              try {
-                localStorage.setItem('patente_registered_students', JSON.stringify(result));
-              } catch {}
-              return result;
-            });
-            setFirestoreStatus('connected');
-          }
-        },
-        (err) => {
-          const msg = String(err?.message || err || '');
-          if (msg.includes('not found') || msg.includes('default')) {
-            setFirestoreStatus('not_created');
-          }
-        }
-      );
-      return () => unsubscribe();
-    }
   }, []);
 
   // Filtered students list
@@ -374,27 +303,14 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       unlockedRound: newStatus ? 240 : (student.unlockedRound || 1),
     };
 
-    // 1. Update in Firestore
-    if (isFirebaseConfigured && db && student.uid) {
-      try {
-        const studentRef = doc(db, 'students', student.uid);
-        await updateDoc(studentRef, {
-          isVip: newStatus,
-          unlockedRound: payload.unlockedRound,
-        });
-      } catch (err) {
-        console.warn('Failed to update Firestore:', err);
-      }
-    }
-
-    // 2. Update local state
+    // 1. Update local state
     const updated = students.map((s) => (s.email.toLowerCase() === student.email.toLowerCase() ? payload : s));
     setStudents(updated);
 
     try {
       localStorage.setItem('patente_registered_students', JSON.stringify(updated));
 
-      // 3. If currently logged in user on this device is this student, sync active session immediately
+      // 2. If currently logged in user on this device is this student, sync active session immediately
       const currentStored = localStorage.getItem('patente_student_user');
       if (currentStored) {
         const parsed = JSON.parse(currentStored);
@@ -408,7 +324,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
         }
       }
 
-      // 4. Save to MongoDB Atlas server database (/api/students)
+      // 3. Save to MongoDB Atlas server database (/api/students)
       const res = await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -451,15 +367,6 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
     };
-
-    // Update Firestore if available
-    if (isFirebaseConfigured && db) {
-      try {
-        await setDoc(doc(db, 'students', createdProfile.uid), createdProfile);
-      } catch (e) {
-        console.warn('Firestore setDoc notice:', e);
-      }
-    }
 
     // Update state and local/server database
     const updated = [createdProfile, ...students.filter((s) => s.email?.toLowerCase() !== createdProfile.email.toLowerCase())];
@@ -555,29 +462,6 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
           </button>
         </div>
       </div>
-
-      {/* Firestore Database Setup Guidance Banner */}
-      {firestoreStatus === 'not_created' && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-          <div className="space-y-1">
-            <span className="font-bold flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
-              <span>⚠️</span> Cloud Firestore ডাটাবেজ এখনও তৈরি করা হয়নি (Project: patenta-bangla)
-            </span>
-            <p className="text-[12px] opacity-90 leading-relaxed">
-              লোকাল নেটওয়ার্ক ডাটাবেজ (students_db.json) সক্রিয় আছে এবং মোবাইল ও ডেস্কটপে ডেটা লোড হচ্ছে। তবে যেকোনো ডিভাইস থেকে আজীবন গ্লোবাল ক্লাউড সিঙ্ক চালু করতে Firebase Console-এ মাত্র ১-ক্লিকে ডাটাবেজ তৈরি করুন:
-            </p>
-          </div>
-          <a
-            href="https://console.firebase.google.com/project/patenta-bangla/firestore"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-xs transition"
-          >
-            <span>Firebase Console খুলুন (Create DB)</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </div>
-      )}
 
       {/* Admin Tab Switcher */}
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-fit shadow-xs">
