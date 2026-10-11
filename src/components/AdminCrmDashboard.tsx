@@ -1180,11 +1180,11 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleRemoveStudent(student)}
-                                className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/50 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold text-[11px] transition cursor-pointer border border-rose-200 dark:border-rose-800/70 flex items-center gap-1 shadow-2xs"
+                                className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-[11px] transition cursor-pointer border border-red-500 flex items-center gap-1 shadow-sm shrink-0"
                                 title="এই স্টুডেন্টকে স্থায়ীভাবে মুছে ফেলুন (Remove Student)"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
-                                <span>Remove</span>
+                                <span>Remove (মুছুন)</span>
                               </button>
                             </div>
                           </td>
