@@ -153,7 +153,7 @@ export function App() {
     return () => window.removeEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
   }, []);
 
-  // Current Student User State (Mandatory login system + Firebase Backend)
+  // Current Student User State (Mandatory login system + MongoDB Atlas Backend)
   const [currentUser, setCurrentUser] = useState<StudentUser | null>(() => {
     try {
       const saved = localStorage.getItem('patente_student_user');
@@ -165,7 +165,7 @@ export function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authForcedMessage, setAuthForcedMessage] = useState('');
 
-  // Subscribe to real-time Firebase Authentication & Firestore Profile
+  // Subscribe to Student Authentication & MongoDB Profile
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges((profile) => {
       try {

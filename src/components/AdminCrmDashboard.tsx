@@ -1051,7 +1051,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                   {filteredStudents.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="text-center py-10 text-slate-400">
-                        {isLoading ? 'Loading students from Cloud Firestore...' : 'কোনো স্টুডেন্ট পাওয়া যায়নি'}
+                        {isLoading ? 'Loading students from MongoDB Atlas...' : 'কোনো স্টুডেন্ট পাওয়া যায়নি'}
                       </td>
                     </tr>
                   ) : (

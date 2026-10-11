@@ -143,7 +143,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     return hasLetters && hasNumbers;
   };
 
-  const getFirebaseErrorMessage = (err: any): string => {
+  const getAuthErrorMessage = (err: any): string => {
     const code = err?.code || '';
     if (code === 'auth/email-already-in-use') {
       return 'এই ইমেইল দিয়ে ইতোমধ্যে অ্যাকাউন্ট রয়েছে। দয়া করে Sign In (লগইন) করুন।';
@@ -220,7 +220,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       setIsOtpStep(true);
     } catch (err: any) {
       setIsLoading(false);
-      setError(getFirebaseErrorMessage(err));
+      setError(getAuthErrorMessage(err));
     }
   };
 
@@ -250,7 +250,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       } catch {}
     } catch (err: any) {
       setIsLoading(false);
-      setError(getFirebaseErrorMessage(err));
+      setError(getAuthErrorMessage(err));
     }
   };
 
@@ -273,7 +273,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       onLoginSuccess(student);
       onClose();
     } catch (err: any) {
-      setError(getFirebaseErrorMessage(err));
+      setError(getAuthErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -300,7 +300,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
         return;
       }
-      setError(getFirebaseErrorMessage(err));
+      setError(getAuthErrorMessage(err));
     }
   };
 
@@ -720,7 +720,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="আপনার নাম (যেমন: Rock Man)"
+                        placeholder="আপনার নাম "
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-[#0D1117] text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FB6C00] focus:border-[#FB6C00] transition-colors"
                       />
                     </div>
@@ -745,7 +745,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="yourname@gmail.com"
+                        placeholder="your email id"
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-[#0D1117] text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#FB6C00] focus:border-[#FB6C00] transition-colors"
                       />
                     </div>

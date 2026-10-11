@@ -100,7 +100,7 @@ export const trackPaymentStart = (roundId: number, amountEur: number = 49) => {
 /**
  * Track student signup or lead capture
  */
-export const trackStudentRegistration = (method: 'firebase' | 'local' = 'firebase') => {
+export const trackStudentRegistration = (method: 'mongodb' | 'google' | 'local' = 'mongodb') => {
   trackEvent('sign_up', {
     method,
   });
