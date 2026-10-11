@@ -106,6 +106,57 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
           </div>
         </div>
 
+        {/* Student Document Utility Card — Cross-Promotion with MyPdfTools.it */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border border-emerald-500/30 dark:border-emerald-500/20 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white rounded-md">
+                100% Gratis &amp; Privato
+              </span>
+              <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
+                📄 ড্রাইভিং স্কুলের জন্য ডকুমেন্ট ও PDF তৈরি করুন (Documenti per Autoscuola / Motorizzazione)
+              </h4>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              Permesso di Soggiorno, Carta d&apos;Identità এবং Codice Fiscale এর ছবি (JPG) থেকে PDF করতে বা একসাথে যুক্ত করতে আমাদের ফ্রি ও নিরাপদ টুল ব্যবহার করুন:
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <a
+              href="https://www.mypdftools.it/unire-documenti-identita-pdf"
+              target="_blank"
+              rel="noopener"
+              className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
+            >
+              <span>🪪 Unisci Documenti PDF</span>
+            </a>
+            <a
+              href="https://www.mypdftools.it/da-jpg-a-pdf"
+              target="_blank"
+              rel="noopener"
+              className="px-3 py-2 rounded-xl bg-white dark:bg-[#161B26] hover:bg-slate-50 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/10 font-bold text-xs transition"
+            >
+              📸 Foto in PDF
+            </a>
+            <a
+              href="https://www.mypdftools.it/comprimere-pdf-per-pec"
+              target="_blank"
+              rel="noopener"
+              className="px-3 py-2 rounded-xl bg-white dark:bg-[#161B26] hover:bg-slate-50 dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/10 font-bold text-xs transition"
+            >
+              📉 Comprimi PDF
+            </a>
+            <a
+              href="https://www.mypdftools.it"
+              target="_blank"
+              rel="noopener"
+              className="px-3 py-2 rounded-xl bg-white dark:bg-[#161B26] hover:bg-slate-50 dark:hover:bg-white/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-black text-xs transition"
+            >
+              MyPdfTools.it ↗
+            </a>
+          </div>
+        </div>
+
         {/* Legal Disclaimer Box */}
         <div className="p-4 rounded-xl bg-white dark:bg-[#12161F] border border-slate-200 dark:border-white/10 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 shadow-xs">
           <p className="font-bold text-slate-900 dark:text-slate-200">
