@@ -172,6 +172,13 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     if (code === 'auth/network-request-failed') {
       return 'ইন্টারনেট কানেকশন সমস্যা। অনুগ্রহ করে আবার চেষ্টা করুন।';
     }
+    if (code === 'auth/popup-blocked') {
+      return 'আপনার ব্রাউজারে পপ-আপ (Popup) ব্লক করা আছে। অনুগ্রহ করে ব্রাউজারের পপ-আপ অনুমতি দিন অথবা ইমেইল দিয়ে লগইন করুন।';
+    }
+    if (code === 'auth/unauthorized-domain') {
+      const host = typeof window !== 'undefined' ? window.location.hostname : 'domain';
+      return `Google Sign-In চালুর জন্য Firebase Console -> Authentication -> Settings -> Authorized domains-এ "${host}" ডোমেইনটি যুক্ত করুন।`;
+    }
     return err?.message || 'একটি ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।';
   };
 
