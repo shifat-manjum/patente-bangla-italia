@@ -8,10 +8,9 @@
   }
 }
 
-/* Defer off-screen heavy round cards for 60-120fps scrolling */
+/* Lightweight containment for round cards */
 .round-card-deferred {
-  content-visibility: auto;
-  contain-intrinsic-size: auto none auto 225px;
+  contain: layout style paint;
 }
 
 /* Light Theme Mode - Daytime Clean High-Contrast Palette */
