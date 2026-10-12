@@ -291,6 +291,77 @@ export const loginStudent = async (
   return localProfile;
 };
 
+// Step 1 of Password Reset: Send 6-digit OTP to registered student email
+export const sendPasswordResetOtp = async (
+  email: string
+): Promise<{ emailSent: boolean; fallbackOtp?: string }> => {
+  const cleanEmail = email.trim().toLowerCase();
+
+  const res = await fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'send-reset-otp',
+      email: cleanEmail,
+    }),
+  });
+
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await res.json();
+    if (!res.ok) {
+      const authErr: any = new Error(data.error || 'Failed to send password reset code');
+      authErr.code = data.code || 'auth/otp-send-failed';
+      throw authErr;
+    }
+    return {
+      emailSent: Boolean(data.emailSent),
+      fallbackOtp: data.fallbackOtp,
+    };
+  }
+
+  throw new Error('Password reset server unavailable');
+};
+
+// Step 2 of Password Reset: Verify 6-digit OTP and set new password in MongoDB
+export const resetStudentPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string
+): Promise<StudentProfile> => {
+  const cleanEmail = email.trim().toLowerCase();
+
+  const res = await fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'reset-password',
+      email: cleanEmail,
+      otp: otp.trim(),
+      newPassword,
+    }),
+  });
+
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await res.json();
+    if (!res.ok) {
+      const authErr: any = new Error(data.error || 'Password reset failed');
+      authErr.code = data.code || 'auth/reset-failed';
+      throw authErr;
+    }
+
+    if (data.student) {
+      const safeProfile = sanitizeStudentProfile(data.student);
+      cacheStudentLocally(safeProfile, data.token);
+      notifyAuthChange(safeProfile);
+      return safeProfile;
+    }
+  }
+
+  throw new Error('Password reset failed');
+};
+
 // One-click Sign in / Register with Google (Gmail) and sync to MongoDB /api/auth
 export const loginStudentWithGoogle = async (): Promise<{
   student: StudentProfile;

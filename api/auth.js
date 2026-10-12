@@ -625,6 +625,162 @@ export default async function handler(req, res) {
         });
       }
 
+      // STEP 1 OF PASSWORD RESET: SEND 6-DIGIT OTP TO REGISTERED STUDENT EMAIL
+      if (action === 'send-reset-otp') {
+        const cleanEmail = String(body.email || '').trim().toLowerCase();
+        if (!cleanEmail || !cleanEmail.includes('@')) {
+          return res.status(400).json({
+            code: 'auth/invalid-email',
+            error: 'Valid email address is required',
+          });
+        }
+
+        const studentDoc = await col.findOne({ email: cleanEmail });
+        if (!studentDoc) {
+          return res.status(404).json({
+            code: 'auth/user-not-found',
+            error: 'No student account found with this email address',
+          });
+        }
+
+        const otpCode = String(crypto.randomInt(100000, 1000000));
+        const otpHash = hashPassword(otpCode);
+        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+        const otpCol = await getCollection('email_otps');
+        await otpCol.updateOne(
+          { email: cleanEmail },
+          {
+            $set: {
+              email: cleanEmail,
+              name: studentDoc.name || 'Student',
+              purpose: 'password-reset',
+              otpHash,
+              expiresAt,
+              attempts: 0,
+              createdAt: new Date().toISOString(),
+            },
+          },
+          { upsert: true }
+        );
+
+        let emailResult = { delivered: false, provider: 'none' };
+        try {
+          emailResult = await sendVerificationOtpEmail(
+            cleanEmail,
+            studentDoc.name || cleanEmail.split('@')[0] || 'Studente',
+            otpCode
+          );
+        } catch (mailErr) {
+          console.error('Password reset OTP email send error:', mailErr);
+        }
+
+        return res.status(200).json({
+          success: true,
+          emailSent: emailResult.delivered,
+          provider: emailResult.provider,
+          ...(emailResult.delivered ? {} : { fallbackOtp: otpCode }),
+        });
+      }
+
+      // STEP 2 OF PASSWORD RESET: VERIFY 6-DIGIT OTP & SET NEW PASSWORD IN MONGODB
+      if (action === 'reset-password') {
+        const cleanEmail = String(body.email || '').trim().toLowerCase();
+        const otpCode = String(body.otp || '').trim();
+        const newPassword = String(body.newPassword || '');
+
+        if (!cleanEmail || !cleanEmail.includes('@')) {
+          return res.status(400).json({
+            code: 'auth/invalid-email',
+            error: 'Valid email address is required',
+          });
+        }
+
+        if (!otpCode || otpCode.length !== 6) {
+          return res.status(400).json({
+            code: 'auth/invalid-otp',
+            error: '6-digit verification code (OTP) is required',
+          });
+        }
+
+        if (!newPassword || newPassword.length < 8) {
+          return res.status(400).json({
+            code: 'auth/weak-password',
+            error: 'New password must be at least 8 characters and include letters and numbers',
+          });
+        }
+
+        const studentDoc = await col.findOne({ email: cleanEmail });
+        if (!studentDoc) {
+          return res.status(404).json({
+            code: 'auth/user-not-found',
+            error: 'No student account found with this email address',
+          });
+        }
+
+        const otpCol = await getCollection('email_otps');
+        const otpDoc = await otpCol.findOne({ email: cleanEmail });
+
+        if (!otpDoc) {
+          return res.status(400).json({
+            code: 'auth/otp-expired',
+            error: 'Reset code not found or expired. Please request a new code.',
+          });
+        }
+
+        if (Date.now() > otpDoc.expiresAt || (otpDoc.attempts || 0) >= 5) {
+          await otpCol.deleteOne({ email: cleanEmail });
+          return res.status(400).json({
+            code: 'auth/otp-expired',
+            error: 'Reset code has expired. Please request a new code.',
+          });
+        }
+
+        const isOtpValid = verifyPassword(otpCode, otpDoc.otpHash);
+        if (!isOtpValid) {
+          await otpCol.updateOne({ email: cleanEmail }, { $inc: { attempts: 1 } });
+          return res.status(400).json({
+            code: 'auth/invalid-otp',
+            error: 'Invalid 6-digit verification code. Please check and try again.',
+          });
+        }
+
+        // Delete OTP after successful verification
+        await otpCol.deleteOne({ email: cleanEmail });
+
+        const nowIso = new Date().toISOString();
+        const uid = studentDoc.uid || 'std_' + studentDoc._id.toString();
+        const passwordHash = hashPassword(newPassword);
+
+        await col.updateOne(
+          { _id: studentDoc._id },
+          {
+            $set: {
+              uid,
+              passwordHash,
+              emailVerified: true,
+              lastLoginAt: nowIso,
+              updatedAt: nowIso,
+            },
+          }
+        );
+
+        const updatedStudent = {
+          ...studentDoc,
+          uid,
+          emailVerified: true,
+          lastLoginAt: nowIso,
+          updatedAt: nowIso,
+        };
+
+        const token = signToken({ uid, email: cleanEmail, name: studentDoc.name });
+        return res.status(200).json({
+          success: true,
+          token,
+          student: sanitizePublicStudent(updatedStudent),
+        });
+      }
+
       // GOOGLE SIGN-IN / ONE-CLICK GMAIL LOGIN & REGISTRATION
       if (action === 'google') {
         const cleanEmail = String(body.email || '').trim().toLowerCase();
