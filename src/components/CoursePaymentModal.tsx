@@ -176,40 +176,145 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-fadeIn overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 bg-slate-950/85 backdrop-blur-md animate-fadeIn overflow-y-auto"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full my-auto overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all max-h-[92vh] flex flex-col text-slate-800 dark:text-slate-100 text-left">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-5xl w-full my-auto overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all max-h-[94vh] flex flex-col lg:flex-row text-slate-800 dark:text-slate-100 text-left">
         
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#18110E] p-5 sm:p-6 text-white relative shrink-0 border-b border-white/10">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isProcessing}
-            className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer disabled:opacity-50"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        {/* LEFT COLUMN: Emotional & Motivational Floating Neon Showcase */}
+        <div className="lg:w-[45%] bg-[#0D1117] p-5 sm:p-6 text-white relative overflow-y-auto custom-scrollbar flex flex-col justify-between gap-4 border-b lg:border-b-0 lg:border-r border-white/10 shrink-0">
+          {/* Ambient Neon Glow Blobs */}
+          <div className="absolute -top-10 -left-10 w-52 h-52 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-4 right-0 w-56 h-56 bg-[#FB6C00]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-1/2 right-6 w-40 h-40 bg-pink-500/15 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="space-y-1.5 pr-12">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-black text-slate-200">
-              <Lock className="w-3.5 h-3.5 text-[#FB6C00]" />
-              <span>Checkout Sicuro SSL 256-bit • Ricevuta Fiscale Immediata</span>
+          {/* Top Brand + Price Header */}
+          <div className="relative z-10 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/50 text-[11px] font-black text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.35)]">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
+                <span>PatenteGuru Italia • Pro Investment</span>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/50 text-amber-300 text-[10px] font-black shadow-[0_0_12px_rgba(250,204,21,0.35)]">
+                🇪🇺 Valid in 27 EU Countries
+              </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
-              অনলাইন কোর্স এনরোলমেন্ট ও পেমেন্ট (€{activePrice})
-            </h2>
-            <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed">
-              পাস করা পর্যন্ত এককালীন এক্সেস (Una Tantum) • Round #{attemptedRound} থেকে ২৪০ রাউন্ড এবং সাথে সাথে অফিসিয়াল ইনভয়েস রসিদ
+
+            <div className="flex items-baseline gap-2.5 pt-1">
+              <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_0_12px_rgba(251,108,0,0.45)]">
+                €{activePrice},00
+              </span>
+              <span className="text-sm text-slate-400 line-through font-bold">€{regularPrice},00</span>
+              <span className="text-[11px] text-emerald-400 font-black bg-emerald-500/10 border border-emerald-400/40 px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+                এককালীন • Lifetime
+              </span>
+            </div>
+          </div>
+
+          {/* Floating Neon Card 1: Neon Cyan — Drive in Whole Europe */}
+          <div
+            className="relative z-10 p-3.5 sm:p-4 rounded-2xl bg-[#111827]/90 border-2 border-cyan-400 shadow-[0_0_22px_rgba(0,240,255,0.4),inset_0_0_12px_rgba(0,240,255,0.12)] transition-transform hover:scale-[1.01]"
+            style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+          >
+            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-cyan-300 drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] block mb-1">
+              💎 জীবনের সেরা বিনিয়োগ • Best Investment For Your Future
+            </span>
+            <p className="text-xs sm:text-sm font-black text-white leading-snug">
+              এই ছোট্ট বিনিয়োগটি আপনাকে শুধু ইতালি নয়, <span className="text-cyan-300 underline decoration-cyan-400/60">পুরো ইউরোপ জুড়ে (২৭টি দেশে)</span> স্বাধীনভাবে গাড়ি চালানোর স্বপ্ন পূরণ করবে! 🇪🇺🚗
+            </p>
+            <p className="text-[11px] text-slate-300 font-semibold mt-1">
+              This small one-time investment unlocks your freedom to drive a car across all of Europe for life!
+            </p>
+          </div>
+
+          {/* Center Sports Car + Floating Neon Pills */}
+          <div className="relative z-10 py-1 flex items-center justify-center">
+            <img
+              src="/car-logo.png"
+              alt="Patente Guru Car"
+              className="w-56 sm:w-64 h-auto rounded-2xl drop-shadow-[0_0_25px_rgba(0,240,255,0.3)]"
+            />
+            {/* Floating Pill Top-Left (Neon Gold) */}
+            <div className="absolute top-1 left-0 px-3 py-1 rounded-full bg-[#0D1117]/95 border border-yellow-400 text-yellow-300 text-[10px] font-black shadow-[0_0_15px_rgba(250,204,21,0.55)] -rotate-3 animate-bounce" style={{ animationDuration: '3.2s' }}>
+              🇪🇺 Drive in All Europe
+            </div>
+            {/* Floating Pill Bottom-Right (Neon Pink) */}
+            <div className="absolute bottom-1 right-0 px-3 py-1 rounded-full bg-[#0D1117]/95 border border-pink-500 text-pink-300 text-[10px] font-black shadow-[0_0_15px_rgba(255,46,147,0.6)] rotate-2 animate-bounce" style={{ animationDuration: '3.8s' }}>
+              🏆 100% Pass Target
+            </div>
+          </div>
+
+          {/* Two Floating Neon Emotional Cards (Neon Emerald + Neon Pink) */}
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {/* Neon Emerald Card */}
+            <div className="p-3 rounded-2xl bg-[#111827]/90 border-[1.5px] border-emerald-400 shadow-[0_0_18px_rgba(16,185,129,0.38),inset_0_0_10px_rgba(16,185,129,0.1)] space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)] block">
+                👨‍👩‍👧‍👦 পরিবার ও সম্মান
+              </span>
+              <p className="text-[11.5px] font-bold text-white leading-snug">
+                বৃষ্টি বা শীতে বাসের অপেক্ষা নয়—পরিবারকে নিয়ে ঘুরুন নিজের গাড়িতে!
+              </p>
+              <span className="text-[10px] text-emerald-200/80 block font-medium">
+                Give your family comfort &amp; dignity.
+              </span>
+            </div>
+
+            {/* Neon Pink Card */}
+            <div className="p-3 rounded-2xl bg-[#111827]/90 border-[1.5px] border-pink-500 shadow-[0_0_18px_rgba(255,46,147,0.38),inset_0_0_10px_rgba(255,46,147,0.1)] space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-pink-300 drop-shadow-[0_0_6px_rgba(255,107,181,0.8)] block">
+                🚀 ভালো চাকরি ও উচ্চ আয়
+              </span>
+              <p className="text-[11.5px] font-bold text-white leading-snug">
+                ইতালিতে ভালো চাকরি ও উচ্চ আয়ের সবচেয়ে বড় চাবিকাঠি আপনার Patente B!
+              </p>
+              <span className="text-[10px] text-pink-200/80 block font-medium">
+                Unlock better jobs &amp; higher income.
+              </span>
+            </div>
+          </div>
+
+          {/* Bottom Floating Neon Orange Card */}
+          <div className="relative z-10 p-3 rounded-2xl bg-[#111827]/95 border-[1.5px] border-[#FB6C00] shadow-[0_0_20px_rgba(251,108,0,0.45),inset_0_0_10px_rgba(251,108,0,0.15)] text-center space-y-0.5">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#FF9E00] drop-shadow-[0_0_8px_rgba(251,108,0,0.8)] block">
+              🔥 আজকের একটি সিদ্ধান্ত বদলে দেবে আপনার ভবিষ্যৎ
+            </span>
+            <p className="text-[11px] text-slate-200 font-bold">
+              ✓ ২৪০টি অফিশিয়াল রাউন্ড • ✓ পাস না করা পর্যন্ত এক্সেস • ✓ অফিসিয়াল Fattura PDF
             </p>
           </div>
         </div>
 
-        {/* Scrollable Form Body */}
-        <form onSubmit={handleSubmitPayment} className="p-5 sm:p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+        {/* RIGHT COLUMN: Checkout Header + Scrollable Form Body */}
+        <div className="lg:w-[55%] flex flex-col max-h-[94vh] overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#18110E] p-4 sm:p-5 text-white relative shrink-0 border-b border-white/10">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isProcessing}
+              className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer disabled:opacity-50"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1 pr-12">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/10 border border-white/20 text-[10.5px] font-black text-slate-200">
+                <Lock className="w-3.5 h-3.5 text-[#FB6C00]" />
+                <span>Checkout Sicuro SSL 256-bit • Ricevuta Fiscale Immediata</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-black tracking-tight leading-snug">
+                অনলাইন কোর্স এনরোলমেন্ট ও পেমেন্ট (€{activePrice})
+              </h2>
+              <p className="text-[11.5px] text-slate-300 leading-relaxed">
+                পাস করা পর্যন্ত এককালীন এক্সেস (Una Tantum) • Round #{attemptedRound} থেকে ২৪০ রাউন্ড এবং সাথে সাথে অফিসিয়াল ইনভয়েস রসিদ
+              </p>
+            </div>
+          </div>
+
+          {/* Scrollable Form Body */}
+          <form onSubmit={handleSubmitPayment} className="p-4 sm:p-5 space-y-5 overflow-y-auto custom-scrollbar flex-1">
           {errorMessage && (
             <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5 animate-shake">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -563,7 +668,8 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
               পরে করবো (Annulla e Chiudi)
             </button>
           </div>
-        </form>
+          </form>
+        </div>
 
       </div>
     </div>

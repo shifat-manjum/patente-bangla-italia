@@ -109,8 +109,8 @@ export default async function handler(req, res) {
             product_data: {
               name: 'Corso Completo Patente B 2026 - PatenteGuru',
               description:
-                'Accesso Illimitato a 240 Round con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica fino al superamento dell’esame.',
-              images: ['https://patente-bangla-italia.vercel.app/car-logo.png'],
+                '✨ জীবনের সেরা বিনিয়োগ! এই ছোট্ট বিনিয়োগটি আপনাকে শুধু ইতালি নয়, পুরো ইউরোপ জুড়ে (২৭টি দেশে) স্বাধীনভাবে গাড়ি চালানোর স্বপ্ন পূরণ করবে! 🇪🇺🚗 • One small investment to drive a car across all of Europe • 240 Round + Audio + Pass Target.',
+              images: ['https://www.patenteguru.it/stripe-checkout-hero.png'],
             },
           },
           quantity: 1,
