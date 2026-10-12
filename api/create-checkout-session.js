@@ -85,7 +85,7 @@ export default async function handler(req, res) {
       (host ? `${protocol}://${host}` : null) ||
       'https://www.patenteguru.it';
 
-    const session = await stripe.checkout.sessions.create({
+    const baseSessionParams = {
       mode: 'payment',
       customer_email: studentEmail.trim().toLowerCase(),
       client_reference_id: studentEmail.trim().toLowerCase(),
@@ -94,10 +94,6 @@ export default async function handler(req, res) {
         background_color: '#0D1117',
         button_color: '#FB6C00',
         border_style: 'rounded',
-        icon: {
-          type: 'file',
-          file: 'file_1UPPLw0lRuQcN4CldLir3C5Z',
-        },
       },
       custom_text: {
         submit: {
@@ -131,7 +127,23 @@ export default async function handler(req, res) {
       },
       success_url: `${origin}/?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment_cancelled=true`,
-    });
+    };
+
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        ...baseSessionParams,
+        branding_settings: {
+          ...baseSessionParams.branding_settings,
+          icon: {
+            type: 'file',
+            file: 'file_1UPPLw0lRuQcN4CldLir3C5Z',
+          },
+        },
+      });
+    } catch {
+      session = await stripe.checkout.sessions.create(baseSessionParams);
+    }
 
     return res.status(200).json({
       success: true,

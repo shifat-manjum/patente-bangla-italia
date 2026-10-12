@@ -872,7 +872,7 @@ export default async function handler(req, res) {
         }
 
         const validMasterPasswords = ['admin123', 'zentixx2026', 'admin@2026', 'shifat2026', 'saiful2026'];
-        let isPasswordOk = validMasterPasswords.includes(password) || password.length >= 4;
+        let isPasswordOk = validMasterPasswords.includes(password);
 
         const adminDoc = await col.findOne({ email: cleanEmail });
         if (!isPasswordOk && adminDoc?.passwordHash) {

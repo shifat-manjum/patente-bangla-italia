@@ -18,7 +18,7 @@ import { trackExamStart, trackExamSubmit } from '../services/analytics';
 import { fetchSimulationExamQuestions } from '../services/questionsService';
 
 interface ExamSimulatorProps {
-  onSaveMistakes: (questionIds: string[], roundId?: number | null) => void;
+  onSaveMistakes: (questionIds: string[], roundId?: number | null, mistakeObjects?: QuizQuestion[]) => void;
   onGoToTopics: () => void;
   roundId?: number | null;
   onBackToRounds?: () => void;
@@ -124,14 +124,16 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
 
     // Calculate mistakes
     const mistakeIds: string[] = [];
+    const mistakeObjects: QuizQuestion[] = [];
     questions.forEach((q, idx) => {
       const userAns = answers[idx];
       if (userAns === undefined || userAns !== q.isCorrect) {
         mistakeIds.push(q.id);
+        mistakeObjects.push(q);
       }
     });
 
-    onSaveMistakes(mistakeIds, roundId);
+    onSaveMistakes(mistakeIds, roundId, mistakeObjects);
 
     const errorCount = mistakeIds.length;
     const passed = errorCount <= 3;

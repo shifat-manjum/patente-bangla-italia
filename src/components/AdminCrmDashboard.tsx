@@ -461,7 +461,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       const res = await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, adminAction: true }),
       });
 
       if (!res.ok) {
@@ -556,7 +556,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       await fetch('/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createdProfile),
+        body: JSON.stringify({ ...createdProfile, adminAction: true }),
       });
     } catch {}
 

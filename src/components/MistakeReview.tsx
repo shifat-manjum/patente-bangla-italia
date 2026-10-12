@@ -20,13 +20,27 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
 }) => {
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
 
-  // Resolve questions from ministerial question database
+  // Resolve questions from ministerial question database + cached MongoDB exam mistakes
   const mistakeQuestions = useMemo(() => {
     const questionMap = new Map<string, QuizQuestion>();
     // Add base quiz questions
     QUIZ_QUESTIONS.forEach((q) => questionMap.set(q.id, q));
     // Add all 600 official ministerial round questions
     ALL_200_QUESTIONS.forEach((q) => questionMap.set(q.id, q));
+    // Add cached MongoDB 7,165-bank simulation exam questions
+    try {
+      const rawCached = localStorage.getItem('patente_bangla_mistake_questions');
+      if (rawCached) {
+        const parsed: Record<string, QuizQuestion> = JSON.parse(rawCached);
+        if (parsed && typeof parsed === 'object') {
+          Object.entries(parsed).forEach(([k, v]) => {
+            if (v && typeof v === 'object' && v.questionIt) {
+              questionMap.set(k, v);
+            }
+          });
+        }
+      }
+    } catch {}
 
     const resolved: QuizQuestion[] = [];
     for (const id of mistakeIds) {
@@ -34,11 +48,11 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
       if (q) {
         resolved.push(q);
       } else {
-        // Fallback for legacy round IDs like r21_q5
-        const match = id.match(/^r(\d+)_q(\d+)$/);
+        // Fallback for legacy round IDs like r21_q5 or q_123
+        const match = id.match(/^(?:r(\d+)_)?q_?(\d+)$/);
         if (match) {
           const qNum = parseInt(match[2], 10);
-          const fallbackQ = ALL_200_QUESTIONS[(qNum - 1) % ALL_200_QUESTIONS.length];
+          const fallbackQ = ALL_200_QUESTIONS[Math.abs(qNum - 1) % ALL_200_QUESTIONS.length];
           if (fallbackQ) {
             resolved.push({ ...fallbackQ, id });
           }

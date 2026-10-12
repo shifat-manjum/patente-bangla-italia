@@ -126,24 +126,28 @@ export default async function handler(req, res) {
       }
 
       const filter = email ? { email } : { uid };
-      const { createdAt, _id, passwordHash, ...rest } = data;
+      const { createdAt, _id, passwordHash, adminAction, isVip, ...rest } = data;
       if (email) rest.email = email;
+
+      const setPayload = {
+        ...rest,
+        ...(adminAction === true && typeof isVip === 'boolean' ? { isVip } : {}),
+        updatedAt: new Date().toISOString(),
+      };
 
       await col.updateOne(
         filter,
         {
-          $set: {
-            ...rest,
-            updatedAt: new Date().toISOString(),
-          },
+          $set: setPayload,
           $setOnInsert: {
             createdAt: createdAt || new Date().toISOString(),
+            ...(adminAction === true && typeof isVip === 'boolean' ? {} : { isVip: false }),
           },
         },
         { upsert: true }
       );
 
-      return res.status(200).json({ success: true, student: { ...rest, createdAt: createdAt || new Date().toISOString() } });
+      return res.status(200).json({ success: true, student: { ...setPayload, createdAt: createdAt || new Date().toISOString() } });
     }
 
     if (req.method === 'DELETE') {

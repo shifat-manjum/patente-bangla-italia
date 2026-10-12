@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { getCollection } from './_db.js';
 
 let cachedGeminiKey = '';
@@ -47,11 +49,11 @@ export async function generateTutorResponse(prompt, history = []) {
 
   // Available high-performance models
   const candidateModels = [
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
     'gemini-flash-latest',
-    'gemini-3.5-flash',
-    'gemini-3.1-flash-lite',
+    'gemini-2.0-flash-lite',
     'gemini-flash-lite-latest',
-    'gemini-3.6-flash',
   ];
 
   const systemInstruction = `You are "শিক্ষক মারকো" (Teacher Marco), the witty, funny, charismatic, and brilliant Italian driving instructor at "Patente Guru" (ইতালিয়ান ড্রাইভিং লাইসেন্স Patente B বিশেষজ্ঞ).

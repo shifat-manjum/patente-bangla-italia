@@ -546,40 +546,58 @@ export function App() {
     });
   };
 
-  const handleSaveExamMistakes = (newIds: string[], finishedRoundId?: number | null) => {
+  const handleSaveExamMistakes = (newIds: string[], finishedRoundId?: number | null, mistakeObjects?: any[]) => {
     const updatedTotalQuestions = totalQuestionsAnswered + 30;
     incrementAnsweredCount(30);
+
+    // Cache full question objects for MongoDB 7,165-bank exam mistakes so MistakeReview can always render them
+    if (Array.isArray(mistakeObjects) && mistakeObjects.length > 0) {
+      try {
+        const existingRaw = localStorage.getItem('patente_bangla_mistake_questions');
+        const existingMap = existingRaw ? JSON.parse(existingRaw) : {};
+        mistakeObjects.forEach((q) => {
+          if (q?.id && q?.questionIt) {
+            existingMap[q.id] = q;
+          }
+        });
+        localStorage.setItem('patente_bangla_mistake_questions', JSON.stringify(existingMap));
+      } catch {}
+    }
 
     const updatedMistakes = Array.from(new Set([...mistakeIds, ...newIds]));
     setMistakeIds(updatedMistakes);
 
-    const fallbackRoundNum = Math.min(240, Math.max(1, Math.floor(updatedTotalQuestions / 30)));
-    const activeRoundNum = finishedRoundId || currentRoundId || fallbackRoundNum;
-
+    const activeRoundNum = finishedRoundId || currentRoundId || null;
     const errorCount = newIds.length;
     const passed = errorCount <= 3;
 
-    const updatedCompletedRounds = {
-      ...completedRounds,
-      [activeRoundNum]: { errors: errorCount, passed },
-    };
-    setCompletedRounds(updatedCompletedRounds);
+    let updatedCompletedRounds = completedRounds;
+    let updatedUnlockedRound = unlockedRound;
 
-    const nextUnlocked = passed ? Math.min(240, activeRoundNum + 1) : activeRoundNum;
-    const updatedUnlockedRound = Math.max(unlockedRound, activeRoundNum, nextUnlocked);
-    setUnlockedRound(updatedUnlockedRound);
+    // Only update sequential round completion when the student actually took a specific curriculum Round (1..240)
+    if (activeRoundNum && activeRoundNum >= 1 && activeRoundNum <= 240) {
+      updatedCompletedRounds = {
+        ...completedRounds,
+        [activeRoundNum]: { errors: errorCount, passed },
+      };
+      setCompletedRounds(updatedCompletedRounds);
+
+      const nextUnlocked = passed ? Math.min(240, activeRoundNum + 1) : activeRoundNum;
+      updatedUnlockedRound = Math.max(unlockedRound, activeRoundNum, nextUnlocked);
+      setUnlockedRound(updatedUnlockedRound);
+
+      if (passed && activeRoundNum === appSettings.freeRoundsLimit && !isVip && appSettings.freeRoundsLimit < 240) {
+        setTimeout(() => {
+          setIsPaywallOpen(true);
+        }, 1800);
+      }
+    }
 
     try {
       localStorage.setItem('patente_bangla_unlocked_round', String(updatedUnlockedRound));
       localStorage.setItem('patente_bangla_completed_rounds', JSON.stringify(updatedCompletedRounds));
       localStorage.setItem('patente_bangla_answered_count', String(updatedTotalQuestions));
     } catch {}
-
-    if (passed && activeRoundNum === appSettings.freeRoundsLimit && !isVip && appSettings.freeRoundsLimit < 240) {
-      setTimeout(() => {
-        setIsPaywallOpen(true);
-      }, 1800);
-    }
 
     // Immediately sync completed round & quiz count to MongoDB Atlas so CRM updates in real time
     if (currentUser?.uid || currentUser?.email) {
@@ -618,7 +636,7 @@ export function App() {
   };
 
   const handleSelectTab = (tab: NavTab) => {
-    if (['exam', 'hotshot', 'topics', 'mistakes'].includes(tab)) {
+    if (['exam', 'mistakes'].includes(tab)) {
       if (!requireLogin('কুইজ ও পরীক্ষা শুরু করতে')) {
         return;
       }
@@ -628,6 +646,8 @@ export function App() {
       setAppTab('exam');
     } else if (tab === 'rounds') {
       setAppTab('curriculum');
+    } else if (tab === 'hotshot' || tab === 'topics' || tab === 'vocab') {
+      setAppTab('theory');
     } else if (tab === 'mistakes') {
       setAppTab('errors');
     } else if (tab === 'admin') {

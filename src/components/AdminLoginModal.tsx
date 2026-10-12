@@ -77,20 +77,20 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     } catch {}
 
     // 3. Fallback check for offline/local admin mode
-    if (password.length >= 4) {
+    const validMasterPasswords = ['admin123', 'zentixx2026', 'admin@2026', 'shifat2026', 'saiful2026'];
+    if (validMasterPasswords.includes(password)) {
       sessionStorage.setItem('patente_admin_auth', cleanEmail);
       onAdminLoginSuccess(cleanEmail);
       onClose();
     } else {
-      setError('পাসওয়ার্ড ন্যূনতম ৪ অক্ষরের দিন');
+      setError('ভুল অ্যাডমিন পাসওয়ার্ড। দয়া করে আপনার সঠিক পাসওয়ার্ড দিন।');
     }
     setIsLoading(false);
   };
 
-  const handleQuickAdminLogin = (adminEmail: string) => {
-    sessionStorage.setItem('patente_admin_auth', adminEmail);
-    onAdminLoginSuccess(adminEmail);
-    onClose();
+  const handleQuickAdminSelect = (adminEmail: string) => {
+    setEmail(adminEmail);
+    setError('');
   };
 
   return (
@@ -187,15 +187,15 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           </button>
         </form>
 
-        {/* 1-Click Fast Access for Owners & Partners */}
+        {/* Quick Select Authorized Admin Email */}
         <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
           <span className="text-[10px] text-slate-400 block text-center uppercase tracking-wider font-bold">
-            দ্রুত অ্যাডমিন অ্যাক্সেস (Fast 1-Click Verify)
+            অ্যাডমিন ইমেইল নির্বাচন করুন (Select Admin Email)
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={() => handleQuickAdminLogin('khshifatmanjum@gmail.com')}
+              onClick={() => handleQuickAdminSelect('khshifatmanjum@gmail.com')}
               className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold transition cursor-pointer text-center border border-slate-200 dark:border-slate-700 truncate"
               title="khshifatmanjum@gmail.com"
             >
@@ -203,7 +203,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => handleQuickAdminLogin('khshifat@gmail.com')}
+              onClick={() => handleQuickAdminSelect('khshifat@gmail.com')}
               className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold transition cursor-pointer text-center border border-slate-200 dark:border-slate-700 truncate"
               title="khshifat@gmail.com"
             >
@@ -211,7 +211,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => handleQuickAdminLogin('saifulislamnyt@gmail.com')}
+              onClick={() => handleQuickAdminSelect('saifulislamnyt@gmail.com')}
               className="py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold transition cursor-pointer text-center border border-emerald-200 dark:border-emerald-800 truncate"
               title="saifulislamnyt@gmail.com"
             >
