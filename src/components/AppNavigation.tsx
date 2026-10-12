@@ -57,7 +57,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
   return (
     <>
       {/* Desktop & Tablet Top Tab Navigation Bar (Adaptive Cockpit Style) */}
-      <nav className="hidden md:block bg-white/90 dark:bg-[#0D1117]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 sticky top-[80px] sm:top-[88px] z-30 shadow-xs dark:shadow-xl transition-colors">
+      <nav className="hidden md:block bg-white dark:bg-[#0D1117] border-b border-slate-200 dark:border-white/10 sticky top-[80px] sm:top-[88px] z-30 shadow-xs dark:shadow-xl">
         <div className="max-w-[1600px] mx-auto px-[15px] py-3 sm:py-4">
           <div 
             className="flex items-center justify-start xl:justify-center gap-2.5 lg:gap-4 overflow-x-auto no-scrollbar scrollbar-none py-1 px-1"
@@ -127,7 +127,7 @@ export const AppNavigation: React.FC<AppNavigationProps> = ({
       </nav>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 shadow-[0_-8px_25px_rgba(0,0,0,0.1)] dark:shadow-[0_-8px_25px_rgba(0,0,0,0.6)] safe-bottom select-none touch-manipulation">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#0D1117] border-t border-slate-200 dark:border-white/10 shadow-[0_-8px_25px_rgba(0,0,0,0.1)] dark:shadow-[0_-8px_25px_rgba(0,0,0,0.6)] safe-bottom select-none touch-manipulation">
         <div className="grid grid-cols-5 h-[68px] sm:h-[72px] px-1.5 py-1 gap-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;

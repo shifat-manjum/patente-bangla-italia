@@ -4,9 +4,6 @@ import type { NavTab } from './components/Header';
 import { AppNavigation } from './components/AppNavigation';
 import type { AppTab } from './components/AppNavigation';
 import { StudentDashboardView } from './components/StudentDashboardView';
-import { RoundsCurriculumView } from './components/RoundsCurriculumView';
-import { EnrollmentModal } from './components/EnrollmentModal';
-import { StudentAuthModal } from './components/StudentAuthModal';
 import type { StudentUser } from './components/StudentAuthModal';
 import {
   subscribeToAuthChanges,
@@ -33,7 +30,10 @@ import {
 import type { AppSettings } from './services/appSettingsService';
 import { trackViewContent, trackPurchase } from './utils/metaPixel';
 
-// Lazy-loaded heavy components (saves >2MB on initial mobile download!)
+// Lazy-loaded views & modals (keeps initial bundle ultra-fast!)
+const RoundsCurriculumView = lazy(() => import('./components/RoundsCurriculumView').then(m => ({ default: m.RoundsCurriculumView })));
+const EnrollmentModal = lazy(() => import('./components/EnrollmentModal').then(m => ({ default: m.EnrollmentModal })));
+const StudentAuthModal = lazy(() => import('./components/StudentAuthModal').then(m => ({ default: m.StudentAuthModal })));
 const TheorySummaryView = lazy(() => import('./components/TheorySummaryView').then(m => ({ default: m.TheorySummaryView })));
 const ExamSimulator = lazy(() => import('./components/ExamSimulator').then(m => ({ default: m.ExamSimulator })));
 const MistakeReview = lazy(() => import('./components/MistakeReview').then(m => ({ default: m.MistakeReview })));
@@ -597,7 +597,7 @@ export function App() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col transition-colors duration-300 font-sans relative overflow-x-hidden ${
+      className={`min-h-screen flex flex-col font-sans relative overflow-x-hidden ${
         currentTheme === 'sepia'
           ? 'theme-sepia bg-[#F5EEDB] text-[#2F1B0B] selection:bg-[#B45309] selection:text-white'
           : currentTheme === 'dark'
@@ -605,25 +605,6 @@ export function App() {
           : 'theme-light bg-[#F8FAFC] text-slate-900 selection:bg-[#FB6C00] selection:text-white'
       }`}
     >
-      {/* Subtle theme-specific ambient accents */}
-      {currentTheme === 'sepia' ? (
-        <>
-          <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
-          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
-        </>
-      ) : currentTheme === 'dark' ? (
-        <>
-          <div className="fixed top-0 left-1/4 w-[600px] h-[360px] bg-[#E52E2D]/10 rounded-full blur-[100px] pointer-events-none -z-10" />
-          <div className="fixed top-20 right-1/4 w-[500px] h-[360px] bg-[#FB6C00]/8 rounded-full blur-[100px] pointer-events-none -z-10" />
-          <div className="fixed bottom-10 left-1/3 w-[500px] h-[300px] bg-[#FB6C00]/6 rounded-full blur-[100px] pointer-events-none -z-10" />
-        </>
-      ) : (
-        <>
-          <div className="fixed top-0 left-1/4 w-[500px] h-[300px] bg-amber-100/60 rounded-full blur-3xl pointer-events-none -z-10" />
-          <div className="fixed top-20 right-1/4 w-[400px] h-[300px] bg-orange-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
-        </>
-      )}
-
       {/* Navigation Header */}
       <Header
         totalQuestionsAnswered={totalQuestionsAnswered}
@@ -855,106 +836,120 @@ export function App() {
         </Suspense>
       </main>
 
-      {/* Mandatory Student Auth Modal */}
-      <StudentAuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onLoginSuccess={(user) => {
-          const safe = sanitizeStudentProfile(user);
-          setCurrentUser(safe);
-        }}
-        forcedMessage={authForcedMessage}
-      />
-
-      {/* Official Driving Academy Enrollment Modal */}
-      <EnrollmentModal
-        isOpen={isPaywallOpen}
-        onClose={() => setIsPaywallOpen(false)}
-        onContinueFree={() => setIsPaywallOpen(false)}
-        onViewFullPage={() => {
-          setIsPaywallOpen(false);
-          setAppTab('enrollment');
-        }}
-        onOpenPayment={() => {
-          setIsPaywallOpen(false);
-          setIsPaymentModalOpen(true);
-        }}
-        attemptedRound={unlockedRound > appSettings.freeRoundsLimit ? unlockedRound : appSettings.freeRoundsLimit + 1}
-        academyPriceEur={appSettings.academyPriceEur}
-        regularPriceEur={appSettings.regularPriceEur}
-        freeRoundsLimit={appSettings.freeRoundsLimit}
-      />
-
       <Suspense fallback={null}>
+        {/* Mandatory Student Auth Modal */}
+        {isAuthModalOpen && (
+          <StudentAuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
+            onLoginSuccess={(user) => {
+              const safe = sanitizeStudentProfile(user);
+              setCurrentUser(safe);
+            }}
+            forcedMessage={authForcedMessage}
+          />
+        )}
+
+        {/* Official Driving Academy Enrollment Modal */}
+        {isPaywallOpen && (
+          <EnrollmentModal
+            isOpen={isPaywallOpen}
+            onClose={() => setIsPaywallOpen(false)}
+            onContinueFree={() => setIsPaywallOpen(false)}
+            onViewFullPage={() => {
+              setIsPaywallOpen(false);
+              setAppTab('enrollment');
+            }}
+            onOpenPayment={() => {
+              setIsPaywallOpen(false);
+              setIsPaymentModalOpen(true);
+            }}
+            attemptedRound={unlockedRound > appSettings.freeRoundsLimit ? unlockedRound : appSettings.freeRoundsLimit + 1}
+            academyPriceEur={appSettings.academyPriceEur}
+            regularPriceEur={appSettings.regularPriceEur}
+            freeRoundsLimit={appSettings.freeRoundsLimit}
+          />
+        )}
+
         {/* Student Personal Profile & Data Modal */}
-        <StudentProfileModal
-          isOpen={isStudentProfileOpen}
-          onClose={() => setIsStudentProfileOpen(false)}
-          student={currentUser}
-          isVip={isVip}
-          onLogout={handleLogout}
-          onOpenInvoice={handleOpenInvoice}
-          onUpdateProfile={(updated) => {
-            const safe = sanitizeStudentProfile(updated);
-            setCurrentUser(safe);
-            try {
-              localStorage.setItem('patente_student_user', JSON.stringify(safe));
-            } catch {}
-          }}
-        />
+        {isStudentProfileOpen && (
+          <StudentProfileModal
+            isOpen={isStudentProfileOpen}
+            onClose={() => setIsStudentProfileOpen(false)}
+            student={currentUser}
+            isVip={isVip}
+            onLogout={handleLogout}
+            onOpenInvoice={handleOpenInvoice}
+            onUpdateProfile={(updated) => {
+              const safe = sanitizeStudentProfile(updated);
+              setCurrentUser(safe);
+              try {
+                localStorage.setItem('patente_student_user', JSON.stringify(safe));
+              } catch {}
+            }}
+          />
+        )}
 
         {/* Direct Online Payment Checkout Modal */}
-        <CoursePaymentModal
-          isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
-          onSuccess={handlePaymentSuccess}
-          academyPriceEur={appSettings.academyPriceEur}
-          regularPriceEur={appSettings.regularPriceEur}
-          initialStudent={
-            currentUser
-              ? {
-                  name: currentUser.name,
-                  email: currentUser.email,
-                }
-              : studentLead
-              ? {
-                  name: studentLead.name,
-                  email: studentLead.email,
-                  phone: studentLead.phone,
-                }
-              : null
-          }
-          attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
-        />
+        {isPaymentModalOpen && (
+          <CoursePaymentModal
+            isOpen={isPaymentModalOpen}
+            onClose={() => setIsPaymentModalOpen(false)}
+            onSuccess={handlePaymentSuccess}
+            academyPriceEur={appSettings.academyPriceEur}
+            regularPriceEur={appSettings.regularPriceEur}
+            initialStudent={
+              currentUser
+                ? {
+                    name: currentUser.name,
+                    email: currentUser.email,
+                  }
+                : studentLead
+                ? {
+                    name: studentLead.name,
+                    email: studentLead.email,
+                    phone: studentLead.phone,
+                  }
+                : null
+            }
+            attemptedRound={unlockedRound > 20 ? unlockedRound : 21}
+          />
+        )}
 
         {/* Official Tax Invoice & Payment Receipt Modal (Printable/Downloadable PDF) */}
-        <CourseInvoiceModal
-          isOpen={isInvoiceModalOpen}
-          onClose={() => setIsInvoiceModalOpen(false)}
-          invoice={activeInvoice}
-          onStartCourse={() => {
-            setIsInvoiceModalOpen(false);
-            setAppTab('curriculum');
-          }}
-        />
+        {isInvoiceModalOpen && (
+          <CourseInvoiceModal
+            isOpen={isInvoiceModalOpen}
+            onClose={() => setIsInvoiceModalOpen(false)}
+            invoice={activeInvoice}
+            onStartCourse={() => {
+              setIsInvoiceModalOpen(false);
+              setAppTab('curriculum');
+            }}
+          />
+        )}
 
         {/* Student Lead Registration Modal */}
-        <StudentLeadModal
-          isOpen={isLeadModalOpen}
-          onClose={() => setIsLeadModalOpen(false)}
-          onSaveLead={(data) => {
-            try {
-              localStorage.setItem('patente_bangla_student_lead', JSON.stringify(data));
-            } catch {}
-            setStudentLead(data);
-          }}
-        />
+        {isLeadModalOpen && (
+          <StudentLeadModal
+            isOpen={isLeadModalOpen}
+            onClose={() => setIsLeadModalOpen(false)}
+            onSaveLead={(data) => {
+              try {
+                localStorage.setItem('patente_bangla_student_lead', JSON.stringify(data));
+              } catch {}
+              setStudentLead(data);
+            }}
+          />
+        )}
 
         {/* About Us Modal (Shifat Manjum & Zentixx Story) */}
-        <AboutModal
-          isOpen={isAboutOpen}
-          onClose={() => setIsAboutOpen(false)}
-        />
+        {isAboutOpen && (
+          <AboutModal
+            isOpen={isAboutOpen}
+            onClose={() => setIsAboutOpen(false)}
+          />
+        )}
 
         {/* Floating 24/7 AI Maestro Tutor Chatbot */}
         <PatenteChatbot
@@ -964,18 +959,20 @@ export function App() {
         />
 
         {/* Admin Login Gate Modal */}
-        <AdminLoginModal
-          isOpen={isAdminLoginOpen}
-          onClose={() => setIsAdminLoginOpen(false)}
-          onAdminLoginSuccess={(email) => {
-            setAdminEmail(email);
-            try {
-              sessionStorage.setItem('patente_admin_auth', email);
-            } catch {}
-            setIsAdminLoginOpen(false);
-            setAppTab('admin');
-          }}
-        />
+        {isAdminLoginOpen && (
+          <AdminLoginModal
+            isOpen={isAdminLoginOpen}
+            onClose={() => setIsAdminLoginOpen(false)}
+            onAdminLoginSuccess={(email) => {
+              setAdminEmail(email);
+              try {
+                sessionStorage.setItem('patente_admin_auth', email);
+              } catch {}
+              setIsAdminLoginOpen(false);
+              setAppTab('admin');
+            }}
+          />
+        )}
       </Suspense>
 
       {/* Mobile Sticky Floating Pay Now Bar (Always visible and easily accessible on mobile) */}

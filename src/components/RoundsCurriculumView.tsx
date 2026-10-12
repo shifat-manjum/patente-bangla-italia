@@ -202,7 +202,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
 
       {/* Modern 240 Rounds Grid (Clean Adaptive Cards with Italian First, then Bangla) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-        {filteredRounds.map((round) => {
+        {filteredRounds.map((round, idx) => {
           const isPassed = round.result?.passed === true;
           // Unlocking logic: VIP students have ALL 240 rounds completely unlocked!
           // Non-VIP students follow sequential progression
@@ -213,7 +213,7 @@ export const RoundsCurriculumView: React.FC<RoundsCurriculumViewProps> = ({
           return (
             <div
               key={round.id}
-              className={`rounded-2xl border p-5 sm:p-5.5 transition-all duration-200 transform hover:-translate-y-1 hover:shadow-xl relative flex flex-col justify-between min-h-[225px] ${
+              className={`${idx >= 8 ? 'round-card-deferred ' : ''}rounded-2xl border p-5 sm:p-5.5 transition-colors duration-150 hover:shadow-lg relative flex flex-col justify-between min-h-[225px] ${
                 isCurrent
                   ? 'bg-white dark:bg-[#161C28] border-slate-900/30 dark:border-[#FB6C00]/40 ring-2 ring-slate-900/10 dark:ring-[#FB6C00]/20 shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_0_20px_rgba(251,108,0,0.15)]'
                   : isPassed

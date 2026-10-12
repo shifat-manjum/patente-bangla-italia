@@ -11,12 +11,8 @@ import {
   ShieldCheck,
   GripVertical
 } from 'lucide-react';
-import { HOTSHOT_QUESTIONS } from '../data/hotshotQuestions';
-import { ROUND_QUESTIONS } from '../data/roundQuestions';
-import { COMPREHENSIVE_VOCABULARY } from '../data/vocabData';
 import type { StudentUser } from './StudentAuthModal';
 import { speakItalian as playItalianFemaleVoice } from '../utils/italianSpeech';
-import { getBanglaTranslation } from '../utils/patenteTranslator';
 
 interface Message {
   id: string;
@@ -50,6 +46,34 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Lazy-loaded heavy data refs (only loaded when chat window opens!)
+  const knowledgeRef = useRef<{
+    hotshot: any[];
+    rounds: Record<number, any[]>;
+    vocab: any[];
+    translate: (it: string, fallback?: string) => string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (isOpen && !knowledgeRef.current) {
+      Promise.all([
+        import('../data/hotshotQuestions'),
+        import('../data/roundQuestions'),
+        import('../data/vocabData'),
+        import('../utils/patenteTranslator'),
+      ])
+        .then(([hotshotMod, roundsMod, vocabMod, transMod]) => {
+          knowledgeRef.current = {
+            hotshot: hotshotMod.HOTSHOT_QUESTIONS || [],
+            rounds: roundsMod.ROUND_QUESTIONS || {},
+            vocab: vocabMod.COMPREHENSIVE_VOCABULARY || [],
+            translate: transMod.getBanglaTranslation || ((_it: string, fb?: string) => fb || ''),
+          };
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
 
   // Initial welcome message (Funny & charismatic teacher persona)
   const [messages, setMessages] = useState<Message[]>([
@@ -232,9 +256,15 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       };
     }
 
+    const kb = knowledgeRef.current;
+    const hotshotList = kb?.hotshot || [];
+    const roundMap = kb?.rounds || {};
+    const vocabList = kb?.vocab || [];
+    const translateFn = kb?.translate || ((_it: string, fb?: string) => fb || '');
+
     // 2. Check if user pasted an existing hotshot question
-    const matchedHotshot = HOTSHOT_QUESTIONS.find(
-      (q) =>
+    const matchedHotshot = hotshotList.find(
+      (q: any) =>
         q.questionIt.toLowerCase().includes(cleanQuery) ||
         cleanQuery.includes(q.questionIt.toLowerCase().slice(0, 30))
     );
@@ -247,7 +277,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
         quiz: {
           isCorrect: matchedHotshot.isCorrect,
           questionIt: matchedHotshot.questionIt,
-          questionBn: getBanglaTranslation(matchedHotshot.questionIt, matchedHotshot.questionBn),
+          questionBn: translateFn(matchedHotshot.questionIt, matchedHotshot.questionBn),
           explanationBn: matchedHotshot.explanationBn,
           trapTipBn: matchedHotshot.trapTipBn,
           vocab: matchedHotshot.vocabulary,
@@ -256,8 +286,8 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     }
 
     // 3. Check in all 20 rounds (600 official questions)
-    for (const roundList of Object.values(ROUND_QUESTIONS)) {
-      const match = roundList.find((q) => {
+    for (const roundList of Object.values(roundMap)) {
+      const match = (roundList as any[]).find((q: any) => {
         const it = q.questionIt.toLowerCase();
         return (
           cleanQuery.length > 15 &&
@@ -273,7 +303,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
           quiz: {
             isCorrect: match.isCorrect,
             questionIt: match.questionIt,
-            questionBn: getBanglaTranslation(match.questionIt, match.questionBn),
+            questionBn: translateFn(match.questionIt, match.questionBn),
             explanationBn: match.explanationBn,
             vocab: match.vocabulary,
           },
@@ -301,16 +331,18 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     }
 
     // 5. Vocabulary Matcher
-    const matchedVocab = COMPREHENSIVE_VOCABULARY.filter(
-      (v) =>
-        cleanQuery.includes(v.wordIt.toLowerCase()) ||
-        cleanQuery.includes(v.meaningBn.toLowerCase())
-    ).slice(0, 3);
+    const matchedVocab = vocabList
+      .filter(
+        (v: any) =>
+          cleanQuery.includes(v.wordIt.toLowerCase()) ||
+          cleanQuery.includes(v.meaningBn.toLowerCase())
+      )
+      .slice(0, 3);
 
     if (matchedVocab.length > 0) {
       const vocabText = matchedVocab
         .map(
-          (v) =>
+          (v: any) =>
             `• **${v.wordIt}**: ${v.meaningBn} *(ক্যাটাগরি: ${v.category})*`
         )
         .join('\n');

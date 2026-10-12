@@ -4,23 +4,23 @@
 
 @layer base {
   body {
-    @apply font-sans antialiased min-h-screen selection:bg-[#FB6C00] selection:text-white transition-colors duration-200;
-    background-attachment: fixed;
+    @apply font-sans antialiased min-h-screen selection:bg-[#FB6C00] selection:text-white;
   }
 }
 
+/* Defer off-screen heavy round cards for 60-120fps scrolling */
+.round-card-deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 225px;
+}
+
 /* Light Theme Mode - Daytime Clean High-Contrast Palette */
-html.theme-light,
+html.theme-light body,
 body.theme-light,
-html:not(.dark):not(.theme-sepia),
+html:not(.dark):not(.theme-sepia) body,
 body:not(.dark):not(.theme-sepia) {
   background-color: #F8FAFC !important;
   color: #0F172A !important;
-  background-image: 
-    radial-gradient(ellipse at 15% 10%, rgba(251, 108, 0, 0.04) 0px, transparent 55%),
-    radial-gradient(ellipse at 85% 15%, rgba(251, 108, 0, 0.03) 0px, transparent 50%),
-    radial-gradient(ellipse at 50% 90%, rgba(245, 158, 11, 0.03) 0px, transparent 55%) !important;
-  background-attachment: fixed !important;
 }
 
 html:not(.dark):not(.theme-sepia) .school-card,
@@ -31,15 +31,11 @@ html:not(.dark):not(.theme-sepia) .glass-box {
 }
 
 /* Sepia Reader Theme Mode - Warm Parchment / Eye-Comfort Reading Palette */
-html.theme-sepia,
+html.theme-sepia body,
 body.theme-sepia,
 .theme-sepia {
   background-color: #F5EEDB !important;
   color: #2F1B0B !important;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(180, 83, 9, 0.07) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(217, 119, 6, 0.05) 0px, transparent 50%) !important;
-  background-attachment: fixed !important;
 }
 
 .theme-sepia .bg-white,
@@ -88,16 +84,11 @@ body.theme-sepia,
 }
 
 /* Adobe Dark Theme Mode - Deep Obsidian Ambient Palette */
-html.dark,
+html.dark body,
 body.dark,
 .dark {
   background-color: #0D1117 !important;
   color: #F8FAFC !important;
-  background-image: 
-    radial-gradient(ellipse at 15% 10%, rgba(229, 46, 45, 0.14) 0px, transparent 55%),
-    radial-gradient(ellipse at 85% 15%, rgba(251, 108, 0, 0.08) 0px, transparent 50%),
-    radial-gradient(ellipse at 50% 90%, rgba(217, 83, 30, 0.10) 0px, transparent 55%) !important;
-  background-attachment: fixed !important;
 }
 
 /* Card & Surface Dark Backgrounds (Excludes buttons, links, and components with explicit dark:bg-) */
