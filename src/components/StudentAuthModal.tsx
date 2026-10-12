@@ -521,7 +521,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
               </div>
 
               {/* Segmented Tab Switcher */}
-              <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-bold">
+              <div className="grid grid-cols-3 p-1 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-[11px] sm:text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => {
@@ -530,13 +530,13 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                     setError('');
                     setSuccessMessage('');
                   }}
-                  className={`py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                    mode === 'login' || mode === 'forgot'
+                  className={`py-2 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer ${
+                    mode === 'login'
                       ? 'bg-white dark:bg-white/15 text-[#FB6C00] dark:text-white shadow-xs font-black'
                       : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
-                  <LogIn className="w-3.5 h-3.5" />
+                  <LogIn className="w-3.5 h-3.5 shrink-0" />
                   <span>Sign In</span>
                 </button>
                 <button
@@ -547,14 +547,31 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                     setError('');
                     setSuccessMessage('');
                   }}
-                  className={`py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  className={`py-2 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer ${
                     mode === 'register'
                       ? 'bg-white dark:bg-white/15 text-[#FB6C00] dark:text-white shadow-xs font-black'
                       : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Create Account</span>
+                  <UserPlus className="w-3.5 h-3.5 shrink-0" />
+                  <span>Register</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('forgot');
+                    setIsResetOtpStep(false);
+                    setError('');
+                    setSuccessMessage('');
+                  }}
+                  className={`py-2 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer ${
+                    mode === 'forgot'
+                      ? 'bg-white dark:bg-white/15 text-[#FB6C00] dark:text-white shadow-xs font-black'
+                      : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
+                  }`}
+                >
+                  <Lock className="w-3.5 h-3.5 shrink-0" />
+                  <span>Reset Pass</span>
                 </button>
               </div>
             </div>
@@ -659,9 +676,9 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                           setError('');
                           setSuccessMessage('');
                         }}
-                        className="text-[11px] font-bold text-[#FB6C00] hover:underline cursor-pointer"
+                        className="text-xs font-black text-[#FB6C00] hover:underline cursor-pointer"
                       >
-                        পাসওয়ার্ড ভুলে গেছেন? (Forgot Password?)
+                        Forgot Password?
                       </button>
                     </div>
                     <div className="relative">
@@ -703,7 +720,22 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
                     )}
                   </button>
 
-                  <div className="text-center pt-2">
+                  {/* Prominent Dedicated Forgot Password Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('forgot');
+                      setIsResetOtpStep(false);
+                      setError('');
+                      setSuccessMessage('');
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl bg-orange-50 hover:bg-orange-100/80 dark:bg-white/5 dark:hover:bg-white/10 border border-orange-200/80 dark:border-white/15 text-[#FB6C00] dark:text-orange-400 font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>পাসওয়ার্ড ভুলে গেছেন? রিসেট করুন (Forgot Password?)</span>
+                  </button>
+
+                  <div className="text-center pt-1">
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       নতুন শিক্ষার্থী?{' '}
                       <button
