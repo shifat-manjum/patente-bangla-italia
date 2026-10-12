@@ -37,7 +37,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   hideAnswerButtonsOnMobile = false,
 }) => {
   const [showBanglaTranslation, setShowBanglaTranslation] = useState(true);
-  const [showEnglishTranslation, setShowEnglishTranslation] = useState(true);
+  const [showEnglishTranslation, setShowEnglishTranslation] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0); // Regular human reading speed
   const [isCopied, setIsCopied] = useState(false);
@@ -63,9 +63,10 @@ export const QuizCard: React.FC<QuizCardProps> = ({
     }
   };
 
-  // Stop any playing speech whenever the active question changes or card unmounts
+  // Stop any playing speech and keep English translation hidden by default when question changes
   useEffect(() => {
     setIsSpeaking(false);
+    setShowEnglishTranslation(false);
     return () => {
       stopSpeech();
     };
@@ -137,11 +138,11 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               <span>{isSpeaking ? 'Playing...' : 'Audio'}</span>
             </button>
 
-            {/* English Translation Toggle */}
+            {/* English Translation Toggle (Hidden by default; click to reveal) */}
             <button
               type="button"
               onClick={() => setShowEnglishTranslation(!showEnglishTranslation)}
-              title="Toggle English Translation"
+              title="Click to see English translation"
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border transition cursor-pointer text-xs font-bold ${
                 showEnglishTranslation
                   ? 'bg-blue-600 text-white border-transparent shadow-sm shadow-blue-500/20'
@@ -149,7 +150,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               }`}
             >
               <span className="text-xs">🇬🇧</span>
-              <span>{showEnglishTranslation ? 'English: ON' : 'English: OFF'}</span>
+              <span>{showEnglishTranslation ? 'Hide English' : 'English'}</span>
             </button>
 
             {/* Bangla Translation Toggle */}
