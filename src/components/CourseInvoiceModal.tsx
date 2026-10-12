@@ -36,14 +36,14 @@ export const CourseInvoiceModal: React.FC<CourseInvoiceModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fadeIn overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn overflow-y-auto"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white rounded-3xl max-w-2xl w-full my-auto overflow-hidden shadow-2xl border border-slate-200 transform transition-all max-h-[92vh] flex flex-col text-slate-800">
+      <div className="bg-white rounded-3xl max-w-2xl w-full my-auto overflow-hidden shadow-2xl border border-slate-200 transform transition-all flex flex-col text-slate-800">
         
         {/* Top Control Bar (Hidden when printing) */}
-        <div className="no-print p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white flex items-center justify-between gap-3 shrink-0 border-b border-slate-800">
+        <div className="no-print px-4 py-3 sm:px-5 sm:py-3.5 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white flex items-center justify-between gap-3 shrink-0 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
@@ -86,10 +86,10 @@ export const CourseInvoiceModal: React.FC<CourseInvoiceModalProps> = ({
         {/* Printable Invoice Container */}
         <div 
           id="printable-invoice" 
-          className="p-6 sm:p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1 bg-white text-slate-800 text-left"
+          className="p-4 sm:p-6 space-y-4 bg-white text-slate-800 text-left"
         >
           {/* Header Issuer & Document Info */}
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-4 pb-5 border-b-2 border-slate-100">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-3 pb-4 border-b-2 border-slate-100">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">

@@ -132,6 +132,8 @@ const cacheStudentLocally = (student: StudentProfile, token?: string) => {
     }
     if (student.isVip) {
       localStorage.setItem('patente_bangla_is_vip', 'true');
+    } else {
+      localStorage.removeItem('patente_bangla_is_vip');
     }
     const all: StudentProfile[] = JSON.parse(localStorage.getItem(LOCAL_STUDENTS_LIST_KEY) || '[]');
     const filtered = all.filter((s: any) => s.email?.toLowerCase() !== student.email.toLowerCase());
@@ -358,6 +360,11 @@ export const logoutStudent = async (): Promise<void> => {
   try {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     localStorage.removeItem(LOCAL_TOKEN_KEY);
+    localStorage.removeItem('patente_bangla_is_vip');
+    localStorage.removeItem('patente_bangla_unlocked_round');
+    localStorage.removeItem('patente_bangla_answered_count');
+    localStorage.removeItem('patente_bangla_completed_rounds');
+    localStorage.removeItem('patente_bangla_mistakes');
   } catch {}
   notifyAuthChange(null);
 };
@@ -416,7 +423,7 @@ export const subscribeToAuthChanges = (
                 ...(data.student.completedRounds || {}),
                 ...(cached.completedRounds || {}),
               },
-              isVip: Boolean(cached.isVip || data.student.isVip),
+              isVip: Boolean(data.student.isVip),
             });
             cacheStudentLocally(merged);
             callback(merged);

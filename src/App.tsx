@@ -1,4 +1,5 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import type { NavTab } from './components/Header';
 import { AppNavigation } from './components/AppNavigation';
@@ -29,6 +30,74 @@ import {
 } from './services/appSettingsService';
 import type { AppSettings } from './services/appSettingsService';
 import { trackViewContent, trackPurchase } from './utils/metaPixel';
+
+type ExtendedTab = AppTab | 'admin' | 'enrollment';
+
+const PATH_TO_TAB: Record<string, ExtendedTab> = {
+  '/': 'dashboard',
+  '/rounds': 'curriculum',
+  '/curriculum': 'curriculum',
+  '/theory': 'theory',
+  '/exam': 'exam',
+  '/errors': 'errors',
+  '/mistakes': 'errors',
+  '/enroll': 'enrollment',
+  '/admin': 'admin',
+};
+
+const TAB_TO_PATH: Record<ExtendedTab, string> = {
+  dashboard: '/',
+  curriculum: '/rounds',
+  theory: '/theory',
+  exam: '/exam',
+  errors: '/errors',
+  enrollment: '/enroll',
+  admin: '/admin',
+};
+
+const ROUTE_SEO: Record<ExtendedTab, { title: string; description: string; path: string }> = {
+  dashboard: {
+    title: 'Patente B Italia (বাংলা) | PatenteGuru.it — ইতালিয়ান ড্রাইভিং লাইসেন্স কুইজ ও বাংলা ব্যাখ্যা',
+    description:
+      'ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) ২০২৬ এর অফিশিয়াল ৭,১৬৫টি কুইজ বাংলা অনুবাদ, অডিও উচ্চারণ ও ২৪০টি রাউন্ড সহ অনুশীলন করুন। Quiz Patente B in Bangla.',
+    path: '/',
+  },
+  curriculum: {
+    title: '২৪০টি অফিশিয়াল রাউন্ড (240 Rounds) | Patente B বাংলা কুইজ — PatenteGuru.it',
+    description:
+      'ইতালির মিনিস্টারিয়াল ৭,১৬৫টি অফিশিয়াল কুইজের ২৪০টি ধাপে ধাপে সাজানো রাউন্ড বাংলা অর্থ ও ট্রিকস সহ অনুশীলন করুন। 240 Round Quiz Patente B in Bengali.',
+    path: '/rounds',
+  },
+  theory: {
+    title: '২৫টি থিওরি অধ্যায় ও শব্দকোষ (Teoria Patente B বাংলা) | PatenteGuru.it',
+    description:
+      'Patente B পরীক্ষার ২৫টি থিওরি অধ্যায়, ট্রাফিক সিগন্যাল এবং ট্রাবোকেত্তো (ফাঁদ শব্দ) বাংলায় সহজ ব্যাখ্যা সহ পড়ুন। Teoria Patente B spiegata in Bengali.',
+    path: '/theory',
+  },
+  exam: {
+    title: 'অফিশিয়াল সিমুলেশন পরীক্ষা (Simulazione Esame Patente B বাংলা) | PatenteGuru.it',
+    description:
+      'ইতালিয়ান মিনিস্টারিয়াল নিয়মে ৩০টি প্রশ্ন ও ২০ মিনিটের অফিশিয়াল Patente B সিমুলেশন পরীক্ষা দিন বাংলা সাহায্য ও অডিও উচ্চারণ সহ।',
+    path: '/exam',
+  },
+  errors: {
+    title: 'ভুলের খাতা ও রিভিশন (Ripasso Errori Patente B বাংলা) | PatenteGuru.it',
+    description:
+      'আপনার ভুল করা Patente B কুইজগুলো বাংলা ব্যাখ্যা ও ট্রিকস সহ পুনরায় অনুশীলন করুন এবং পরীক্ষায় ১০০% পাস নিশ্চিত করুন।',
+    path: '/errors',
+  },
+  enrollment: {
+    title: 'সম্পূর্ণ কোর্স ও প্রো পাস (Corso Completo Patente B) | PatenteGuru.it',
+    description:
+      'PatenteGuru Autoscuola Digitale-এ ভর্তি হয়ে ২৪০টি অফিশিয়াল রাউন্ড, অডিও উচ্চারণ এবং লাইফটাইম অ্যাক্সেস আনলক করুন।',
+    path: '/enroll',
+  },
+  admin: {
+    title: 'Admin CRM & Student Progress Monitor | PatenteGuru.it',
+    description: 'PatenteGuru Admin CRM & Student Progress Control Panel.',
+    path: '/admin',
+  },
+};
 
 // Lazy-loaded views & modals (keeps initial bundle ultra-fast!)
 const RoundsCurriculumView = lazy(() => import('./components/RoundsCurriculumView').then(m => ({ default: m.RoundsCurriculumView })));
@@ -66,14 +135,38 @@ export const getSequentialUnlockedRound = (completed?: Record<number, { passed: 
 };
 
 export function App() {
-  const [appTab, setAppTab] = useState<AppTab | 'admin' | 'enrollment'>('dashboard');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const normalizedPathname = location.pathname.replace(/\/+$/, '') || '/';
+  const appTab: ExtendedTab = PATH_TO_TAB[normalizedPathname] || 'dashboard';
+
+  const setAppTab = useCallback(
+    (nextTab: ExtendedTab) => {
+      const targetPath = TAB_TO_PATH[nextTab] || '/';
+      if (location.pathname !== targetPath) {
+        navigate(targetPath);
+      }
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    },
+    [location.pathname, navigate]
+  );
+
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isStudentProfileOpen, setIsStudentProfileOpen] = useState(false);
 
   // Direct Online Payment & Invoicing State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [activeInvoice, setActiveInvoice] = useState<InvoiceRecord | null>(() => getLatestInvoice());
+  const [activeInvoice, setActiveInvoice] = useState<InvoiceRecord | null>(() => {
+    try {
+      const saved = localStorage.getItem('patente_student_user');
+      const parsed = saved ? JSON.parse(saved) : null;
+      return parsed?.email && parsed?.isVip ? getLatestInvoice(parsed.email) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   // Theme State: 'light' | 'sepia' | 'dark'
@@ -114,8 +207,22 @@ export function App() {
     }
   };
 
+  // Dynamic per-route SEO metadata & analytics tracking
   useEffect(() => {
     trackPageView(appTab);
+    const seo = ROUTE_SEO[appTab] || ROUTE_SEO.dashboard;
+    document.title = seo.title;
+
+    const setMeta = (selector: string, attr: string, value: string) => {
+      const el = document.querySelector(selector);
+      if (el) el.setAttribute(attr, value);
+    };
+
+    setMeta('meta[name="description"]', 'content', seo.description);
+    setMeta('meta[property="og:title"]', 'content', seo.title);
+    setMeta('meta[property="og:description"]', 'content', seo.description);
+    setMeta('meta[property="og:url"]', 'content', `https://www.patenteguru.it${seo.path}`);
+    setMeta('link[rel="canonical"]', 'href', `https://www.patenteguru.it${seo.path}`);
   }, [appTab]);
 
   useEffect(() => {
@@ -192,9 +299,17 @@ export function App() {
           if (Array.isArray(profile.mistakeIds)) {
             setMistakeIds((prev) => Array.from(new Set([...(prev || []), ...profile.mistakeIds])));
           }
-          if (profile.isVip) {
-            setIsVip(true);
+          const vipStatus = Boolean(safe.isVip);
+          setIsVip(vipStatus);
+          setActiveInvoice(vipStatus ? getLatestInvoice(safe.email) : null);
+          if (!vipStatus) {
+            setIsInvoiceModalOpen(false);
           }
+        } else {
+          setCurrentUser(null);
+          setIsVip(false);
+          setActiveInvoice(null);
+          setIsInvoiceModalOpen(false);
         }
       } catch (err) {
         console.warn('Error in auth change handler:', err);
@@ -212,11 +327,14 @@ export function App() {
           if (remote) {
             if (remote.isVip) {
               setIsVip(true);
+              setActiveInvoice(getLatestInvoice(currentUser.email));
               try {
                 localStorage.setItem('patente_bangla_is_vip', 'true');
               } catch {}
             } else {
               setIsVip(false);
+              setActiveInvoice(null);
+              setIsInvoiceModalOpen(false);
               try {
                 localStorage.removeItem('patente_bangla_is_vip');
               } catch {}
@@ -233,12 +351,23 @@ export function App() {
           }
         })
         .catch(() => {});
+    } else {
+      setIsVip(false);
+      setActiveInvoice(null);
+      setIsInvoiceModalOpen(false);
     }
   }, [currentUser?.email]);
 
   const handleLogout = async () => {
     await logoutStudent();
     setCurrentUser(null);
+    setIsVip(false);
+    setActiveInvoice(null);
+    setIsInvoiceModalOpen(false);
+    setUnlockedRound(1);
+    setTotalQuestionsAnswered(0);
+    setCompletedRounds({});
+    setMistakeIds([]);
   };
 
   const requireLogin = (action = 'কুইজ ও রাউন্ড শুরু করতে'): boolean => {
@@ -271,12 +400,12 @@ export function App() {
   });
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
 
-  // Auto-detect #admin or ?admin=true
+  // Auto-detect #admin, ?admin=true, or /admin route
   useEffect(() => {
     const checkAdmin = () => {
-      if (window.location.hash === '#admin' || window.location.search.includes('admin=true')) {
+      if (window.location.hash === '#admin' || window.location.search.includes('admin=true') || location.pathname === '/admin') {
         if (adminEmail) {
-          setAppTab('admin');
+          if (location.pathname !== '/admin') setAppTab('admin');
         } else {
           setIsAdminLoginOpen(true);
         }
@@ -285,16 +414,10 @@ export function App() {
     checkAdmin();
     window.addEventListener('hashchange', checkAdmin);
     return () => window.removeEventListener('hashchange', checkAdmin);
-  }, [adminEmail]);
+  }, [adminEmail, location.pathname, setAppTab]);
 
-  // VIP State
-  const [isVip, setIsVip] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('patente_bangla_is_vip') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  // VIP State (strictly derived from authenticated student profile)
+  const [isVip, setIsVip] = useState<boolean>(() => Boolean(currentUser?.isVip));
 
   // Total questions answered count
   const [totalQuestionsAnswered, setTotalQuestionsAnswered] = useState<number>(() => {
@@ -342,8 +465,12 @@ export function App() {
 
   // Persist VIP
   useEffect(() => {
-    localStorage.setItem('patente_bangla_is_vip', String(isVip));
-  }, [isVip]);
+    if (isVip && currentUser) {
+      localStorage.setItem('patente_bangla_is_vip', 'true');
+    } else {
+      localStorage.removeItem('patente_bangla_is_vip');
+    }
+  }, [isVip, currentUser]);
 
   // Persist answered count
   useEffect(() => {
@@ -374,7 +501,8 @@ export function App() {
     localStorage.setItem('patente_bangla_mistakes', JSON.stringify(mistakeIds));
   }, [mistakeIds]);
 
-  // Sync student progress to MongoDB Atlas whenever progress changes
+  // Sync student study progress to MongoDB Atlas whenever progress changes
+  // (Never pass client-side isVip here so stale local storage can never grant free VIP!)
   useEffect(() => {
     if (currentUser?.uid || currentUser?.email) {
       syncStudentProgressToCloud(currentUser.uid, {
@@ -383,10 +511,9 @@ export function App() {
         totalQuestionsAnswered,
         completedRounds,
         mistakeIds,
-        isVip,
       });
     }
-  }, [unlockedRound, totalQuestionsAnswered, completedRounds, mistakeIds, isVip, currentUser?.uid, currentUser?.email]);
+  }, [unlockedRound, totalQuestionsAnswered, completedRounds, mistakeIds, currentUser?.uid, currentUser?.email]);
 
   const incrementAnsweredCount = (amount: number = 1) => {
     try {
@@ -462,7 +589,6 @@ export function App() {
         totalQuestionsAnswered: updatedTotalQuestions,
         completedRounds: updatedCompletedRounds,
         mistakeIds: updatedMistakes,
-        isVip,
       });
     }
   };
@@ -574,16 +700,16 @@ export function App() {
   }, []);
 
   const handleOpenInvoice = () => {
-    if (!isVip) {
+    if (!isVip || !currentUser) {
       setIsPaymentModalOpen(true);
       return;
     }
-    let inv = activeInvoice || getLatestInvoice(currentUser?.email);
+    let inv = activeInvoice || getLatestInvoice(currentUser.email);
     if (!inv) {
       inv = createInvoiceRecord({
-        studentName: currentUser?.name || studentLead?.name || 'Studente Ufficiale Patente B',
-        studentEmail: currentUser?.email || studentLead?.email || 'khshifat@gmail.com',
-        studentPhone: studentLead?.phone || '+39 351 000 0000',
+        studentName: currentUser.name || studentLead?.name || 'Studente Ufficiale Patente B',
+        studentEmail: currentUser.email,
+        studentPhone: currentUser.phone || studentLead?.phone || '+39 351 000 0000',
         codiceFiscale: 'REGOLARE',
         address: 'Italia',
         city: 'Bolzano',
@@ -595,9 +721,45 @@ export function App() {
     setIsInvoiceModalOpen(true);
   };
 
+  // Lock background page scroll & document height whenever any popup modal is open
+  // This prevents full-page screenshot tools (like mypdftools capture) from scrolling the background page and repeating the popup!
+  const isAnyModalOpen =
+    isAuthModalOpen ||
+    isPaywallOpen ||
+    isStudentProfileOpen ||
+    isPaymentModalOpen ||
+    isInvoiceModalOpen ||
+    isLeadModalOpen ||
+    isAboutOpen ||
+    isAdminLoginOpen;
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    if (isAnyModalOpen) {
+      html.style.overflow = 'hidden';
+      html.style.height = '100vh';
+      body.style.overflow = 'hidden';
+      body.style.height = '100vh';
+    } else {
+      html.style.overflow = '';
+      html.style.height = '';
+      body.style.overflow = '';
+      body.style.height = '';
+    }
+    return () => {
+      html.style.overflow = '';
+      html.style.height = '';
+      body.style.overflow = '';
+      body.style.height = '';
+    };
+  }, [isAnyModalOpen]);
+
   return (
     <div
-      className={`min-h-screen flex flex-col font-sans relative overflow-x-hidden ${
+      className={`${
+        isAnyModalOpen ? 'h-screen overflow-hidden' : 'min-h-screen overflow-x-hidden'
+      } flex flex-col font-sans relative ${
         currentTheme === 'sepia'
           ? 'theme-sepia bg-[#F5EEDB] text-[#2F1B0B] selection:bg-[#B45309] selection:text-white'
           : currentTheme === 'dark'
@@ -845,6 +1007,12 @@ export function App() {
             onLoginSuccess={(user) => {
               const safe = sanitizeStudentProfile(user);
               setCurrentUser(safe);
+              const vipStatus = Boolean(safe.isVip);
+              setIsVip(vipStatus);
+              setActiveInvoice(vipStatus ? getLatestInvoice(safe.email) : null);
+              if (!vipStatus) {
+                setIsInvoiceModalOpen(false);
+              }
             }}
             forcedMessage={authForcedMessage}
           />
