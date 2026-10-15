@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Users,
   Search,
@@ -14,6 +14,8 @@ import {
   FileText,
   Sliders,
   Check,
+  CheckCheck,
+  Bell,
   Save,
   Trash2,
   X
@@ -63,6 +65,76 @@ const getStudentCompletedRound = (student: StudentProfile): number => {
     Math.max(highestCompletedKey, completedCount, roundsFromQuizzes, unlockedCompleted)
   );
 };
+
+// Helper to reliably extract student creation/registration timestamp in ms
+export const getStudentTimestamp = (student: StudentProfile): number => {
+  if (student.createdAt) {
+    if (typeof student.createdAt === 'number') return student.createdAt;
+    if (student.createdAt.seconds) return student.createdAt.seconds * 1000;
+    if (typeof student.createdAt.toDate === 'function') {
+      try {
+        return student.createdAt.toDate().getTime();
+      } catch {}
+    }
+    if (typeof student.createdAt === 'string') {
+      const parsed = Date.parse(student.createdAt);
+      if (!isNaN(parsed)) return parsed;
+    }
+  }
+  if (student.lastLoginAt) {
+    if (typeof student.lastLoginAt === 'number') return student.lastLoginAt;
+    if (typeof student.lastLoginAt === 'string') {
+      const parsed = Date.parse(student.lastLoginAt);
+      if (!isNaN(parsed)) return parsed;
+    }
+  }
+  if (student.uid) {
+    const match = student.uid.match(/\d{10,13}/);
+    if (match) {
+      const num = parseInt(match[0], 10);
+      if (num > 1500000000000) return num;
+      if (num > 1500000000) return num * 1000;
+    }
+  }
+  return 0;
+};
+
+// Helper for human-readable relative time formatting
+export const formatTimeAgo = (timestamp: number): string => {
+  if (!timestamp) return 'নতুন শিক্ষার্থী';
+  const diffSec = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+  if (diffSec < 60) return 'এইমাত্র';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} মিনিট আগে`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour} ঘণ্টা আগে`;
+  const diffDays = Math.floor(diffHour / 24);
+  if (diffDays === 1) return 'গতকাল';
+  if (diffDays < 30) return `${diffDays} দিন আগে`;
+  return new Date(timestamp).toLocaleDateString('it-IT');
+};
+
+// Lightweight native audio chime when new student registers (0 dependencies)
+const playNotificationChime = () => {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.45);
+  } catch {}
+};
+
+const LAST_SEEN_KEY = 'patente_crm_last_seen_timestamp';
 
 // Helper for instantaneous local cache retrieval (0ms initial render)
 const getInitialCachedStudents = (): StudentProfile[] => {
@@ -160,7 +232,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const [students, setStudents] = useState<StudentProfile[]>(() => getInitialCachedStudents());
   const [isLoading, setIsLoading] = useState<boolean>(() => getInitialCachedStudents().length === 0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'free' | 'pro'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'free' | 'pro' | 'new'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
@@ -171,6 +243,22 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   const [selectedProgressStudent, setSelectedProgressStudent] = useState<StudentProfile | null>(null);
   const [manualRoundInput, setManualRoundInput] = useState<number>(1);
   const [isSavingRound, setIsSavingRound] = useState<boolean>(false);
+
+  // New Student Notification System State
+  const [lastSeenTimestamp, setLastSeenTimestamp] = useState<number>(() => {
+    try {
+      const val = localStorage.getItem(LAST_SEEN_KEY);
+      if (val) {
+        const parsed = parseInt(val, 10);
+        if (!isNaN(parsed) && parsed > 0) return parsed;
+      }
+    } catch {}
+    // Default to 24 hours ago so recent signups are initially visible
+    return Date.now() - 24 * 60 * 60 * 1000;
+  });
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifDropdownRef = useRef<HTMLDivElement>(null);
+  const prevStudentCountRef = useRef<number>(getInitialCachedStudents().length);
 
   // Marketing & Free Rounds Policy Settings
   const [settings, setSettings] = useState<AppSettings>(() => getAppSettings());
@@ -263,14 +351,14 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
   };
 
   // Fetch students with instant local fallback, Server JSON DB (/api/students), and Cloud Firestore
-  const fetchStudents = async () => {
-    setIsRefreshing(true);
+  const fetchStudents = async (silent = false) => {
+    if (!silent) setIsRefreshing(true);
     let serverStudents: StudentProfile[] = [];
 
     // 1. Read immediate local data first
     const localStudents = getInitialCachedStudents();
     if (localStudents.length > 0) {
-      setStudents(localStudents);
+      setStudents((prev) => (prev.length === 0 ? localStudents : prev));
       setIsLoading(false);
     }
 
@@ -322,14 +410,25 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
 
     const merged = Array.from(map.values());
     if (merged.length > 0) {
+      // Sort newest registrations first
+      merged.sort((a, b) => getStudentTimestamp(b) - getStudentTimestamp(a));
+
+      // If new students appeared during this active session, ring a subtle pleasant chime
+      if (merged.length > prevStudentCountRef.current && prevStudentCountRef.current > 0) {
+        playNotificationChime();
+      }
+      prevStudentCountRef.current = merged.length;
+
       setStudents(merged);
       try {
         localStorage.setItem('patente_registered_students', JSON.stringify(merged));
       } catch {}
     }
 
-    setIsLoading(false);
-    setIsRefreshing(false);
+    if (!silent) {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
   };
 
   // Allow Admin to manually update or sync a student's completed round in CRM & MongoDB
@@ -388,11 +487,48 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
     fetchRemoteAppSettings().then((s) => {
       if (s) setSettings(s);
     });
+
+    // Auto sync every 35 seconds quietly to pick up live student registrations
+    const interval = setInterval(() => {
+      fetchStudents(true);
+    }, 35000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  // Filtered students list
+  // Close notification dropdown when clicked outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifDropdownRef.current && !notifDropdownRef.current.contains(e.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    };
+    if (isNotifOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isNotifOpen]);
+
+  // Track newly registered students (newer than lastSeenTimestamp)
+  const newStudents = useMemo(() => {
+    return students
+      .filter((s) => getStudentTimestamp(s) > lastSeenTimestamp)
+      .sort((a, b) => getStudentTimestamp(b) - getStudentTimestamp(a));
+  }, [students, lastSeenTimestamp]);
+
+  const handleMarkAllAsSeen = () => {
+    const now = Date.now();
+    setLastSeenTimestamp(now);
+    try {
+      localStorage.setItem(LAST_SEEN_KEY, String(now));
+    } catch {}
+  };
+
+  // Filtered students list (sorted newest first)
   const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
+    const list = students.filter((student) => {
       // Search
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -403,12 +539,15 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
       }
 
       // Filter
+      if (filterType === 'new') return getStudentTimestamp(student) > lastSeenTimestamp;
       if (filterType === 'pro' && !student.isVip) return false;
       if (filterType === 'free' && student.isVip) return false;
 
       return true;
     });
-  }, [students, searchQuery, filterType]);
+
+    return list.sort((a, b) => getStudentTimestamp(b) - getStudentTimestamp(a));
+  }, [students, searchQuery, filterType, lastSeenTimestamp]);
 
   // Key CRM Metrics
   const metrics = useMemo(() => {
@@ -619,10 +758,160 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+          {/* New Student Notification Bell & Dropdown */}
+          <div className="relative" ref={notifDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsNotifOpen((prev) => !prev)}
+              className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
+                newStudents.length > 0
+                  ? 'bg-emerald-950 hover:bg-emerald-900 border-emerald-500/80 text-emerald-300 ring-2 ring-emerald-500/40 shadow-lg shadow-emerald-950/50'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+              }`}
+              title={
+                newStudents.length > 0
+                  ? `${newStudents.length} নতুন শিক্ষার্থী নিবন্ধন!`
+                  : 'নোটিফিকেশন (কোনো নতুন নিবন্ধন নেই)'
+              }
+            >
+              <div className="relative">
+                <Bell className={`w-3.5 h-3.5 ${newStudents.length > 0 ? 'text-emerald-400 animate-bounce' : 'text-slate-400'}`} />
+                {newStudents.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                )}
+              </div>
+              <span>নোটিফিকেশন</span>
+              {newStudents.length > 0 ? (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-emerald-400 text-slate-950">
+                  {newStudents.length} New
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono text-slate-400 bg-slate-900">
+                  0
+                </span>
+              )}
+            </button>
+
+            {/* Notification Dropdown Panel */}
+            {isNotifOpen && (
+              <div className="absolute right-0 mt-2.5 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-slate-700 text-white shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3">
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                      <Bell className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="font-bold text-xs text-white">
+                      নতুন শিক্ষার্থী নিবন্ধন ({newStudents.length})
+                    </span>
+                  </div>
+                  {newStudents.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleMarkAllAsSeen}
+                      className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer bg-emerald-950/60 hover:bg-emerald-900/60 px-2 py-1 rounded-lg border border-emerald-500/30 transition"
+                      title="সবগুলো দেখা হয়েছে হিসেবে চিহ্নিত করুন"
+                    >
+                      <CheckCheck className="w-3 h-3" />
+                      <span>সব দেখা হয়েছে</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                  {newStudents.length === 0 ? (
+                    <div className="py-6 text-center space-y-1.5 text-slate-400">
+                      <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-emerald-400">
+                        <CheckCheck className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-bold text-slate-200">সব নতুন নিবন্ধন দেখা হয়েছে</p>
+                      <p className="text-[10px] text-slate-400">নতুন কোনো শিক্ষার্থী রেজিস্ট্রেশন করলে সাথে সাথে এখানে নোটিফিকেশন আসবে।</p>
+                    </div>
+                  ) : (
+                    newStudents.map((std) => {
+                      const timeAgo = formatTimeAgo(getStudentTimestamp(std));
+                      const cleanPhone = std.phone ? std.phone.replace(/[^0-9+]/g, '') : '';
+                      const waUrl = cleanPhone
+                        ? `https://wa.me/${cleanPhone.replace('+', '')}?text=${encodeURIComponent(
+                            `Ciao ${std.name || 'Student'}, ti contatto da Patente Bangla Italia!`
+                          )}`
+                        : null;
+
+                      return (
+                        <div
+                          key={std.email}
+                          className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 transition space-y-1.5 text-left"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                              <span className="font-bold text-xs text-white truncate max-w-[170px]">
+                                {std.name || 'Student'}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                              {timeAgo}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 font-mono truncate">
+                            {std.email}
+                          </div>
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="text-[10px] text-slate-400">
+                              {std.phone || 'ফোন নম্বর নেই'}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              {waUrl && (
+                                <a
+                                  href={waUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold flex items-center gap-1 transition"
+                                >
+                                  <Phone className="w-2.5 h-2.5" />
+                                  <span>WhatsApp</span>
+                                </a>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSearchQuery(std.email);
+                                  setFilterType('all');
+                                  setIsNotifOpen(false);
+                                }}
+                                className="px-2 py-0.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-[10px] font-bold cursor-pointer transition"
+                              >
+                                CRM-এ দেখুন
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {newStudents.length > 0 && (
+                  <div className="pt-2 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFilterType('new');
+                        setIsNotifOpen(false);
+                      }}
+                      className="w-full py-1.5 px-3 rounded-xl bg-[#FB6C00] hover:bg-[#e05f00] text-white font-bold text-xs text-center transition cursor-pointer"
+                    >
+                      টেবিলে শুধু নতুনদের দেখুন ({newStudents.length})
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Refresh Button */}
           <button
             type="button"
-            onClick={fetchStudents}
+            onClick={() => fetchStudents(false)}
             disabled={isRefreshing}
             className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-700"
             title="Refresh student list"
@@ -1123,6 +1412,21 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                 </button>
                 <button
                   type="button"
+                  onClick={() => setFilterType('new')}
+                  className={`px-3 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    filterType === 'new'
+                      ? 'bg-emerald-500 text-slate-950 font-black shadow-xs'
+                      : 'text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400'
+                  }`}
+                  title="নতুন নিবন্ধিত শিক্ষার্থী দেখুন"
+                >
+                  {newStudents.length > 0 && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                  )}
+                  <span>New ({newStudents.length})</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setFilterType('pro')}
                   className={`px-3 py-1 rounded-lg transition cursor-pointer ${
                     filterType === 'pro'
@@ -1194,25 +1498,52 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                             `Ciao ${student.name || 'Student'}, ti contatto da Patente Bangla Italia per la tua preparazione dell'esame di guida!`
                           )}`
                         : null;
+                      const studentTs = getStudentTimestamp(student);
+                      const isNew = studentTs > lastSeenTimestamp;
+                      const timeAgo = formatTimeAgo(studentTs);
 
                       return (
                         <tr
                           key={student.email}
-                          className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition"
+                          className={`transition ${
+                            isNew
+                              ? 'bg-emerald-500/5 hover:bg-emerald-500/10'
+                              : 'hover:bg-slate-50/70 dark:hover:bg-slate-800/40'
+                          }`}
                         >
                           {/* Student Info */}
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FB6C00] to-amber-400 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                                {(student.name || student.email || 'S')[0]?.toUpperCase() || 'S'}
+                              <div className="relative shrink-0">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FB6C00] to-amber-400 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                                  {(student.name || student.email || 'S')[0]?.toUpperCase() || 'S'}
+                                </div>
+                                {isNew && (
+                                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full animate-ping" />
+                                )}
                               </div>
                               <div>
-                                <div className="font-bold text-slate-900 dark:text-white">
-                                  {student.name || 'Unnamed Student'}
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-bold text-slate-900 dark:text-white">
+                                    {student.name || 'Unnamed Student'}
+                                  </span>
+                                  {isNew && (
+                                    <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                                      NEW
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="text-[11px] text-slate-400 font-mono">
                                   {student.email}
                                 </div>
+                                {studentTs > 0 && (
+                                  <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5 font-sans">
+                                    <span>নিবন্ধন:</span>
+                                    <span className={isNew ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-slate-500'}>
+                                      {timeAgo}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>
