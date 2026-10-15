@@ -1,40 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.patenteguru.it/</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://www.patenteguru.it/" />
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.patenteguru.it/" />
   </url>
   <url>
     <loc>https://www.patenteguru.it/rounds</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://www.patenteguru.it/rounds" />
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.patenteguru.it/rounds" />
   </url>
   <url>
     <loc>https://www.patenteguru.it/theory</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://www.patenteguru.it/theory" />
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.patenteguru.it/theory" />
   </url>
   <url>
     <loc>https://www.patenteguru.it/exam</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://www.patenteguru.it/exam" />
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.patenteguru.it/exam" />
   </url>
   <url>
     <loc>https://www.patenteguru.it/errors</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://www.patenteguru.it/errors" />
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.patenteguru.it/errors" />
   </url>
   <url>
     <loc>https://www.patenteguru.it/enroll</loc>
-    <lastmod>2026-10-12</lastmod>
+    <lastmod>2026-10-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="bn" href="https://www.patenteguru.it/enroll" />
+    <xhtml:link rel="alternate" hreflang="it" href="https://www.patenteguru.it/enroll" />
   </url>
 </urlset>
-

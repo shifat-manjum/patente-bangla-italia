@@ -214,7 +214,21 @@ export function App() {
     document.title = seo.title;
 
     const setMeta = (selector: string, attr: string, value: string) => {
-      const el = document.querySelector(selector);
+      let el = document.querySelector(selector);
+      if (!el) {
+        if (selector.startsWith('meta')) {
+          el = document.createElement('meta');
+          const propMatch = selector.match(/property="([^"]+)"/);
+          const nameMatch = selector.match(/name="([^"]+)"/);
+          if (propMatch) el.setAttribute('property', propMatch[1]);
+          if (nameMatch) el.setAttribute('name', nameMatch[1]);
+          document.head.appendChild(el);
+        } else if (selector.startsWith('link[rel="canonical"]')) {
+          el = document.createElement('link');
+          el.setAttribute('rel', 'canonical');
+          document.head.appendChild(el);
+        }
+      }
       if (el) el.setAttribute(attr, value);
     };
 
@@ -222,6 +236,8 @@ export function App() {
     setMeta('meta[property="og:title"]', 'content', seo.title);
     setMeta('meta[property="og:description"]', 'content', seo.description);
     setMeta('meta[property="og:url"]', 'content', `https://www.patenteguru.it${seo.path}`);
+    setMeta('meta[name="twitter:title"]', 'content', seo.title);
+    setMeta('meta[name="twitter:description"]', 'content', seo.description);
     setMeta('link[rel="canonical"]', 'href', `https://www.patenteguru.it${seo.path}`);
   }, [appTab]);
 
@@ -339,11 +355,13 @@ export function App() {
                 localStorage.removeItem('patente_bangla_is_vip');
               } catch {}
             }
-            if (typeof remote.unlockedRound === 'number' && remote.unlockedRound > unlockedRound) {
-              setUnlockedRound(remote.unlockedRound);
+            if (typeof remote.unlockedRound === 'number') {
+              const nextRound = remote.unlockedRound;
+              setUnlockedRound((prev) => (nextRound > prev ? nextRound : prev));
             }
-            if (typeof remote.totalQuestionsAnswered === 'number' && remote.totalQuestionsAnswered > totalQuestionsAnswered) {
-              setTotalQuestionsAnswered(remote.totalQuestionsAnswered);
+            if (typeof remote.totalQuestionsAnswered === 'number') {
+              const nextTotal = remote.totalQuestionsAnswered;
+              setTotalQuestionsAnswered((prev) => (nextTotal > prev ? nextTotal : prev));
             }
             if (remote.completedRounds && typeof remote.completedRounds === 'object' && !Array.isArray(remote.completedRounds)) {
               setCompletedRounds((prev) => ({ ...remote.completedRounds, ...(prev || {}) }));
@@ -655,7 +673,7 @@ export function App() {
     }
   };
 
-  const handlePaymentSuccess = (invoice: InvoiceRecord) => {
+  const handlePaymentSuccess = useCallback((invoice: InvoiceRecord) => {
     setIsVip(true);
     try {
       localStorage.setItem('patente_bangla_is_vip', 'true');
@@ -684,7 +702,7 @@ export function App() {
         origin: { y: 0.6 },
       });
     } catch {}
-  };
+  }, [effectiveUnlockedRound, appSettings.academyPriceEur, currentUser?.uid]);
 
   // Auto-detect and handle Stripe Checkout return (?payment_success=true&session_id=...)
   useEffect(() => {
@@ -717,7 +735,7 @@ export function App() {
           });
       }
     } catch {}
-  }, []);
+  }, [handlePaymentSuccess]);
 
   const handleOpenInvoice = () => {
     if (!isVip || !currentUser) {
