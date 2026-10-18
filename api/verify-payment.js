@@ -50,6 +50,9 @@ export default async function handler(req, res) {
       const city = meta.city || 'Bolzano';
       const amount = session.amount_total ? session.amount_total / 100 : 49.0;
       const transactionId = String(session.payment_intent || session.id);
+      const promoCode = (meta.promoCode || '').trim().toUpperCase();
+      const discountEur = Number(meta.discountEur) > 0 ? Number(meta.discountEur) : 0;
+      const referrerName = meta.referrerName || '';
 
       const invoiceNumber = `PG-2026-${Math.floor(10000 + Math.random() * 90000)}`;
       const now = new Date();
@@ -73,6 +76,7 @@ export default async function handler(req, res) {
         city,
         amount,
         currency: 'EUR',
+        ...(promoCode ? { promoCode, discountEur, referrerName } : {}),
         taxExemptionNote:
           "Operazione didattico-formativa esente da IVA ai sensi dell'art. 10, comma 1, n. 20 del D.P.R. 633/1972.",
         paymentMethod: 'card',
@@ -91,7 +95,7 @@ export default async function handler(req, res) {
         },
       };
 
-      // 1. Update Student in MongoDB Atlas to VIP (all 240 rounds unlocked!)
+      // 1. Update Student in MongoDB Atlas (all 240 rounds unlocked!)
       if (studentEmail) {
         try {
           const studentsCol = await getCollection('students');
@@ -104,6 +108,7 @@ export default async function handler(req, res) {
                 isVip: true,
                 vipUnlockedAt: now.toISOString(),
                 transactionId,
+                ...(promoCode ? { referredByCode: promoCode, paidAmountEur: amount } : { paidAmountEur: amount }),
                 updatedAt: now.toISOString(),
               },
               $setOnInsert: {

@@ -1,16 +1,52 @@
 // Dynamic Application Policy & Marketing Settings Service (MongoDB Atlas + LocalStorage)
 
+export interface PromoCodeItem {
+  code: string; // Uppercase e.g. "FRIEND5", "ITALIA10", "RAKIB10"
+  discountEur: number; // Buyer discount in EUR (e.g. 5 or 10, or 0 for tracking only)
+  commissionEur: number; // Commission earned by partner/student per paid sale (e.g. 10)
+  ownerName: string; // Influencer or student name
+  ownerPhone?: string; // WhatsApp / phone of the referrer
+  active: boolean;
+  usageCount?: number;
+  createdAt?: string;
+}
+
 export interface AppSettings {
   freeRoundsLimit: number; // e.g. 0 (all paid), 5, 10, 20 (standard), 240 (all free)
   academyPriceEur: number; // e.g. 49
   regularPriceEur?: number; // e.g. 120 (regular price before discount)
   promoBannerText?: string;
   isPromoActive?: boolean;
+  promoCodes?: PromoCodeItem[];
   lastUpdated?: string;
 }
 
 const SETTINGS_STORAGE_KEY = 'patente_app_settings';
 export const SETTINGS_CHANGE_EVENT = 'patente_settings_changed';
+export const REFERRAL_STORAGE_KEY = 'patente_referral_code';
+
+export const DEFAULT_PROMO_CODES: PromoCodeItem[] = [
+  {
+    code: 'FRIEND5',
+    discountEur: 5,
+    commissionEur: 10,
+    ownerName: 'Student Referral Program',
+    ownerPhone: '',
+    active: true,
+    usageCount: 0,
+    createdAt: '2026-10-01T00:00:00.000Z',
+  },
+  {
+    code: 'ITALIA10',
+    discountEur: 10,
+    commissionEur: 10,
+    ownerName: 'Community Influencer Partner',
+    ownerPhone: '',
+    active: true,
+    usageCount: 0,
+    createdAt: '2026-10-01T00:00:00.000Z',
+  },
+];
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   freeRoundsLimit: 20,
@@ -18,6 +54,55 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   regularPriceEur: 120,
   promoBannerText: 'অফিসিয়াল ইতালিয়ান লাইসেন্স প্রস্তুতি • প্রথম প্রচেষ্টায় পাশের গ্যারান্টি',
   isPromoActive: false,
+  promoCodes: DEFAULT_PROMO_CODES,
+};
+
+/**
+ * Generate a clean, deterministic personal referral code for any registered student
+ */
+export const getStudentReferralCode = (nameOrEmail?: string): string => {
+  if (!nameOrEmail) return 'REF-STUDENT';
+  const clean = nameOrEmail
+    .split('@')[0]
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase()
+    .slice(0, 8);
+  return `REF-${clean || 'STUDENT'}`;
+};
+
+/**
+ * Validate a promo or student referral code and return discount & partner details
+ */
+export const validatePromoCode = (
+  rawCode: string,
+  settings?: AppSettings
+): PromoCodeItem | null => {
+  const clean = (rawCode || '').trim().toUpperCase();
+  if (!clean) return null;
+
+  const activeSettings = settings || getAppSettings();
+  const list = Array.isArray(activeSettings.promoCodes) && activeSettings.promoCodes.length > 0
+    ? activeSettings.promoCodes
+    : DEFAULT_PROMO_CODES;
+
+  const matched = list.find((item) => item.code.toUpperCase() === clean && item.active);
+  if (matched) {
+    return matched;
+  }
+
+  // Also automatically honor any student personal referral code (REF-XXXX)
+  if (clean.startsWith('REF-') && clean.length >= 6) {
+    const studentTag = clean.slice(4);
+    return {
+      code: clean,
+      discountEur: 5,
+      commissionEur: 10,
+      ownerName: `Student Referrer (${studentTag})`,
+      active: true,
+    };
+  }
+
+  return null;
 };
 
 /**
@@ -41,6 +126,9 @@ export const getAppSettings = (): AppSettings => {
           regularPriceEur: Number.isFinite(parsed.regularPriceEur) && parsed.regularPriceEur > 0
             ? parsed.regularPriceEur
             : DEFAULT_APP_SETTINGS.regularPriceEur,
+          promoCodes: Array.isArray(parsed.promoCodes) && parsed.promoCodes.length > 0
+            ? parsed.promoCodes
+            : DEFAULT_PROMO_CODES,
         };
       }
     }
@@ -151,6 +239,9 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
         regularPriceEur: typeof remoteSettings.regularPriceEur === 'number' && remoteSettings.regularPriceEur > 0
           ? remoteSettings.regularPriceEur
           : local.regularPriceEur,
+        promoCodes: Array.isArray(remoteSettings.promoCodes) && remoteSettings.promoCodes.length > 0
+          ? remoteSettings.promoCodes
+          : local.promoCodes || DEFAULT_PROMO_CODES,
       };
       try {
         localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(merged));
@@ -169,4 +260,3 @@ export const fetchRemoteAppSettings = async (): Promise<AppSettings> => {
 
   return local;
 };
-

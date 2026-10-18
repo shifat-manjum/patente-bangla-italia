@@ -18,7 +18,10 @@ import {
   Bell,
   Save,
   Trash2,
-  X
+  X,
+  Copy,
+  Plus,
+  Gift
 } from 'lucide-react';
 import type { StudentProfile } from '../services/studentService';
 import { AdminQuestionExplorer } from './AdminQuestionExplorer';
@@ -34,7 +37,7 @@ import {
   saveAppSettings, 
   fetchRemoteAppSettings 
 } from '../services/appSettingsService';
-import type { AppSettings } from '../services/appSettingsService';
+import type { AppSettings, PromoCodeItem } from '../services/appSettingsService';
 
 interface AdminCrmDashboardProps {
   adminEmail: string;
@@ -329,6 +332,78 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
     } finally {
       setIsSavingSettings(false);
     }
+  };
+
+  // Promo / Influencer Code Management State
+  const [newPromoCode, setNewPromoCode] = useState('');
+  const [newPromoDiscount, setNewPromoDiscount] = useState<number>(5);
+  const [newPromoCommission, setNewPromoCommission] = useState<number>(10);
+  const [newPromoOwner, setNewPromoOwner] = useState('');
+  const [newPromoPhone, setNewPromoPhone] = useState('');
+  const [copiedPromoCode, setCopiedPromoCode] = useState<string | null>(null);
+
+  const handleAddPromoCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanCode = newPromoCode.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+    if (!cleanCode) {
+      alert('দয়া করে একটি প্রোমো কোড লিখুন (যেমন: RAKIB5, MILAN10)');
+      return;
+    }
+    const currentCodes = Array.isArray(settings.promoCodes) ? settings.promoCodes : [];
+    if (currentCodes.some((c) => c.code.toUpperCase() === cleanCode)) {
+      alert('এই কোডটি ইতিমধ্যে তালিকায় আছে!');
+      return;
+    }
+    const newItem: PromoCodeItem = {
+      code: cleanCode,
+      discountEur: Math.max(0, newPromoDiscount || 5),
+      commissionEur: Math.max(0, newPromoCommission || 10),
+      ownerName: newPromoOwner.trim() || 'Partner / Influencer',
+      ownerPhone: newPromoPhone.trim(),
+      active: true,
+      usageCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+    const updatedList = [newItem, ...currentCodes];
+    setSettings((prev) => ({ ...prev, promoCodes: updatedList }));
+    setNewPromoCode('');
+    setNewPromoOwner('');
+    setNewPromoPhone('');
+    setIsSavingSettings(true);
+    try {
+      const updated = await saveAppSettings({ promoCodes: updatedList });
+      setSettings(updated);
+      setSettingsSaveMsg(`নতুন প্রোমো কোড "${cleanCode}" সফলভাবে তৈরি ও লাইভ হয়েছে!`);
+      setTimeout(() => setSettingsSaveMsg(null), 4000);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  const handleTogglePromoActive = async (code: string) => {
+    const currentCodes = Array.isArray(settings.promoCodes) ? settings.promoCodes : [];
+    const updatedList = currentCodes.map((c) =>
+      c.code === code ? { ...c, active: !c.active } : c
+    );
+    setSettings((prev) => ({ ...prev, promoCodes: updatedList }));
+    const updated = await saveAppSettings({ promoCodes: updatedList });
+    setSettings(updated);
+  };
+
+  const handleDeletePromoCode = async (code: string) => {
+    if (!window.confirm(`আপনি কি নিশ্চিতভাবে "${code}" প্রোমো কোডটি মুছে ফেলতে চান?`)) return;
+    const currentCodes = Array.isArray(settings.promoCodes) ? settings.promoCodes : [];
+    const updatedList = currentCodes.filter((c) => c.code !== code);
+    setSettings((prev) => ({ ...prev, promoCodes: updatedList }));
+    const updated = await saveAppSettings({ promoCodes: updatedList });
+    setSettings(updated);
+  };
+
+  const handleCopyPromoLink = (code: string) => {
+    const link = `https://www.patenteguru.it/?ref=${code}`;
+    navigator.clipboard.writeText(link);
+    setCopiedPromoCode(code);
+    setTimeout(() => setCopiedPromoCode(null), 2500);
   };
 
   const handleOpenStudentInvoice = (student: StudentProfile) => {
@@ -1316,6 +1391,179 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                 </div>
               );
             })()}
+          </div>
+
+          {/* Influencer & Student Referral / Promo Code Management Panel */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/95 border border-slate-800 text-white shadow-xl space-y-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3.5">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#E52E2D] to-[#FB6C00] text-white flex items-center justify-center shadow-md">
+                    <Gift className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-white">
+                    ইনফ্লুয়েন্সার ও স্টুডেন্ট রেফারেল / প্রোমো কোড সিস্টেম (Affiliate & Promo Manager)
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400">
+                  টিকটক/ইউটিউব ইনফ্লুয়েন্সার, ড্রাইভিং স্কুল বা আপনার শিক্ষার্থীদের জন্য প্রোমো কোড তৈরি করুন। ক্রেতা ডিসকাউন্ট পাবে এবং রেফারকারী কমিশন পাবে। (এছাড়া প্রতিটি শিক্ষার্থীর প্রোফাইলে স্বয়ংক্রিয় <code>REF-XXXX</code> কোড চালু আছে)।
+                </p>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-300 text-[11px] font-black shrink-0">
+                {(settings.promoCodes || []).length}টি প্রোমো কোড সক্রিয়
+              </span>
+            </div>
+
+            {/* Create New Influencer / Promo Code Form */}
+            <form onSubmit={handleAddPromoCode} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-300 block">প্রোমো কোড (Code) *</label>
+                <input
+                  type="text"
+                  value={newPromoCode}
+                  onChange={(e) => setNewPromoCode(e.target.value.toUpperCase())}
+                  placeholder="যেমন: RAKIB5, ROMA10"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-black text-xs uppercase focus:outline-none focus:ring-2 focus:ring-[#FB6C00]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-300 block">ক্রেতার ছাড় / Buyer Off (€)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={newPromoDiscount}
+                  onChange={(e) => setNewPromoDiscount(parseInt(e.target.value, 10) || 0)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-black text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-300 block">রেফারার কমিশন (€)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={newPromoCommission}
+                  onChange={(e) => setNewPromoCommission(parseInt(e.target.value, 10) || 0)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-amber-400 font-black text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-300 block">ইনফ্লুয়েন্সার / পার্টনারের নাম</label>
+                <input
+                  type="text"
+                  value={newPromoOwner}
+                  onChange={(e) => setNewPromoOwner(e.target.value)}
+                  placeholder="যেমন: Rakib Vlog Italy"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#FB6C00]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-300 block">WhatsApp / ফোন (ঐচ্ছিক)</label>
+                <input
+                  type="text"
+                  value={newPromoPhone}
+                  onChange={(e) => setNewPromoPhone(e.target.value)}
+                  placeholder="+39 320..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#FB6C00]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSavingSettings}
+                className="py-2 px-4 rounded-xl bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d42423] hover:to-[#e56000] text-white font-black text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md h-[34px]"
+              >
+                <Plus className="w-4 h-4" />
+                <span>কোড যোগ করুন</span>
+              </button>
+            </form>
+
+            {/* Active Promo Codes List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {(settings.promoCodes || []).map((promo) => {
+                const salesCount = students.filter(
+                  (s) => (s as any).referredByCode?.toUpperCase() === promo.code.toUpperCase()
+                ).length + (promo.usageCount || 0);
+                const finalStudentPrice = Math.max(10, (settings.academyPriceEur || 49) - promo.discountEur);
+
+                return (
+                  <div
+                    key={promo.code}
+                    className={`p-3.5 rounded-2xl border transition flex flex-col justify-between gap-2.5 ${
+                      promo.active
+                        ? 'bg-slate-950/80 border-slate-800 hover:border-slate-700'
+                        : 'bg-slate-950/30 border-slate-800/50 opacity-60'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-lg bg-[#FB6C00]/20 border border-[#FB6C00]/40 text-[#FB6C00] font-mono font-black text-xs">
+                            {promo.code}
+                          </span>
+                          <span className="text-xs font-bold text-white truncate max-w-[140px]">
+                            {promo.ownerName}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-1">
+                          ক্রেতার ছাড়: <strong className="text-emerald-400">-€{promo.discountEur}</strong> (কোর্স ফি হবে €{finalStudentPrice}) • কমিশন: <strong className="text-amber-400">€{promo.commissionEur}</strong>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleTogglePromoActive(promo.code)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition ${
+                            promo.active
+                              ? 'bg-emerald-950 text-emerald-300 border border-emerald-700'
+                              : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
+                          {promo.active ? 'Active' : 'Paused'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePromoCode(promo.code)}
+                          className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition cursor-pointer"
+                          title="মুছে ফেলুন"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                      <span className="text-slate-400">
+                        মোট সেলস: <strong className="text-white">{salesCount} জন</strong> (বকেয়া কমিশন: €{salesCount * promo.commissionEur})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyPromoLink(promo.code)}
+                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold flex items-center gap-1 transition cursor-pointer"
+                      >
+                        {copiedPromoCode === promo.code ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span className="text-emerald-400">লিংক কপি হয়েছে</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>রেফারেল লিংক কপি</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Executive CRM Metrics Cards */}

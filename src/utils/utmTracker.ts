@@ -31,6 +31,13 @@ export const captureAndStoreUtm = (): UtmParams => {
     const content = urlParams.get('utm_content');
     const fbclid = urlParams.get('fbclid');
     const gclid = urlParams.get('gclid');
+    const refCode = urlParams.get('ref') || urlParams.get('promo') || urlParams.get('referral');
+
+    if (refCode && refCode.trim()) {
+      try {
+        localStorage.setItem('patente_referral_code', refCode.trim().toUpperCase());
+      } catch {}
+    }
 
     // Only update if there are campaign parameters in URL
     if (source || medium || campaign || fbclid || gclid) {

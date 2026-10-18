@@ -11,7 +11,8 @@ import {
   Loader2,
   FileText,
   AlertCircle,
-  MessageCircle
+  MessageCircle,
+  Tag
 } from 'lucide-react';
 import type { 
   PaymentMethodType, 
@@ -20,8 +21,10 @@ import type {
 } from '../services/paymentService';
 import { 
   getAppSettings, 
-  SETTINGS_CHANGE_EVENT 
+  SETTINGS_CHANGE_EVENT,
+  validatePromoCode
 } from '../services/appSettingsService';
+import type { PromoCodeItem } from '../services/appSettingsService';
 import { WHATSAPP_SUPPORT_NUMBER } from '../config/constants';
 import { trackInitiateCheckout } from '../utils/metaPixel';
 import { trackPaymentStart } from '../services/analytics';
@@ -50,8 +53,28 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
   regularPriceEur,
 }) => {
   const [appSettings, setAppSettings] = useState(() => getAppSettings());
-  const activePrice = academyPriceEur || appSettings.academyPriceEur || 49;
+  const basePrice = academyPriceEur || appSettings.academyPriceEur || 49;
   const regularPrice = regularPriceEur || appSettings.regularPriceEur || 120;
+
+  const [promoInput, setPromoInput] = useState<string>(() => {
+    try {
+      return localStorage.getItem('patente_referral_code') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [appliedPromo, setAppliedPromo] = useState<PromoCodeItem | null>(() => {
+    try {
+      const savedRef = localStorage.getItem('patente_referral_code');
+      return savedRef ? validatePromoCode(savedRef, getAppSettings()) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [promoError, setPromoError] = useState<string | null>(null);
+
+  const discountEur = appliedPromo ? Math.max(0, appliedPromo.discountEur || 0) : 0;
+  const activePrice = Math.max(10, basePrice - discountEur);
 
   useEffect(() => {
     const handleSettingsChanged = (e: any) => {
@@ -111,6 +134,35 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
     setTimeout(() => setCopiedIban(false), 2500);
   };
 
+  const handleApplyPromo = () => {
+    setPromoError(null);
+    const code = promoInput.trim().toUpperCase();
+    if (!code) {
+      setPromoError('দয়া করে একটি প্রোমো বা রেফারেল কোড লিখুন।');
+      return;
+    }
+    const matched = validatePromoCode(code, appSettings);
+    if (!matched) {
+      setAppliedPromo(null);
+      setPromoError('এই প্রোমো বা রেফারেল কোডটি সঠিক নয় বা মেয়াদোত্তীর্ণ।');
+      return;
+    }
+    setAppliedPromo(matched);
+    setPromoInput(matched.code);
+    try {
+      localStorage.setItem('patente_referral_code', matched.code);
+    } catch {}
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoInput('');
+    setPromoError(null);
+    try {
+      localStorage.removeItem('patente_referral_code');
+    } catch {}
+  };
+
   const handleSubmitPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -131,11 +183,15 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
     if (selectedMethod === 'bonifico') {
       setBonificoPendingSent(true);
       const waNumber = WHATSAPP_SUPPORT_NUMBER.replace(/[^0-9]/g, '');
+      const promoLine = appliedPromo
+        ? `🎁 Promo/Referral Code: ${appliedPromo.code} (-€${appliedPromo.discountEur} Sconto | Partner: ${appliedPromo.ownerName})\n`
+        : '';
       const waText = encodeURIComponent(
         `Ciao PatenteGuru! Ho scelto il pagamento tramite Bonifico Bancario SEPA di €${activePrice},00 per il Corso Completo Patente B (240 Round).\n\n` +
         `👤 Nome: ${formData.studentName.trim()}\n` +
         `📧 Email: ${formData.studentEmail.trim().toLowerCase()}\n` +
         `📱 Telefono: ${formData.studentPhone.trim()}\n` +
+        promoLine +
         `🏛️ Codice Fiscale: ${formData.codiceFiscale.trim() || 'N/A'}\n\n` +
         `Invio qui la ricevuta contabile (CRO/TRN) del bonifico per l'attivazione del mio Corso Completo (240 Round) e l'emissione della Fattura.`
       );
@@ -160,6 +216,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
           address: formData.address.trim(),
           city: formData.city.trim(),
           priceEur: activePrice,
+          promoCode: appliedPromo?.code || '',
         }),
       });
 
@@ -238,12 +295,83 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                 <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
                   €{activePrice},00
                 </span>
-                <span className="text-xs text-slate-400 line-through">€{regularPrice}</span>
+                <span className="text-xs text-slate-400 line-through">
+                  €{appliedPromo ? basePrice : regularPrice}
+                </span>
               </div>
+              {appliedPromo && (
+                <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 block">
+                  ✓ প্রোমো ছাড়: -€{appliedPromo.discountEur},00 ({appliedPromo.code})
+                </span>
+              )}
               <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
                 Esente IVA Art. 10 DPR 633/72
               </span>
             </div>
+          </div>
+
+          {/* Promo / Referral Code Input Box */}
+          <div className="p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-[#FB6C00]" />
+                <span>প্রোমো বা রেফারেল কোড আছে? (Codice Promo / Referral)</span>
+              </label>
+              {appliedPromo && (
+                <button
+                  type="button"
+                  onClick={handleRemovePromo}
+                  className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                >
+                  সরান (Remove)
+                </button>
+              )}
+            </div>
+
+            {appliedPromo ? (
+              <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/70 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <div>
+                    <span className="font-black text-emerald-800 dark:text-emerald-300">
+                      কোড <span className="font-mono underline">{appliedPromo.code}</span> সফলভাবে যুক্ত হয়েছে!
+                    </span>
+                    <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block">
+                      আপনি অতিরিক্ত <strong>€{appliedPromo.discountEur},00 ছাড়</strong> পেয়েছেন (নতুন ফি: €{activePrice},00)
+                    </span>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[10px]">
+                  -€{appliedPromo.discountEur}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={promoInput}
+                  onChange={(e) => {
+                    setPromoInput(e.target.value.toUpperCase());
+                    if (promoError) setPromoError(null);
+                  }}
+                  placeholder="যেমন: FRIEND5 বা REF-XXXX"
+                  className="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold uppercase text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FB6C00]"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyPromo}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-[#FB6C00] dark:hover:bg-[#e56000] text-white font-black text-xs transition cursor-pointer shrink-0"
+                >
+                  Apply কোড
+                </button>
+              </div>
+            )}
+
+            {promoError && (
+              <p className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                ⚠️ {promoError}
+              </p>
+            )}
           </div>
 
           {/* Payment Method Selector Tabs */}

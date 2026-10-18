@@ -59,6 +59,7 @@ export default async function handler(req, res) {
       codiceFiscale = '',
       address = '',
       city = 'Bolzano',
+      promoCode = '',
     } = body;
 
     if (!studentEmail || !studentEmail.includes('@')) {
@@ -66,16 +67,47 @@ export default async function handler(req, res) {
     }
 
     // Determine current academy price: check DB settings first, fallback to body.priceEur, then default €49
-    let priceEur = typeof body.priceEur === 'number' && body.priceEur > 0 ? body.priceEur : 49;
+    let basePriceEur = typeof body.priceEur === 'number' && body.priceEur > 0 ? body.priceEur : 49;
+    let settingsPromoCodes = [];
     try {
       const settingsCol = await getCollection('settings');
       const settingsDoc = await settingsCol.findOne({ key: 'app_settings' });
       if (settingsDoc && typeof settingsDoc.academyPriceEur === 'number' && settingsDoc.academyPriceEur > 0) {
-        priceEur = settingsDoc.academyPriceEur;
+        basePriceEur = settingsDoc.academyPriceEur;
+      }
+      if (settingsDoc && Array.isArray(settingsDoc.promoCodes)) {
+        settingsPromoCodes = settingsDoc.promoCodes;
       }
     } catch (e) {
       console.warn('Could not read price from settings, using fallback price:', e);
     }
+
+    // Validate Promo / Referral Code
+    const cleanPromoCode = String(promoCode || '').trim().toUpperCase();
+    let appliedCode = '';
+    let discountEur = 0;
+    let referrerName = '';
+
+    if (cleanPromoCode) {
+      const defaultPromos = [
+        { code: 'FRIEND5', discountEur: 5, ownerName: 'Student Referral Program', active: true },
+        { code: 'ITALIA10', discountEur: 10, ownerName: 'Community Influencer Partner', active: true },
+      ];
+      const promoList = settingsPromoCodes.length > 0 ? settingsPromoCodes : defaultPromos;
+      const matched = promoList.find((p) => String(p.code || '').toUpperCase() === cleanPromoCode && p.active !== false);
+
+      if (matched) {
+        appliedCode = cleanPromoCode;
+        discountEur = Number(matched.discountEur) > 0 ? Number(matched.discountEur) : 0;
+        referrerName = matched.ownerName || '';
+      } else if (cleanPromoCode.startsWith('REF-') && cleanPromoCode.length >= 6) {
+        appliedCode = cleanPromoCode;
+        discountEur = 5;
+        referrerName = `Student (${cleanPromoCode.slice(4)})`;
+      }
+    }
+
+    const priceEur = Math.max(10, basePriceEur - discountEur);
 
     // Determine origin for redirection
     const host = req.headers.host || '';
@@ -107,7 +139,9 @@ export default async function handler(req, res) {
             currency: 'eur',
             unit_amount: Math.round(priceEur * 100),
             product_data: {
-              name: 'Corso Completo Patente B 2026 - PatenteGuru',
+              name: appliedCode
+                ? `Corso Completo Patente B 2026 (Promo: ${appliedCode})`
+                : 'Corso Completo Patente B 2026 - PatenteGuru',
               description:
                 'Accesso Illimitato a 240 Round con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica fino al superamento dell’esame.',
               images: ['https://patente-bangla-italia.vercel.app/car-logo.png'],
@@ -124,6 +158,9 @@ export default async function handler(req, res) {
         address: address.trim(),
         city: city.trim(),
         amount: String(priceEur),
+        promoCode: appliedCode,
+        discountEur: String(discountEur),
+        referrerName,
       },
       success_url: `${origin}/?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?payment_cancelled=true`,

@@ -9,10 +9,14 @@ import {
   FileText,
   LogOut,
   Save,
-  Check
+  Check,
+  Gift,
+  Copy,
+  Share2
 } from 'lucide-react';
 import type { StudentProfile } from '../services/studentService';
 import { syncStudentProgressToCloud } from '../services/studentService';
+import { getStudentReferralCode } from '../services/appSettingsService';
 
 interface StudentProfileModalProps {
   isOpen: boolean;
@@ -39,6 +43,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
+  const [copiedRef, setCopiedRef] = useState(false);
 
   useEffect(() => {
     if (student) {
@@ -88,6 +93,23 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
   };
 
   const completedCount = student.completedRounds ? Object.values(student.completedRounds).filter((r) => r.passed).length : 0;
+  const myReferralCode = getStudentReferralCode(student.name || student.email);
+  const myReferralUrl = `https://www.patenteguru.it/?ref=${myReferralCode}`;
+
+  const handleCopyReferral = () => {
+    navigator.clipboard.writeText(myReferralUrl);
+    setCopiedRef(true);
+    setTimeout(() => setCopiedRef(false), 2500);
+  };
+
+  const handleShareWhatsApp = () => {
+    const text = encodeURIComponent(
+      `ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) বাংলায় প্রস্তুতি নিচ্ছো? 🚗🇮🇹\n` +
+      `PatenteGuru-তে আমার রেফারেল কোড ${myReferralCode} ব্যবহার করলে ফুল কোর্সে সাথে সাথে €5 ডিসকাউন্ট পাবে!\n\n` +
+      `👉 এই লিংকে ক্লিক করে শুরু করো:\n${myReferralUrl}`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
@@ -131,7 +153,7 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
             <ShieldCheck className="w-5 h-5 text-[#FB6C00]" />
             <div>
               <div className="text-xs font-black text-slate-900 dark:text-white">
-                {isVip || student.isVip ? 'Academy Pro (২৪০ রাউন্ড এক্সেস)' : 'Free Foundation (১–২০ রাউন্ড ফ্রি)'}
+                {isVip || student.isVip ? 'Corso Completo (২৪০ রাউন্ড এক্সেস)' : 'Free Foundation (১–২০ রাউন্ড ফ্রি)'}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400">
                 {isVip || student.isVip ? 'পাস করা পর্যন্ত ফুল কোর্স অন্তর্ভুক্ত' : 'ফ্রি ফাউন্ডেশন লেভেল'}
@@ -160,6 +182,50 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
           <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-center">
             <span className="text-[10px] font-bold text-slate-400 block">Passed Rounds</span>
             <span className="text-base font-black text-emerald-600 dark:text-emerald-400">{completedCount}</span>
+          </div>
+        </div>
+
+        {/* Student Referral & Reward Card */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-50 via-amber-50/70 to-emerald-50/50 dark:from-orange-950/30 dark:via-slate-900 dark:to-emerald-950/20 border border-orange-200/80 dark:border-orange-500/25 space-y-2.5">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#E52E2D] to-[#FB6C00] text-white flex items-center justify-center shrink-0 shadow-sm">
+                <Gift className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-slate-900 dark:text-white">
+                  বন্ধুকে রেফার করুন এবং €10 পুরস্কার পান!
+                </h4>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                  আপনার কোডে বন্ধু ভর্তি হলে সে পাবে <strong>€5 ছাড়</strong> এবং আপনি পাবেন <strong>€10 ক্যাশব্যাক/কমিশন</strong>।
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+            <div>
+              <span className="text-[9px] uppercase font-bold text-slate-400 block">আপনার পার্সোনাল রেফারেল কোড</span>
+              <span className="text-sm font-mono font-black text-[#FB6C00] tracking-wider">{myReferralCode}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleCopyReferral}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center gap-1 transition cursor-pointer"
+              >
+                {copiedRef ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedRef ? 'কপি হয়েছে!' : 'লিংক কপি'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleShareWhatsApp}
+                className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 transition cursor-pointer shadow-xs"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>WhatsApp শেয়ার</span>
+              </button>
+            </div>
           </div>
         </div>
 
