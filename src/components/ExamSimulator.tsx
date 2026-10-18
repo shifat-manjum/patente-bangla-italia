@@ -123,14 +123,46 @@ export const ExamSimulator: React.FC<ExamSimulatorProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Calculate mistakes
-    const mistakeIds: string[] = [];
-    const mistakeObjects: QuizQuestion[] = [];
+    const rawMistakes: QuizQuestion[] = [];
     questions.forEach((q, idx) => {
       const userAns = answers[idx];
       if (userAns === undefined || userAns !== q.isCorrect) {
-        mistakeIds.push(q.id);
-        mistakeObjects.push(q);
+        rawMistakes.push(q);
       }
+    });
+
+    let mockTestNum = 0;
+    if (!roundId && rawMistakes.length > 0) {
+      try {
+        const prevCounter = parseInt(localStorage.getItem('patente_bangla_mock_counter') || '0', 10);
+        mockTestNum = (Number.isFinite(prevCounter) && prevCounter >= 0 ? prevCounter : 0) + 1;
+        localStorage.setItem('patente_bangla_mock_counter', String(mockTestNum));
+      } catch {
+        mockTestNum = 1;
+      }
+    }
+
+    const mistakeIds: string[] = [];
+    const mistakeObjects: QuizQuestion[] = [];
+    rawMistakes.forEach((q) => {
+      let scopedId = q.id;
+      if (roundId) {
+        const prefix = `r${roundId}_`;
+        if (!scopedId.startsWith(prefix)) {
+          scopedId = `${prefix}${scopedId}`;
+        }
+      } else if (mockTestNum > 0 && !scopedId.startsWith('mt')) {
+        scopedId = `mt${mockTestNum}_${scopedId}`;
+      }
+
+      const enrichedQ: QuizQuestion = {
+        ...q,
+        id: scopedId,
+        ...(roundId ? { roundId } : {}),
+      } as QuizQuestion;
+
+      mistakeIds.push(scopedId);
+      mistakeObjects.push(enrichedQ);
     });
 
     onSaveMistakes(mistakeIds, roundId, mistakeObjects);

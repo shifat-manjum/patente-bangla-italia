@@ -323,8 +323,8 @@ export function App() {
           if (profile.completedRounds && typeof profile.completedRounds === 'object' && !Array.isArray(profile.completedRounds)) {
             setCompletedRounds((prev) => ({ ...(prev || {}), ...profile.completedRounds }));
           }
-          if (Array.isArray(profile.mistakeIds)) {
-            setMistakeIds((prev) => Array.from(new Set([...(prev || []), ...profile.mistakeIds])));
+          if (Array.isArray(profile.mistakeIds) && localStorage.getItem('patente_bangla_mistakes') === null) {
+            setMistakeIds(profile.mistakeIds);
           }
           const vipStatus = Boolean(safe.isVip);
           setIsVip(vipStatus);
@@ -1030,7 +1030,12 @@ export function App() {
               mistakeIds={mistakeIds}
               onClearMistakes={() => setMistakeIds([])}
               onRemoveMistake={(id) => setMistakeIds((prev) => prev.filter((item) => item !== id))}
-              onGoToTopics={() => setAppTab('theory')}
+              onRemoveMistakesByRound={(idsToRemove) => {
+                const removeSet = new Set(idsToRemove);
+                setMistakeIds((prev) => prev.filter((item) => !removeSet.has(item)));
+              }}
+              onSelectRound={handleStartRound}
+              onGoToTopics={() => setAppTab('curriculum')}
             />
           )}
 

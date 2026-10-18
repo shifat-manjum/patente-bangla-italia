@@ -18640,6 +18640,7 @@ export const getQuestionsForRound = (roundId: number, randomize: boolean = true)
     const topic = getRoundTopic(roundId);
     pool = selected.map((q) => ({
       ...q,
+      id: `r${roundId}_${q.id}`,
       chapterTitleIt: topic.titleIt,
       chapterTitleBn: `রাউন্ড ${roundId}: ${topic.titleBn}`,
       roundId
