@@ -1,5 +1,6 @@
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { getStoredUtmParams } from '../utils/utmTracker';
 
 export interface StudentProfile {
   uid: string;
@@ -205,6 +206,7 @@ export const registerStudent = async (
         phone: cleanPhone,
         password,
         otp: otp ? otp.trim() : '',
+        utm: getStoredUtmParams(),
       }),
     });
 

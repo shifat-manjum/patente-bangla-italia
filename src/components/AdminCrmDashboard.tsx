@@ -1654,15 +1654,15 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                                 }`}
                                 title={
                                   student.isVip
-                                    ? 'VIP এক্সেস প্রত্যাহার করুন'
+                                    ? 'কোর্স এক্সেস প্রত্যাহার করুন'
                                     : 'ঘনিষ্ঠদের জন্য সব ২৪০ রাউন্ড সম্পূর্ণ ফ্রি করে দিন'
                                 }
                               >
                                 {student.isVip ? (
-                                  <span>Revoke VIP</span>
+                                  <span>Revoke Access</span>
                                 ) : (
                                   <>
-                                    <span>🎁 সব ২৪০ রাউন্ড ফ্রি (VIP Pass)</span>
+                                    <span>🎁 সব ২৪০ রাউন্ড এক্সেস (Full Course Pass)</span>
                                   </>
                                 )}
                               </button>
@@ -1760,7 +1760,7 @@ export const AdminCrmDashboard: React.FC<AdminCrmDashboardProps> = ({
                   className="w-4 h-4 rounded text-orange-500 focus:ring-orange-400 cursor-pointer"
                 />
                 <label htmlFor="isVipCheck" className="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
-                  একাডেমি Pro VIP Pass (€{settings.academyPriceEur || 49} লাইফটাইম এক্সেস)
+                  একাডেমি Corso Completo Pass (€{settings.academyPriceEur || 49} ফুল কোর্স এক্সেস)
                 </label>
               </div>
 

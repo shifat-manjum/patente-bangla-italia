@@ -26,7 +26,7 @@ export const trackPixelEvent = (eventName: string, params?: Record<string, any>)
 };
 
 /**
- * Step 3A: When student starts Free Round / Practice Simulation
+ * Step 1: When student views quiz / free round content
  */
 export const trackViewContent = (
   contentName: string = 'Free Quiz Round',
@@ -39,7 +39,33 @@ export const trackViewContent = (
 };
 
 /**
- * Step 3B: When student clicks "Pay Now" / "ভর্তি হন" to initiate checkout
+ * Step 2: When student registers an account (OTP or Google)
+ */
+export const trackCompleteRegistration = (
+  method: string = 'email_otp',
+  status: boolean = true
+) => {
+  trackPixelEvent('CompleteRegistration', {
+    content_name: 'Student Account Registration',
+    status: status ? 'success' : 'failed',
+    registration_method: method,
+  });
+};
+
+/**
+ * Step 3: When student clicks to join WhatsApp community or requests info
+ */
+export const trackPixelLead = (
+  leadType: string = 'whatsapp_community'
+) => {
+  trackPixelEvent('Lead', {
+    content_name: 'Student Lead',
+    content_category: leadType,
+  });
+};
+
+/**
+ * Step 4: When student clicks "Pay Now" / "ভর্তি হন" to initiate checkout
  */
 export const trackInitiateCheckout = (
   value: number = 49,
@@ -54,9 +80,9 @@ export const trackInitiateCheckout = (
 };
 
 /**
- * Step 3C: When student successfully completes purchase / unlocks full course
+ * Step 5: When student successfully completes purchase / unlocks full course
  */
-export const trackPurchase = (
+export const trackPixelPurchase = (
   value: number = 49,
   currency: string = 'EUR',
   contentName: string = 'Patente Bangla Pro Pass - 240 Rounds'
@@ -68,3 +94,5 @@ export const trackPurchase = (
   });
 };
 
+// Backwards-compatibility alias
+export const trackPurchase = trackPixelPurchase;

@@ -272,7 +272,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-2 sm:gap-2.5">
                 <div className="text-right hidden sm:block">
                   <span className="text-[10px] text-amber-500 font-extrabold uppercase tracking-wider block">
-                    VIP 240 Rounds
+                    Corso Completo (২৪০ রাউন্ড)
                   </span>
                   <div className="flex items-baseline gap-1 justify-end">
                     <span className="text-[11px] text-slate-400 line-through">
@@ -302,8 +302,8 @@ export const Header: React.FC<HeaderProps> = ({
                   title="২৪০ রাউন্ডের সম্পূর্ণ সিলেবাস খুলুন"
                 >
                   <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span className="hidden sm:inline">VIP Enrolled (240 Rounds)</span>
-                  <span className="sm:hidden">VIP</span>
+                  <span className="hidden sm:inline">Corso Completo (২৪০ রাউন্ড)</span>
+                  <span className="sm:hidden">Enrolled</span>
                 </button>
                 <button
                   type="button"

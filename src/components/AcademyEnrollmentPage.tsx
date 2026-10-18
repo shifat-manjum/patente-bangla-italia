@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getAppSettings, SETTINGS_CHANGE_EVENT } from '../services/appSettingsService';
 import { trackInitiateCheckout } from '../utils/metaPixel';
+import { trackPaymentStart } from '../services/analytics';
 
 interface AcademyEnrollmentPageProps {
   onBack: () => void;
@@ -270,6 +271,7 @@ export const AcademyEnrollmentPage: React.FC<AcademyEnrollmentPageProps> = ({
             <button
               type="button"
               onClick={() => {
+                trackPaymentStart(attemptedRound || 21, activePrice);
                 trackInitiateCheckout(activePrice, 'EUR', 'Patente Bangla Pro Pass');
                 onOpenPayment();
               }}

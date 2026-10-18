@@ -24,6 +24,7 @@ import {
 } from '../services/appSettingsService';
 import { WHATSAPP_SUPPORT_NUMBER } from '../config/constants';
 import { trackInitiateCheckout } from '../utils/metaPixel';
+import { trackPaymentStart } from '../services/analytics';
 
 interface CoursePaymentModalProps {
   isOpen: boolean;
@@ -136,7 +137,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
         `📧 Email: ${formData.studentEmail.trim().toLowerCase()}\n` +
         `📱 Telefono: ${formData.studentPhone.trim()}\n` +
         `🏛️ Codice Fiscale: ${formData.codiceFiscale.trim() || 'N/A'}\n\n` +
-        `Invio qui la ricevuta contabile (CRO/TRN) del bonifico per l'attivazione del mio account VIP e l'emissione della Fattura.`
+        `Invio qui la ricevuta contabile (CRO/TRN) del bonifico per l'attivazione del mio Corso Completo (240 Round) e l'emissione della Fattura.`
       );
       window.open(`https://wa.me/${waNumber}?text=${waText}`, '_blank', 'noopener,noreferrer');
       return;
@@ -146,6 +147,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
     // Real Stripe Checkout for Card, PostePay, Apple Pay, Google Pay, Satispay, Klarna
     try {
+      trackPaymentStart(attemptedRound, activePrice);
       trackInitiateCheckout(activePrice, 'EUR', 'Patente Bangla Pro Pass');
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
@@ -504,12 +506,12 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
               </div>
 
               <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
-                <strong>⚠️ গুরুত্বপূর্ণ নির্দেশনা:</strong> বনিফিকো (Bank Transfer) পেমেন্ট আমাদের ব্যাংকে জমা হওয়ার আগে কোনো ফ্রি ফাত্তুরা (Fattura) বা ২৪০ রাউন্ড (VIP Pass) স্বয়ংক্রিয়ভাবে চালু হবে না। ব্যাংক থেকে <strong>€{activePrice},00</strong> পাঠানোর পর নিচের বাটনে ক্লিক করে আমাদের WhatsApp-এ রসিদ (Ricevuta / CRO) পাঠান। পেমেন্ট নিশ্চিত হওয়ার সাথে সাথে আপনার VIP অ্যাকাউন্ট ও অফিশিয়াল Fattura সক্রিয় করে দেওয়া হবে।
+                <strong>⚠️ গুরুত্বপূর্ণ নির্দেশনা:</strong> বনিফিকো (Bank Transfer) পেমেন্ট আমাদের ব্যাংকে জমা হওয়ার আগে কোনো ফ্রি ফাত্তুরা (Fattura) বা সম্পূর্ণ কোর্স (২৪০ রাউন্ড এক্সেস) স্বয়ংক্রিয়ভাবে চালু হবে না। ব্যাংক থেকে <strong>€{activePrice},00</strong> পাঠানোর পর নিচের বাটনে ক্লিক করে আমাদের WhatsApp-এ রসিদ (Ricevuta / CRO) পাঠান। পেমেন্ট নিশ্চিত হওয়ার সাথে সাথে আপনার কোর্স অ্যাকাউন্ট ও অফিশিয়াল Fattura সক্রিয় করে দেওয়া হবে।
               </div>
 
               {bonificoPendingSent && (
                 <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-300 dark:border-emerald-700 text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                  ✓ WhatsApp ওপেন হয়েছে! অনুগ্রহ করে আপনার ব্যাংক ট্রান্সফারের রসিদ (Ricevuta / Screenshot) চ্যাটে পাঠিয়ে দিন। পেমেন্ট যাচাই সম্পন্ন হলেই আপনার VIP Pass ও Fattura চালু হবে।
+                  ✓ WhatsApp ওপেন হয়েছে! অনুগ্রহ করে আপনার ব্যাংক ট্রান্সফারের রসিদ (Ricevuta / Screenshot) চ্যাটে পাঠিয়ে দিন। পেমেন্ট যাচাই সম্পন্ন হলেই আপনার কোর্স এক্সেস ও Fattura চালু হবে।
                 </div>
               )}
             </div>

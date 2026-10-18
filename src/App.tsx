@@ -22,14 +22,19 @@ import {
   saveInvoice 
 } from './services/paymentService';
 import type { InvoiceRecord } from './services/paymentService';
-import { trackPageView, trackThemeChange } from './services/analytics';
+import { 
+  trackPageView, 
+  trackThemeChange, 
+  trackPurchase as trackGaPurchase 
+} from './services/analytics';
 import { 
   getAppSettings, 
   fetchRemoteAppSettings, 
   SETTINGS_CHANGE_EVENT 
 } from './services/appSettingsService';
 import type { AppSettings } from './services/appSettingsService';
-import { trackViewContent, trackPurchase } from './utils/metaPixel';
+import { trackViewContent, trackPurchase as trackPixelPurchase } from './utils/metaPixel';
+import { captureAndStoreUtm } from './utils/utmTracker';
 
 type ExtendedTab = AppTab | 'admin' | 'enrollment';
 
@@ -207,10 +212,16 @@ export function App() {
     }
   };
 
+  // Marketing & UTM Attribution on initial landing
+  useEffect(() => {
+    captureAndStoreUtm();
+  }, []);
+
   // Dynamic per-route SEO metadata & analytics tracking
   useEffect(() => {
-    trackPageView(appTab);
     const seo = ROUTE_SEO[appTab] || ROUTE_SEO.dashboard;
+    const cleanPath = TAB_TO_PATH[appTab] || window.location.pathname;
+    trackPageView(seo.title, cleanPath);
     document.title = seo.title;
 
     const setMeta = (selector: string, attr: string, value: string) => {
@@ -434,8 +445,15 @@ export function App() {
     return () => window.removeEventListener('hashchange', checkAdmin);
   }, [adminEmail, location.pathname, setAppTab]);
 
-  // VIP State (strictly derived from authenticated student profile)
-  const [isVip, setIsVip] = useState<boolean>(() => Boolean(currentUser?.isVip));
+  // VIP State (derived from authenticated student profile or verified VIP flag)
+  const [isVip, setIsVip] = useState<boolean>(() => {
+    try {
+      if (currentUser?.isVip) return true;
+      return localStorage.getItem('patente_bangla_is_vip') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   // Total questions answered count
   const [totalQuestionsAnswered, setTotalQuestionsAnswered] = useState<number>(() => {
@@ -483,9 +501,9 @@ export function App() {
 
   // Persist VIP
   useEffect(() => {
-    if (isVip && currentUser) {
+    if (isVip) {
       localStorage.setItem('patente_bangla_is_vip', 'true');
-    } else {
+    } else if (!isVip && !currentUser?.isVip) {
       localStorage.removeItem('patente_bangla_is_vip');
     }
   }, [isVip, currentUser]);
@@ -678,6 +696,7 @@ export function App() {
     try {
       localStorage.setItem('patente_bangla_is_vip', 'true');
     } catch {}
+    saveInvoice(invoice);
     // DO NOT force jump to round 240! Maintain student's legitimate sequential progress
     setUnlockedRound(effectiveUnlockedRound);
     try {
@@ -686,7 +705,32 @@ export function App() {
     setActiveInvoice(invoice);
     setIsPaymentModalOpen(false);
     setIsInvoiceModalOpen(true);
-    trackPurchase(invoice?.amount || appSettings.academyPriceEur || 49, 'EUR', 'Patente Bangla Pro Pass - 240 Rounds');
+    const purchaseAmount = invoice?.amount || appSettings.academyPriceEur || 49;
+    trackGaPurchase(purchaseAmount, invoice?.transactionId, 240);
+    trackPixelPurchase(purchaseAmount, 'EUR', 'Patente Bangla Pro Pass - 240 Rounds');
+
+    setCurrentUser((prev) => {
+      const base: StudentUser = prev || {
+        uid: 'std_' + Date.now(),
+        name: invoice.studentName || 'Student',
+        email: invoice.studentEmail.toLowerCase(),
+        phone: invoice.studentPhone || '',
+        address: invoice.address || '',
+        city: invoice.city || 'Bolzano',
+        unlockedRound: effectiveUnlockedRound,
+        totalQuestionsAnswered: totalQuestionsAnswered || 0,
+        completedRounds: completedRounds || {},
+        mistakeIds: mistakeIds || [],
+        isVip: true,
+        createdAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+      };
+      const updated = { ...base, isVip: true };
+      try {
+        localStorage.setItem('patente_student_user', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     if (currentUser?.uid) {
       syncStudentProgressToCloud(currentUser.uid, {
@@ -702,7 +746,7 @@ export function App() {
         origin: { y: 0.6 },
       });
     } catch {}
-  }, [effectiveUnlockedRound, appSettings.academyPriceEur, currentUser?.uid]);
+  }, [effectiveUnlockedRound, appSettings.academyPriceEur, currentUser?.uid, completedRounds, mistakeIds, totalQuestionsAnswered]);
 
   // Auto-detect and handle Stripe Checkout return (?payment_success=true&session_id=...)
   useEffect(() => {
@@ -1198,7 +1242,7 @@ export function App() {
             <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping shrink-0" />
             <span className="truncate">
               {isVip
-                ? '⭐ VIP সক্রিয় • অফিসিয়াল রসিদ দেখুন'
+                ? '🎓 সম্পূর্ণ কোর্স সক্রিয় • অফিসিয়াল রসিদ দেখুন'
                 : `🔥 ২৪০টি রাউন্ডের সম্পূর্ণ কোর্স আনলক (€${appSettings.academyPriceEur || 49})`}
             </span>
           </div>

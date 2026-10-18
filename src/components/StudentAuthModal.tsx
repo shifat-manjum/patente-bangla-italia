@@ -27,7 +27,8 @@ import {
 } from '../services/studentService';
 import type { StudentProfile } from '../services/studentService';
 import { WHATSAPP_GROUP_URL } from '../config/constants';
-import { trackWhatsAppJoin } from '../services/analytics';
+import { trackWhatsAppJoin, trackStudentRegistration, trackStudentLogin, trackLead } from '../services/analytics';
+import { trackCompleteRegistration, trackPixelLead } from '../utils/metaPixel';
 
 export type StudentUser = StudentProfile;
 
@@ -264,6 +265,10 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       setIsLoading(false);
       setIsOtpStep(false);
       setRegisteredStudent(student);
+      trackStudentRegistration('email_otp');
+      trackCompleteRegistration('email_otp');
+      trackLead('registration_otp_student');
+      trackPixelLead('registration_otp_student');
       // Auto-trigger WhatsApp group join in a new window/tab
       try {
         window.open(WHATSAPP_GROUP_URL, '_blank', 'noopener,noreferrer');
@@ -292,6 +297,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     try {
       setIsLoading(true);
       const student = await loginStudent(email, password);
+      trackStudentLogin('email');
       onLoginSuccess(student);
       onClose();
     } catch (err: any) {
@@ -354,6 +360,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       setIsLoading(false);
       setSuccessMessage('✅ আপনার পাসওয়ার্ড সফলভাবে রিসেট হয়েছে! লগইন করা হচ্ছে...');
       setTimeout(() => {
+        trackStudentLogin('email_after_reset');
         onLoginSuccess(updatedStudent);
         onClose();
       }, 900);
@@ -372,11 +379,16 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
       setIsGoogleLoading(false);
       if (isNewStudent) {
         setRegisteredStudent(student);
+        trackStudentRegistration('google');
+        trackCompleteRegistration('google');
+        trackLead('registration_google_student');
+        trackPixelLead('registration_google_student');
         try {
           window.open(WHATSAPP_GROUP_URL, '_blank', 'noopener,noreferrer');
           trackWhatsAppJoin('auto_popup_on_google_register');
         } catch {}
       } else {
+        trackStudentLogin('google');
         onLoginSuccess(student);
         onClose();
       }

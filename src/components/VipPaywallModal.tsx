@@ -86,7 +86,7 @@ export const VipPaywallModal: React.FC<VipPaywallModalProps> = ({
             </li>
             <li className="flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span><strong>VIP WhatsApp Study Support</strong>: Direct doubt clearance from native Bengali speakers in Italy.</span>
+              <span><strong>Direct WhatsApp Study Support</strong>: Direct doubt clearance from native Bengali speakers in Italy.</span>
             </li>
           </ul>
         </div>
