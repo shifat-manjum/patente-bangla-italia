@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Headphones,
   MessageCircle,
+  Lock,
 } from 'lucide-react';
 import type { StudentProfile } from '../services/studentService';
 import { WHATSAPP_GROUP_URL } from '../config/constants';
@@ -416,8 +417,16 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           className="bg-white dark:bg-[#12161F] rounded-2xl p-5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group shadow-xs dark:shadow-sm"
         >
           <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white flex items-center justify-center">
-              <GraduationCap className="w-5 h-5" />
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white flex items-center justify-center">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              {!student && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-500/10 text-[#FB6C00] border border-orange-500/20">
+                  <Lock className="w-3 h-3" />
+                  রেজিস্ট্রেশন আবশ্যক
+                </span>
+              )}
             </div>
             <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition">
               Theory Summaries (25 Chapters)
@@ -427,7 +436,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             </p>
           </div>
           <div className="pt-4 flex items-center text-xs font-black text-slate-700 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white gap-1">
-            <span>Read Cheat Sheets</span>
+            <span>{student ? 'Read Cheat Sheets' : 'রেজিস্টার করে থিওরি পড়ুন'}</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>

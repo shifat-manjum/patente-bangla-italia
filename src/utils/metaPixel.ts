@@ -26,6 +26,13 @@ export const trackPixelEvent = (eventName: string, params?: Record<string, any>)
 };
 
 /**
+ * Track standard PageView event on SPA tab / route changes
+ */
+export const trackPixelPageView = (pageTitle?: string, path?: string) => {
+  trackPixelEvent('PageView', pageTitle || path ? { page_title: pageTitle, page_path: path } : undefined);
+};
+
+/**
  * Step 1: When student views quiz / free round content
  */
 export const trackViewContent = (

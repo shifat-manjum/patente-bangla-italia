@@ -306,6 +306,7 @@ export function App() {
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authForcedMessage, setAuthForcedMessage] = useState('');
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login');
 
   // Subscribe to Student Authentication & MongoDB Profile
   useEffect(() => {
@@ -399,14 +400,26 @@ export function App() {
     setMistakeIds([]);
   };
 
-  const requireLogin = (action = 'কুইজ ও রাউন্ড শুরু করতে'): boolean => {
+  const [postLoginRedirectTab, setPostLoginRedirectTab] = useState<ExtendedTab | null>(null);
+
+  const requireLogin = useCallback((action = 'কুইজ ও রাউন্ড শুরু করতে', mode: 'login' | 'register' = 'login'): boolean => {
     if (!currentUser) {
-      setAuthForcedMessage(`${action} দয়া করে আপনার ফ্রি স্টুডেন্ট অ্যাকাউন্টে সাইন ইন করুন অথবা নতুন ফ্রি অ্যাকাউন্ট খুলুন। কোনো প্রশ্ন দেখতে বা সমাধান করতে লগইন বাধ্যতামূলক।`);
+      setAuthInitialMode(mode);
+      setAuthForcedMessage(`${action} দয়া করে আপনার ফ্রি স্টুডেন্ট অ্যাকাউন্টে সাইন ইন করুন অথবা নতুন ফ্রি অ্যাকাউন্ট খুলুন। রেজিস্ট্রেশন ছাড়া কোনো প্রশ্ন বা থিওরি দেখা সম্ভব নয়।`);
       setIsAuthModalOpen(true);
       return false;
     }
     return true;
-  };
+  }, [currentUser]);
+
+  const handleGoToTheory = useCallback(() => {
+    if (!currentUser) {
+      setPostLoginRedirectTab('theory');
+      requireLogin('২৫টি থিওরি সারসংক্ষেপ ও গোল্ডেন রুলস দেখতে', 'login');
+      return;
+    }
+    setAppTab('theory');
+  }, [currentUser, requireLogin, setAppTab]);
 
   // Student Lead Registration State
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
@@ -683,7 +696,8 @@ export function App() {
     } else if (tab === 'rounds') {
       setAppTab('curriculum');
     } else if (tab === 'hotshot' || tab === 'topics' || tab === 'vocab') {
-      setAppTab('theory');
+      handleGoToTheory();
+      return;
     } else if (tab === 'mistakes') {
       setAppTab('errors');
     } else if (tab === 'admin') {
@@ -862,6 +876,7 @@ export function App() {
         onThemeChange={handleThemeChange}
         currentUser={currentUser}
         onOpenAuth={() => {
+          setAuthInitialMode('login');
           setAuthForcedMessage('');
           setIsAuthModalOpen(true);
         }}
@@ -898,6 +913,10 @@ export function App() {
           if (['exam', 'errors'].includes(tab)) {
             if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
           }
+          if (tab === 'theory') {
+            handleGoToTheory();
+            return;
+          }
           if (tab === 'exam') {
             setCurrentRoundId(null);
           }
@@ -930,6 +949,7 @@ export function App() {
             <button
               type="button"
               onClick={() => {
+                setAuthInitialMode('register');
                 setAuthForcedMessage(
                   appSettings.freeRoundsLimit === 0
                     ? 'কুইজ ও রাউন্ড শুরু করতে অনুগ্রহ করে সাইন ইন বা ফ্রি রেজিস্টার করুন।'
@@ -966,7 +986,7 @@ export function App() {
               regularPriceEur={appSettings.regularPriceEur}
               onContinueRound={(r) => handleStartRound(r)}
               onGoToCurriculum={() => setAppTab('curriculum')}
-              onGoToTheory={() => setAppTab('theory')}
+              onGoToTheory={handleGoToTheory}
               onGoToExam={() => {
                 if (!requireLogin('অফিসিয়াল পরীক্ষা শুরু করতে')) return;
                 setCurrentRoundId(null);
@@ -996,6 +1016,8 @@ export function App() {
 
           {appTab === 'theory' && (
             <TheorySummaryView
+              currentUser={currentUser}
+              onRequireAuth={(action, mode) => requireLogin(action || '২৫টি থিওরি সারসংক্ষেপ দেখতে', mode || 'register')}
               onStartRound={handleStartRound}
               isVip={isVip}
               academyPriceEur={appSettings.academyPriceEur}
@@ -1021,7 +1043,7 @@ export function App() {
               }}
               onSelectRound={handleStartRound}
               onSaveMistakes={handleSaveExamMistakes}
-              onGoToTopics={() => setAppTab('theory')}
+              onGoToTopics={handleGoToTheory}
             />
           )}
 
@@ -1091,6 +1113,7 @@ export function App() {
           <StudentAuthModal
             isOpen={isAuthModalOpen}
             onClose={() => setIsAuthModalOpen(false)}
+            initialMode={authInitialMode}
             onLoginSuccess={(user) => {
               const safe = sanitizeStudentProfile(user);
               setCurrentUser(safe);
@@ -1099,6 +1122,11 @@ export function App() {
               setActiveInvoice(vipStatus ? getLatestInvoice(safe.email) : null);
               if (!vipStatus) {
                 setIsInvoiceModalOpen(false);
+              }
+              if (postLoginRedirectTab) {
+                const target = postLoginRedirectTab;
+                setPostLoginRedirectTab(null);
+                setAppTab(target);
               }
             }}
             forcedMessage={authForcedMessage}

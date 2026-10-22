@@ -2,6 +2,7 @@
 // Measurement ID: G-5W892DWMHR
 
 import { getUtmEventPayload } from '../utils/utmTracker';
+import { trackPixelPageView } from '../utils/metaPixel';
 
 declare global {
   interface Window {
@@ -50,6 +51,8 @@ export const trackPageView = (pageTitle: string, path: string = window.location.
       });
       console.log(`[GA4 PageView] "${pageTitle}" -> ${path}`);
     }
+    // Also track in Meta Pixel for every tab/route change
+    trackPixelPageView(pageTitle, path);
   } catch (err) {
     console.debug('Analytics trackPageView notice:', err);
   }

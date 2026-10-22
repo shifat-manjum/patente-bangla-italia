@@ -93,6 +93,15 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Sync mode with initialMode when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setError('');
+      setSuccessMessage('');
+    }
+  }, [isOpen, initialMode]);
+
   if (!isOpen) return null;
 
   // Validation Policies
