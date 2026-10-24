@@ -93,18 +93,160 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   const isCorrect = isAnswered && userAnswer === question.isCorrect;
   const shouldRevealOutcome = (showInstantResult && isAnswered) || alwaysShowExplanation;
 
-  // Teacher Marco explanation generator with guaranteed Bengali breakdown
-  const getMarcoExplanation = () => {
-    const text = question.explanationBn?.trim();
-    if (text) return text;
+  // Helper: Detect whether an existing explanation is just a generic canned placeholder
+  const isGenericExplanation = (text?: string): boolean => {
+    if (!text) return true;
+    const trimmed = text.trim();
+    if (trimmed.length < 25) return true;
+    return (
+      trimmed.includes('ইতালির অফিশিয়াল ট্রাফিক কোড') ||
+      trimmed.includes('ইতালিয়ান ট্রাফিক কোড') ||
+      trimmed.includes('শতভাগ আইনসম্মত ও সত্য') ||
+      trimmed.includes('শতভাগ সত্য (VERO)') ||
+      trimmed.includes('মিথ্যা (FALSO)। ট্রাফিক নিয়মে এমন কোনো বিধান নেই') ||
+      trimmed.includes('এই বক্তব্যটি সম্পূর্ণ মিথ্যা (FALSO)') ||
+      trimmed.includes('এই বক্তব্যটি মিথ্যা (FALSO)') ||
+      trimmed.includes('এই বক্তব্যটি ট্রাফিক আইন অনুযায়ী পুরোপুরি সত্য')
+    );
+  };
 
+  // State to hold live AI-generated real explanation
+  const [aiExplanation, setAiExplanation] = useState<{
+    explanationBn: string;
+    trapTipBn?: string;
+  } | null>(() => {
+    try {
+      const cacheKey = `patente_ai_exp_${question.id || question.questionIt}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.explanationBn && !isGenericExplanation(parsed.explanationBn)) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return null;
+  });
+  const [isFetchingExplanation, setIsFetchingExplanation] = useState(false);
+
+  // Automatically fetch Teacher Marco's real AI explanation whenever a question outcome is revealed or in MistakeReview
+  useEffect(() => {
+    // If we already have a genuine custom explanation from the dataset, keep it
+    if (!isGenericExplanation(question.explanationBn)) {
+      return;
+    }
+
+    if (!shouldRevealOutcome) {
+      return;
+    }
+
+    const cacheKey = `patente_ai_exp_${question.id || question.questionIt}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.explanationBn && !isGenericExplanation(parsed.explanationBn)) {
+          setAiExplanation(parsed);
+          return;
+        }
+      }
+    } catch {}
+
+    // Fetch real explanation from Teacher Marco AI backend
+    let isCancelled = false;
+    setIsFetchingExplanation(true);
+
+    fetch('/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: question.id,
+        questionIt: question.questionIt,
+        isCorrect: question.isCorrect,
+        questionBn: question.questionBn || '',
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isCancelled && data.success && data.explanationBn) {
+          const expData = {
+            explanationBn: data.explanationBn,
+            trapTipBn: data.trapTipBn || '',
+          };
+          setAiExplanation(expData);
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(expData));
+          } catch {}
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not fetch AI explanation for card:', err);
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsFetchingExplanation(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [shouldRevealOutcome, question.id, question.questionIt, question.explanationBn, question.isCorrect, question.questionBn]);
+
+  // Smart fallback based on Italian traffic rules if offline or loading
+  const getSmartRuleFallback = (): string => {
+    const it = question.questionIt.toLowerCase();
+    if (it.includes('distanza di sicurezza')) {
+      return question.isCorrect
+        ? 'গাড়ির গতি বাড়লে ব্রেকিং দূরত্ব বহুগুণ বৃদ্ধি পায়, তাই উচ্চ গতিতে অবশ্যই নিরাপদ দূরত্ব (Distanza di sicurezza) বাড়াতে হবে।'
+        : 'নিরাপদ দূরত্ব কখনোই একটি অপরিবর্তনশীল সংখ্যা নয়; গাড়ির গতি, রাস্তা ও আবহাওয়ার ওপর ভিত্তি করে এটি পরিবর্তন করতে হয়।';
+    }
+    if (it.includes('sorpasso')) {
+      return question.isCorrect
+        ? 'পর্যাপ্ত দৃশ্যমানতা থাকলে এবং বিপরীত দিক থেকে কোনো গাড়ি না এলে নির্দিষ্ট সড়কে সতর্কতার সাথে ওভারটেক অনুমোদিত।'
+        : 'বাঁক (Curva), পাহাড়ি ঢালের চূড়া (Dosso) ও রেল ক্রসিংয়ের কাছে ওভারটেক করা কঠোরভাবে নিষিদ্ধ।';
+    }
+    if (it.includes('precedenza')) {
+      return question.isCorrect
+        ? 'ইতালিয়ান ট্রাফিক আইনের সাধারণ নিয়মানুযায়ী মোড়ে ডান দিক থেকে আসা গাড়িকে অগ্রাধিকার (Precedenza a destra) দিতে হয়।'
+        : 'সব সময় ডান দিকের গাড়ি অগ্রাধিকার পাবে না; স্টপ (STOP) বা বিশেষ নির্দেশক সংকেত থাকলে সেই সংকেতের নিয়ম কার্যকর হবে।';
+    }
+    if (it.includes('fermata') || it.includes('sosta')) {
+      return question.isCorrect
+        ? 'যাত্রী ওঠানামার জন্য সাময়িক থামা (Fermata) এবং পার্কিং (Sosta)-এর আইনগত শর্ত ও সময়সীমা আলাদা।'
+        : 'যেখানে পার্কিং (Divieto di sosta) নিষিদ্ধ, সেখানে স্বল্প সময়ের জন্য থামা (Fermata)-ও নিষিদ্ধ হবে এমন ধারণা ভুল।';
+    }
+    if (it.includes('autostrada')) {
+      return question.isCorrect
+        ? 'হাইওয়ে বা অটোস্ত্রাদায় নির্ধারিত সর্বনিম্ন গতি বজায় রাখা এবং জরুরি লেন ছাড়া গাড়ি না থামানো বাধ্যতামূলক।'
+        : 'হাইওয়েতে কোনো অবস্থাতেই ইউ-টার্ন (Inversione di marcia) বা রিভার্স চালানো (Retromarcia) বৈধ নয়।';
+    }
+    if (it.includes('casco') || it.includes('cinture')) {
+      return question.isCorrect
+        ? 'চালকের পাশাপাশি পেছনের সিটের সব আরোহীদের জন্যও সিটবেল্ট বা হেলমেট ব্যবহার শতভাগ বাধ্যতামূলক।'
+        : 'শহরের ভেতরে কম গতিতে গাড়ি চালালেও সিটবেল্ট বা হেলমেটের নিয়ম শিথিল হয় না।';
+    }
     return question.isCorrect
-      ? 'ইতালিয়ান ট্রাফিক কোড (Codice della Strada) অনুযায়ী এই বক্তব্যটি শতভাগ সত্য (VERO)। রাস্তায় নিরাপদে ও নিয়মানুযায়ী গাড়ি চালানোর ক্ষেত্রে এই বিধানটি হুবহু প্রযোজ্য।'
-      : 'এই বক্তব্যটি মিথ্যা (FALSO)। ইতালিয়ান ট্রাফিক আইনে এমন কোনো নিয়ম নেই অথবা বাক্যটিতে শিক্ষার্থীদের বিভ্রান্ত করতে অতিরিক্ত কিংবা অসত্য শর্ত জুড়ে দেওয়া হয়েছে।';
+      ? 'ইতালির ট্রাফিক কোড অনুযায়ী এই শর্তটি সম্পূর্ণ নিয়মমাফিক এবং নিরাপদ ড্রাইভিংয়ের মূল বিধির সাথে সঙ্গতিপূর্ণ।'
+      : 'প্রশ্নের বাক্যটিতে এমন এক শর্ত উপস্থাপন করা হয়েছে যা ট্রাফিক আইনের মূল বিধির সম্পূর্ণ বিপরীত বা একটি বিভ্রান্তিকর ফাঁদ।';
+  };
+
+  // Teacher Marco explanation generator
+  const getMarcoExplanation = () => {
+    if (aiExplanation?.explanationBn) {
+      return aiExplanation.explanationBn;
+    }
+    if (!isGenericExplanation(question.explanationBn)) {
+      return question.explanationBn!.trim();
+    }
+    return getSmartRuleFallback();
   };
 
   // Teacher Marco Trap (Trabocchetto) detector
   const getMarcoTrapTip = () => {
+    if (aiExplanation?.trapTipBn?.trim()) {
+      return aiExplanation.trapTipBn.trim();
+    }
     if (question.trapTipBn?.trim()) return question.trapTipBn.trim();
     const it = question.questionIt.toLowerCase();
     if (!question.isCorrect) {
@@ -447,9 +589,16 @@ export const QuizCard: React.FC<QuizCardProps> = ({
               </div>
 
               {/* Marco Bengali Explanation Body */}
-              <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
-                {getMarcoExplanation()}
-              </p>
+              {isFetchingExplanation && !aiExplanation ? (
+                <div className="flex items-center gap-2.5 py-2.5 text-amber-700 dark:text-amber-300 text-xs sm:text-sm font-semibold animate-pulse">
+                  <Sparkles className="w-4 h-4 text-amber-500 animate-spin" />
+                  <span>শিক্ষক মারকো ট্রাফিক আইন ও ফাঁদ বিশ্লেষণ করে খাঁটি ব্যাখ্যা প্রস্তুত করছেন...</span>
+                </div>
+              ) : (
+                <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                  {getMarcoExplanation()}
+                </p>
+              )}
 
               {/* Marco Trap Warning (Trabocchetto) */}
               {getMarcoTrapTip() && (
