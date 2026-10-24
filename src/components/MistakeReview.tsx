@@ -242,7 +242,7 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
               আপনার ভুল প্রশ্নগুলোর তালিকা ({totalMistakesCount}টি প্রশ্ন • {mistakeGroups.length}টি রাউন্ড)
             </h1>
             <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed max-w-2xl">
-              প্রতিটি রাউন্ড ও মক টেস্টের ভুল প্রশ্নগুলো নিচে আলাদাভাবে সাজানো আছে। আপনি চাইলে যেকোনো নির্দিষ্ট রাউন্ড বেছে নিয়ে রিভিশন দিতে পারেন অথবা পুরো রাউন্ডের ভুল এক ক্লিকে মুছে ফেলতে পারেন।
+              প্রতিটি ভুল প্রশ্নের সাথে রয়েছে <strong className="text-amber-600 dark:text-amber-400">শিক্ষক মারকোর সহজ ব্যাখ্যা ও ফাঁদ সতর্কতা</strong>। প্রয়োজনে সরাসরি চ্যাটবটে মারকো ভাইকে প্রশ্ন করতে পারেন অথবা পুনরায় উত্তর দিয়ে সঠিকতা যাচাই করতে পারেন।
             </p>
           </div>
 
@@ -410,6 +410,7 @@ export const MistakeReview: React.FC<MistakeReviewProps> = ({
                         userAnswer={answers[q.id] ?? null}
                         onAnswer={(val) => handleAnswer(q, val)}
                         showInstantResult={true}
+                        alwaysShowExplanation={true}
                       />
                       {/* Quick remove individual mistake */}
                       <div className="flex items-center justify-between px-2">

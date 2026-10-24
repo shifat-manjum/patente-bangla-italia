@@ -92,6 +92,46 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     }
   }, [messages, isOpen, isMinimized, isTyping]);
 
+  // Keep a ref to handleSendMessage so event listeners always access the latest state
+  const handleSendMessageRef = useRef<(textToSend?: string) => Promise<void>>(() => Promise.resolve());
+
+  // Listen for global 'patente_ask_marco' custom events dispatched from QuizCard / MistakeReview
+  useEffect(() => {
+    const handleAskMarcoEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{
+        prompt?: string;
+        questionIt?: string;
+        questionBn?: string;
+        isCorrect?: boolean;
+      }>;
+      const detail = customEvent.detail;
+      setIsOpen(true);
+      setIsMinimized(false);
+      setIsDocked(false);
+
+      let query = detail?.prompt;
+      if (!query && detail?.questionIt) {
+        query = `মারকো ভাই, এই প্রশ্নটা একটু সহজ ভাষায় বুঝিয়ে দেন তো:\n"${detail.questionIt}"${
+          detail.questionBn ? `\n(বাংলা: "${detail.questionBn}")` : ''
+        }`;
+      }
+
+      if (query) {
+        // Small delay to allow chatbot DOM to open and render
+        setTimeout(() => {
+          if (handleSendMessageRef.current) {
+            handleSendMessageRef.current(query);
+          }
+        }, 150);
+      }
+    };
+
+    window.addEventListener('patente_ask_marco', handleAskMarcoEvent);
+    return () => {
+      window.removeEventListener('patente_ask_marco', handleAskMarcoEvent);
+    };
+  }, []);
+
   // Speech pronunciation for Italian text using natural female voice
   const speakItalian = (text: string) => {
     playItalianFemaleVoice(text, { rate: 1.0 });
@@ -467,6 +507,10 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       setIsTyping(false);
     }
   };
+
+  useEffect(() => {
+    handleSendMessageRef.current = handleSendMessage;
+  });
 
   const quickActions = [
     { label: '🛑 STOP বনাম Precedenza', query: 'STOP এবং Dare Precedenza এর পার্থক্য কি?' },
