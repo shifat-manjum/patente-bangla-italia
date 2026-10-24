@@ -47,13 +47,14 @@ export async function generateTutorResponse(prompt, history = []) {
     throw new Error('GEMINI_API_KEY is not configured in environment or database');
   }
 
-  // Available high-performance models
+  // Available high-performance models (fastest active models first)
   const candidateModels = [
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.5-flash',
     'gemini-flash-latest',
-    'gemini-2.0-flash-lite',
-    'gemini-flash-lite-latest',
+    'gemini-3.6-flash',
+    'gemini-3.7-flash',
+    'gemini-3.8-flash',
   ];
 
   const systemInstruction = `You are "শিক্ষক মারকো" (Teacher Marco), the witty, funny, charismatic, and brilliant Italian driving instructor at "Patente Guru" (ইতালিয়ান ড্রাইভিং লাইসেন্স Patente B বিশেষজ্ঞ).
@@ -128,14 +129,20 @@ Always respond in Bengali with Italian driving terms. Keep formatting clean with
           contents,
           generationConfig: {
             temperature: 0.65,
-            maxOutputTokens: 600,
+            maxOutputTokens: 1200,
           },
         }),
       });
 
       const data = await res.json();
-      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-        return data.candidates[0].content.parts[0].text;
+      if (data.candidates && data.candidates[0]?.content?.parts) {
+        const textParts = data.candidates[0].content.parts
+          .map(p => p.text)
+          .filter(Boolean)
+          .join('\n');
+        if (textParts) {
+          return textParts;
+        }
       }
 
       if (data.error) {
