@@ -15,20 +15,13 @@ async function getGeminiApiKey() {
 
   // Gracefully read from local .env in development
   try {
-    const candidatePaths = [
-      path.resolve(process.cwd(), '.env'),
-      path.resolve(process.cwd(), 'patente-bangla-italia', '.env'),
-      'D:/patente-bangla-italia/.env',
-      'D:/google_ai_key.env',
-    ];
-    for (const p of candidatePaths) {
-      if (fs.existsSync(p)) {
-        const content = fs.readFileSync(p, 'utf8');
-        const match = content.match(/GEMINI_API_KEY\s*=\s*([^\s\r\n]+)/);
-        if (match && match[1]) {
-          cachedGeminiKey = match[1].trim();
-          return cachedGeminiKey;
-        }
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8');
+      const match = content.match(/GEMINI_API_KEY\s*=\s*([^\s\r\n]+)/);
+      if (match && match[1]) {
+        cachedGeminiKey = match[1].trim();
+        return cachedGeminiKey;
       }
     }
   } catch {}
@@ -161,77 +154,5 @@ Always respond in Bengali with Italian driving terms. Keep formatting clean with
   }
 
   throw lastError || new Error('All AI models temporarily busy');
-}
-
-export async function generateQuestionExplanation(questionIt, isCorrect, questionBn = '') {
-  const apiKey = await getGeminiApiKey();
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured in environment or database');
-  }
-
-  const candidateModels = [
-    'gemini-3.5-flash',
-    'gemini-flash-latest',
-    'gemini-3.5-flash-lite',
-    'gemini-3.6-flash',
-    'gemini-3.7-flash',
-  ];
-
-  const prompt = `You are Teacher Marco (শিক্ষক মারকো 🇮🇹🚗), the expert Italian Patente B instructor at Patente Guru.
-Analyze this Italian driving license quiz statement:
-
-Question (Italian): "${questionIt}"
-Bangla Translation: "${questionBn}"
-Official Correct Verdict: ${isCorrect ? 'VERO (সত্য)' : 'FALSO (মিথ্যা)'}
-
-Provide a real, clear, and educational explanation in natural Bengali (বাংলা) explaining PRECISELY WHY it is ${isCorrect ? 'VERO' : 'FALSO'} according to the Italian Highway Code (Codice della Strada).
-STRICT RULES:
-1. NEVER write generic boilerplate like "এই বক্তব্যটি শতভাগ সত্য/আইনসম্মত" or "ট্রাফিক আইনে এমন কোনো নিয়ম নেই". Explain the actual technical reason, road sign logic, vehicle dynamics, or legal rule!
-2. If it is FALSO, explain what the actual rule is or point out the trick/false detail.
-3. If there is a trap word (Trabocchetto) such as "sempre", "mai", "solo", "soltanto", "obbligatoriamente", "in ogni caso", "esclusivamente", etc., explain it clearly in trapTipBn.
-
-Return strictly valid JSON:
-{
-  "explanationBn": "২-৩ লাইনের প্রাঞ্জল ও পরিষ্কার বাংলা ব্যাখ্যা",
-  "trapTipBn": "ফাঁদ শব্দের সতর্কতা বা কুইজ ট্রিক (না থাকলে খালি স্ট্রিং)"
-}`;
-
-  let lastError = null;
-  for (const model of candidateModels) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.3,
-            maxOutputTokens: 600,
-          },
-        }),
-      });
-
-      const data = await res.json();
-      if (data.candidates && data.candidates[0]?.content?.parts) {
-        const rawJson = data.candidates[0].content.parts.map(p => p.text).join('').trim();
-        const parsed = JSON.parse(rawJson);
-        if (parsed && parsed.explanationBn) {
-          return {
-            explanationBn: parsed.explanationBn.trim(),
-            trapTipBn: (parsed.trapTipBn || '').trim(),
-          };
-        }
-      }
-      if (data.error) {
-        lastError = new Error(data.error.message || `Model ${model} returned error`);
-      }
-    } catch (err) {
-      lastError = err;
-    }
-  }
-
-  throw lastError || new Error('Failed to generate explanation from AI');
 }
 

@@ -14,8 +14,7 @@ function apiHandlerPlugin(): Plugin {
           url === '/api/settings' ||
           url === '/api/create-checkout-session' ||
           url === '/api/verify-payment' ||
-          url === '/api/ai-tutor' ||
-          url === '/api/explain'
+          url === '/api/ai-tutor'
         ) {
           const wrappedRes = res as any
           if (!wrappedRes.status) {
@@ -66,12 +65,6 @@ function apiHandlerPlugin(): Plugin {
               // @ts-ignore
               const { default: aiTutorHandler } = await import('./api/ai-tutor.js')
               await aiTutorHandler(req as any, wrappedRes)
-              return
-            }
-            if (url === '/api/explain') {
-              // @ts-ignore
-              const { default: explainHandler } = await import('./api/explain.js')
-              await explainHandler(req as any, wrappedRes)
               return
             }
           } catch (err: any) {

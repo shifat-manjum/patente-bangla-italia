@@ -3,13 +3,12 @@ import {
   Volume2,
   CheckCircle2,
   XCircle,
+  Lightbulb,
   AlertTriangle,
   Languages,
   Headphones,
   Copy,
-  Check,
-  Sparkles,
-  MessageCircle,
+  Check
 } from 'lucide-react';
 import type { QuizQuestion } from '../data/quizData';
 import { RoadSign } from './RoadSign';
@@ -25,7 +24,6 @@ interface QuizCardProps {
   isExamSubmitted?: boolean;
   hideAnswerButtons?: boolean;
   hideAnswerButtonsOnMobile?: boolean;
-  alwaysShowExplanation?: boolean;
 }
 
 export const QuizCard: React.FC<QuizCardProps> = ({
@@ -37,7 +35,6 @@ export const QuizCard: React.FC<QuizCardProps> = ({
   isExamSubmitted = false,
   hideAnswerButtons = false,
   hideAnswerButtonsOnMobile = false,
-  alwaysShowExplanation = false,
 }) => {
   const [showBanglaTranslation, setShowBanglaTranslation] = useState(true);
   const [showEnglishTranslation, setShowEnglishTranslation] = useState(false);
@@ -91,202 +88,7 @@ export const QuizCard: React.FC<QuizCardProps> = ({
 
   const isAnswered = userAnswer !== null && userAnswer !== undefined;
   const isCorrect = isAnswered && userAnswer === question.isCorrect;
-  const shouldRevealOutcome = (showInstantResult && isAnswered) || alwaysShowExplanation;
-
-  // Helper: Detect whether an existing explanation is just a generic canned placeholder
-  const isGenericExplanation = (text?: string): boolean => {
-    if (!text) return true;
-    const trimmed = text.trim();
-    if (trimmed.length < 25) return true;
-    return (
-      trimmed.includes('ইতালির অফিশিয়াল ট্রাফিক কোড') ||
-      trimmed.includes('ইতালিয়ান ট্রাফিক কোড') ||
-      trimmed.includes('শতভাগ আইনসম্মত ও সত্য') ||
-      trimmed.includes('শতভাগ সত্য (VERO)') ||
-      trimmed.includes('মিথ্যা (FALSO)। ট্রাফিক নিয়মে এমন কোনো বিধান নেই') ||
-      trimmed.includes('এই বক্তব্যটি সম্পূর্ণ মিথ্যা (FALSO)') ||
-      trimmed.includes('এই বক্তব্যটি মিথ্যা (FALSO)') ||
-      trimmed.includes('এই বক্তব্যটি ট্রাফিক আইন অনুযায়ী পুরোপুরি সত্য')
-    );
-  };
-
-  // State to hold live AI-generated real explanation
-  const [aiExplanation, setAiExplanation] = useState<{
-    explanationBn: string;
-    trapTipBn?: string;
-  } | null>(() => {
-    try {
-      const cacheKey = `patente_ai_exp_${question.id || question.questionIt}`;
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed?.explanationBn && !isGenericExplanation(parsed.explanationBn)) {
-          return parsed;
-        }
-      }
-    } catch {}
-    return null;
-  });
-  const [isFetchingExplanation, setIsFetchingExplanation] = useState(false);
-
-  // Automatically fetch Teacher Marco's real AI explanation whenever a question outcome is revealed or in MistakeReview
-  useEffect(() => {
-    // If we already have a genuine custom explanation from the dataset, keep it
-    if (!isGenericExplanation(question.explanationBn)) {
-      return;
-    }
-
-    if (!shouldRevealOutcome) {
-      return;
-    }
-
-    const cacheKey = `patente_ai_exp_${question.id || question.questionIt}`;
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed?.explanationBn && !isGenericExplanation(parsed.explanationBn)) {
-          setAiExplanation(parsed);
-          return;
-        }
-      }
-    } catch {}
-
-    // Fetch real explanation from Teacher Marco AI backend
-    let isCancelled = false;
-    setIsFetchingExplanation(true);
-
-    fetch('/api/explain', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: question.id,
-        questionIt: question.questionIt,
-        isCorrect: question.isCorrect,
-        questionBn: question.questionBn || '',
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!isCancelled && data.success && data.explanationBn) {
-          const expData = {
-            explanationBn: data.explanationBn,
-            trapTipBn: data.trapTipBn || '',
-          };
-          setAiExplanation(expData);
-          try {
-            localStorage.setItem(cacheKey, JSON.stringify(expData));
-          } catch {}
-        }
-      })
-      .catch((err) => {
-        console.warn('Could not fetch AI explanation for card:', err);
-      })
-      .finally(() => {
-        if (!isCancelled) {
-          setIsFetchingExplanation(false);
-        }
-      });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [shouldRevealOutcome, question.id, question.questionIt, question.explanationBn, question.isCorrect, question.questionBn]);
-
-  // Smart fallback based on Italian traffic rules if offline or loading
-  const getSmartRuleFallback = (): string => {
-    const it = question.questionIt.toLowerCase();
-    if (it.includes('distanza di sicurezza')) {
-      return question.isCorrect
-        ? 'গাড়ির গতি বাড়লে ব্রেকিং দূরত্ব বহুগুণ বৃদ্ধি পায়, তাই উচ্চ গতিতে অবশ্যই নিরাপদ দূরত্ব (Distanza di sicurezza) বাড়াতে হবে।'
-        : 'নিরাপদ দূরত্ব কখনোই একটি অপরিবর্তনশীল সংখ্যা নয়; গাড়ির গতি, রাস্তা ও আবহাওয়ার ওপর ভিত্তি করে এটি পরিবর্তন করতে হয়।';
-    }
-    if (it.includes('sorpasso')) {
-      return question.isCorrect
-        ? 'পর্যাপ্ত দৃশ্যমানতা থাকলে এবং বিপরীত দিক থেকে কোনো গাড়ি না এলে নির্দিষ্ট সড়কে সতর্কতার সাথে ওভারটেক অনুমোদিত।'
-        : 'বাঁক (Curva), পাহাড়ি ঢালের চূড়া (Dosso) ও রেল ক্রসিংয়ের কাছে ওভারটেক করা কঠোরভাবে নিষিদ্ধ।';
-    }
-    if (it.includes('precedenza')) {
-      return question.isCorrect
-        ? 'ইতালিয়ান ট্রাফিক আইনের সাধারণ নিয়মানুযায়ী মোড়ে ডান দিক থেকে আসা গাড়িকে অগ্রাধিকার (Precedenza a destra) দিতে হয়।'
-        : 'সব সময় ডান দিকের গাড়ি অগ্রাধিকার পাবে না; স্টপ (STOP) বা বিশেষ নির্দেশক সংকেত থাকলে সেই সংকেতের নিয়ম কার্যকর হবে।';
-    }
-    if (it.includes('fermata') || it.includes('sosta')) {
-      return question.isCorrect
-        ? 'যাত্রী ওঠানামার জন্য সাময়িক থামা (Fermata) এবং পার্কিং (Sosta)-এর আইনগত শর্ত ও সময়সীমা আলাদা।'
-        : 'যেখানে পার্কিং (Divieto di sosta) নিষিদ্ধ, সেখানে স্বল্প সময়ের জন্য থামা (Fermata)-ও নিষিদ্ধ হবে এমন ধারণা ভুল।';
-    }
-    if (it.includes('autostrada')) {
-      return question.isCorrect
-        ? 'হাইওয়ে বা অটোস্ত্রাদায় নির্ধারিত সর্বনিম্ন গতি বজায় রাখা এবং জরুরি লেন ছাড়া গাড়ি না থামানো বাধ্যতামূলক।'
-        : 'হাইওয়েতে কোনো অবস্থাতেই ইউ-টার্ন (Inversione di marcia) বা রিভার্স চালানো (Retromarcia) বৈধ নয়।';
-    }
-    if (it.includes('casco') || it.includes('cinture')) {
-      return question.isCorrect
-        ? 'চালকের পাশাপাশি পেছনের সিটের সব আরোহীদের জন্যও সিটবেল্ট বা হেলমেট ব্যবহার শতভাগ বাধ্যতামূলক।'
-        : 'শহরের ভেতরে কম গতিতে গাড়ি চালালেও সিটবেল্ট বা হেলমেটের নিয়ম শিথিল হয় না।';
-    }
-    return question.isCorrect
-      ? 'ইতালির ট্রাফিক কোড অনুযায়ী এই শর্তটি সম্পূর্ণ নিয়মমাফিক এবং নিরাপদ ড্রাইভিংয়ের মূল বিধির সাথে সঙ্গতিপূর্ণ।'
-      : 'প্রশ্নের বাক্যটিতে এমন এক শর্ত উপস্থাপন করা হয়েছে যা ট্রাফিক আইনের মূল বিধির সম্পূর্ণ বিপরীত বা একটি বিভ্রান্তিকর ফাঁদ।';
-  };
-
-  // Teacher Marco explanation generator
-  const getMarcoExplanation = () => {
-    if (aiExplanation?.explanationBn) {
-      return aiExplanation.explanationBn;
-    }
-    if (!isGenericExplanation(question.explanationBn)) {
-      return question.explanationBn!.trim();
-    }
-    return getSmartRuleFallback();
-  };
-
-  // Teacher Marco Trap (Trabocchetto) detector
-  const getMarcoTrapTip = () => {
-    if (aiExplanation?.trapTipBn?.trim()) {
-      return aiExplanation.trapTipBn.trim();
-    }
-    if (question.trapTipBn?.trim()) return question.trapTipBn.trim();
-    const it = question.questionIt.toLowerCase();
-    if (!question.isCorrect) {
-      if (/\bsempre\b/i.test(it)) {
-        return 'প্রশ্নে "sempre" (সর্বদা) শব্দটি রয়েছে। ট্রাফিক নিয়মের বাস্তব ব্যতিক্রম থাকায় "sempre" যুক্ত কুইজের প্রশ্নগুলো সাধারণত FALSO হয়!';
-      }
-      if (/\bmai\b/i.test(it)) {
-        return 'প্রশ্নে "mai" (কখনোই না) শব্দটি রয়েছে। এটি একটি পরিচিত ফাঁদ শব্দ (Trabocchetto)!';
-      }
-      if (/\b(solo|soltanto)\b/i.test(it)) {
-        return 'প্রশ্নে "solo / soltanto" (শুধুমাত্র) ব্যবহার করা হয়েছে। অন্য কোনো অনুমতি বা পরিস্থিতি বাদ দিয়ে কেবল একটাই নির্দিষ্ট করায় এটি FALSO!';
-      }
-      if (/\bobbligatoriamente\b/i.test(it)) {
-        return 'প্রশ্নে "obbligatoriamente" (বাধ্যতামূলকভাবে) রয়েছে। খেয়াল রাখুন এটি বাস্তব বাধ্যবাধকতা নাকি সাধারণ সতর্কতা।';
-      }
-      if (/\bin ogni caso\b/i.test(it)) {
-        return 'প্রশ্নে "in ogni caso" (যেকোনো পরিস্থিতিতে) রয়েছে। এটি আরেকটি বহুল ব্যবহৃত ফাঁদ শব্দ!';
-      }
-    }
-    return null;
-  };
-
-  // Open PatenteChatbot with Teacher Marco immediately focused on this question
-  const askTeacherMarco = () => {
-    const verdictStr = question.isCorrect ? 'VERO (সত্য)' : 'FALSO (মিথ্যা)';
-    const prompt = `মারকো ভাই, এই প্রশ্নটা একটু সহজ বাংলায় ভালো করে বুঝিয়ে দেন তো:\n"${question.questionIt}"\n(অফিশিয়াল সঠিক উত্তর: ${verdictStr}${
-      question.questionBn ? ` - বাংলা: "${question.questionBn}"` : ''
-    })`;
-
-    window.dispatchEvent(
-      new CustomEvent('patente_ask_marco', {
-        detail: {
-          prompt,
-          questionIt: question.questionIt,
-          questionBn: question.questionBn,
-          isCorrect: question.isCorrect,
-        },
-      })
-    );
-  };
+  const shouldRevealOutcome = showInstantResult && isAnswered;
 
   return (
     <div
@@ -522,112 +324,44 @@ export const QuizCard: React.FC<QuizCardProps> = ({
             {/* Verdict Banner */}
             <div
               className={`p-3.5 rounded-xl flex items-center justify-between text-xs sm:text-sm font-black ${
-                !isAnswered
-                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800'
-                  : isCorrect
+                isCorrect
                   ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                   : 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
               }`}
             >
               <div className="flex items-center gap-2">
-                {!isAnswered ? (
-                  <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
-                ) : isCorrect ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
-                )}
+                {isCorrect ? <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> : <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />}
                 <span>
-                  {!isAnswered
-                    ? `ভুল করা প্রশ্ন — অফিশিয়াল সঠিক উত্তর: ${question.isCorrect ? 'VERO (সত্য)' : 'FALSO (মিথ্যা)'}`
-                    : isCorrect
+                  {isCorrect
                     ? '✅ চমৎকার! আপনার উত্তর সঠিক হয়েছে।'
                     : `❌ উত্তর ভুল হয়েছে! সঠিক উত্তর: ${question.isCorrect ? 'VERO (সত্য)' : 'FALSO (মিথ্যা)'}`}
                 </span>
               </div>
-              {!isAnswered && (
-                <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 hidden sm:inline">
-                  পুনরায় পরীক্ষা করতে বাটনে ক্লিক করুন
-                </span>
-              )}
             </div>
 
-            {/* ✨ শিক্ষক মারকোর সহজ ব্যাখ্যা (TEACHER MARCO EXPLANATION CARD) */}
-            <div
-              className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 text-left ${
-                !isAnswered || !isCorrect
-                  ? 'bg-gradient-to-br from-amber-50/90 via-orange-50/40 to-amber-100/30 dark:from-amber-950/30 dark:via-slate-800/90 dark:to-orange-950/20 border-amber-300 dark:border-amber-600/50 shadow-md shadow-amber-500/5'
-                  : 'bg-emerald-50/40 dark:bg-slate-800/80 border-emerald-300/70 dark:border-emerald-700/50'
-              }`}
-            >
-              {/* Marco Card Header */}
-              <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-amber-200/60 dark:border-slate-700/60">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl sm:text-2xl select-none" role="img" aria-label="Marco">
-                    🇮🇹🚗
-                  </span>
-                  <div>
-                    <div className="flex items-center gap-1.5 text-xs sm:text-sm font-black text-amber-700 dark:text-amber-400">
-                      <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-                      <span>শিক্ষক মারকোর সহজ ব্যাখ্যা (Teacher Marco)</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                      {question.isCorrect ? 'কেন এই বিবৃতিটি VERO (সত্য)?' : 'কেন এই বিবৃতিটি FALSO (মিথ্যা)?'}
-                    </p>
-                  </div>
+            {/* Explanation Box */}
+            {question.explanationBn && (
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1.5 text-left">
+                <div className="flex items-center gap-1.5 text-xs font-black text-[#FB6C00]">
+                  <Lightbulb className="w-4 h-4" />
+                  <span>কেন এই উত্তরটি সঠিক? (ব্যাখ্যা ও পরীক্ষার টিপস):</span>
                 </div>
-
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-xs font-black shadow-xs shrink-0 ${
-                    question.isCorrect
-                      ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
-                      : 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700'
-                  }`}
-                >
-                  {question.isCorrect ? 'সঠিক উত্তর: VERO' : 'সঠিক উত্তর: FALSO'}
-                </span>
-              </div>
-
-              {/* Marco Bengali Explanation Body */}
-              {isFetchingExplanation && !aiExplanation ? (
-                <div className="flex items-center gap-2.5 py-2.5 text-amber-700 dark:text-amber-300 text-xs sm:text-sm font-semibold animate-pulse">
-                  <Sparkles className="w-4 h-4 text-amber-500 animate-spin" />
-                  <span>শিক্ষক মারকো ট্রাফিক আইন ও ফাঁদ বিশ্লেষণ করে খাঁটি ব্যাখ্যা প্রস্তুত করছেন...</span>
-                </div>
-              ) : (
-                <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
-                  {getMarcoExplanation()}
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
+                  {question.explanationBn}
                 </p>
-              )}
-
-              {/* Marco Trap Warning (Trabocchetto) */}
-              {getMarcoTrapTip() && (
-                <div className="mt-3 p-3 rounded-xl bg-amber-100/80 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 text-amber-950 dark:text-amber-200 text-xs flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <strong className="block text-amber-800 dark:text-amber-300 font-bold">
-                      মারকোর ফাঁদ সতর্কতা (Trabocchetto Alert):
-                    </strong>
-                    <p className="mt-0.5 leading-relaxed">{getMarcoTrapTip()}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Interactive Ask Marco Button */}
-              <div className="mt-3.5 pt-3 border-t border-amber-200/60 dark:border-slate-700/60 flex items-center justify-between flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={askTeacherMarco}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs shadow-md shadow-emerald-600/30 active:scale-95 transition cursor-pointer"
-                >
-                  <MessageCircle className="w-4 h-4 text-white" />
-                  <span>মারকো ভাইকে আরও প্রশ্ন করুন</span>
-                </button>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 italic">
-                  🤖 লাইভ AI শিক্ষক মারকো উত্তর দিতে প্রস্তুত
-                </span>
               </div>
-            </div>
+            )}
+
+            {/* Trap Warning if applicable */}
+            {question.trapTipBn && (
+              <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2 text-left">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="block text-amber-800 dark:text-amber-300 font-bold">পরীক্ষার সতর্কবার্তা (Trabocchetto):</strong>
+                  <p className="mt-0.5 leading-relaxed">{question.trapTipBn}</p>
+                </div>
+              </div>
+            )}
 
             {/* Vocabulary in this question */}
             {question.vocabulary && question.vocabulary.length > 0 && (
