@@ -80,7 +80,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     {
       id: 'welcome',
       sender: 'ai',
-      text: `Ciao ${currentUser ? (currentUser.name || currentUser.email || 'Student').split(' ')[0] : 'Student'}! Sono Teacher Marco! 🇮🇹🚗\n\nপাতেন্তে নিয়ে কোনো প্যারা? কুইজ বুঝতে মাথা ঘুরছে? যেকোনো প্রশ্ন বা কুইজ এখানে পেস্ট করুন—সহজ, মজার ছলে ও ফাঁদ ধরিয়ে বুঝিয়ে দেব! 🍕\n\nতবে হ্যাঁ, বিরিয়ানির রেসিপি জিজ্ঞেস করবেন না কিন্তু, আমি শুধু গাড়ি চালানো আর পাতেন্তে পাস করানো জানি! 😂🏎️`,
+      text: `Ciao ${currentUser ? (currentUser.name || currentUser.email || 'Student').split(' ')[0] : 'Student'}! আমি আপনার সাব্বির ভাই (Sabbir Vi)! 🇮🇹🚗\n\nপাতেন্তে নিয়ে কোনো প্যারা? কুইজ বুঝতে মাথা ঘুরছে? যেকোনো প্রশ্ন বা কুইজ এখানে পেস্ট করুন—সহজ ভাষায়, সুন্দর ছলে ও ফাঁদ ধরিয়ে বুঝিয়ে দেব! 🍕\n\nতবে হ্যাঁ, বিরিয়ানির রেসিপি জিজ্ঞেস করবেন না কিন্তু, আমি শুধু গাড়ি চালানো আর পাতেন্তে পাস করানো জানি! 😂🏎️`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -207,7 +207,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
   const analyzeQuery = (query: string): { reply: string; quiz?: any } => {
     const cleanQuery = query.toLowerCase().trim();
 
-    // 0. Out-of-Scope / Irrelevant Topic Detection (Witty Marco Rejection)
+    // 0. Out-of-Scope / Irrelevant Topic Detection (Witty Sabbir Vi Rejection)
     const outOfScopePatterns = [
       /রেসিপি|বিরিয়ানি|রান্না|তরকারি|খাবার|recipe|cook|cooking|briyani|pizza recipe|pasta recipe/,
       /মুভি|সিনেমা|গান|নাটক|অভিনেতা|movie|actor|actress|cinema|bollywood|song/,
@@ -221,26 +221,26 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
     if (outOfScopePatterns.some((pattern) => pattern.test(cleanQuery))) {
       return {
-        reply: `Mamma Mia! 🤌😂 ওহে বন্ধু, আমি তো ইতালিয়ান ড্রাইভিং লাইসেন্স গুরু মারকো! আমি কি শেফ, কোডার নাকি জ্যোতিষী? 🍝\n\nএই প্রশ্নের সাথে তো পাতেন্তে বি বা ইতালিয়ান ট্রাফিক আইনের দূর-দূরান্তেও কোনো সম্পর্ক নেই! এসবে সময় নষ্ট না করে গাড়ির স্টিয়ারিংয়ে মন দাও—পাতেন্তে পাস না করলে ইতালি ঘুরে দেখবে কীভাবে? 🚗\n\nচলো, কোনো ট্রাফিক সাইন, কুইজের ফাঁদ (Trabocchetti) বা ড্রাইভিং নিয়ম নিয়ে প্রশ্ন করো, চুটকিতে বুঝিয়ে দিচ্ছি! Andiamo! 🏎️💨`,
+        reply: `Mamma Mia! 🤌😂 ওহে বন্ধু, আমি তো ইতালিয়ান ড্রাইভিং লাইসেন্স গুরু সাব্বির ভাই! আমি কি শেফ, কোডার নাকি জ্যোতিষী? 🍝\n\nএই প্রশ্নের সাথে তো পাতেন্তে বি বা ইতালিয়ান ট্রাফিক আইনের দূর-দূরান্তেও কোনো সম্পর্ক নেই! এসবে সময় নষ্ট না করে গাড়ির স্টিয়ারিংয়ে মন দাও—পাতেন্তে পাস না করলে ইতালি ঘুরে দেখবে কীভাবে? 🚗\n\nচলো, কোনো ট্রাফিক সাইন, কুইজের ফাঁদ (Trabocchetti) বা ড্রাইভিং নিয়ম নিয়ে প্রশ্ন করো, চুটকিতে বুঝিয়ে দিচ্ছি! Andiamo! 🏎️💨`,
       };
     }
 
     // 1. Common Student Questions (Course, Exam & License Rules)
     if (cleanQuery.includes('ভুল') || cleanQuery.includes('error') || cleanQuery.includes('কয়টা ভুল')) {
       return {
-        reply: `🎯 **পরীক্ষার নিয়ম ও ভুল সীমা (Regole d'Esame):**\n\nইতালিয়ান Patente B কুইজ পরীক্ষায় মোট **৩০টি প্রশ্ন** থাকে এবং সময় থাকে **২০ মিনিট**।\n\n• পাস করার নিয়ম: আপনি **সর্বোচ্চ ৩টি ভুল (Massimo 3 errori)** করতে পারবেন! ✅\n• **৪টি ভুল হলেই পরীক্ষা ফেইল (Bocciato)!** 😱\n\nমারকোর পরামর্শ: আমাদের ২৪০টি রাউন্ড নিয়মিত প্র্যাকটিস করুন, ভুল শূন্যে নামিয়ে আনাই আমাদের টার্গেট! 🚗💨`,
+        reply: `🎯 **পরীক্ষার নিয়ম ও ভুল সীমা (Regole d'Esame):**\n\nইতালিয়ান Patente B কুইজ পরীক্ষায় মোট **৩০টি প্রশ্ন** থাকে এবং সময় থাকে **২০ মিনিট**।\n\n• পাস করার নিয়ম: আপনি **সর্বোচ্চ ৩টি ভুল (Massimo 3 errori)** করতে পারবেন! ✅\n• **৪টি ভুল হলেই পরীক্ষা ফেইল (Bocciato)!** 😱\n\nসাব্বির ভাইয়ের পরামর্শ: আমাদের ২৪০টি রাউন্ড নিয়মিত প্র্যাকটিস করুন, ভুল শূন্যে নামিয়ে আনাই আমাদের টার্গেট! 🚗💨`,
       };
     }
 
     if (cleanQuery.includes('সময় কত') || cleanQuery.includes('কত মিনিট') || cleanQuery.includes('পরীক্ষা কত') || cleanQuery.includes('tempo')) {
       return {
-        reply: `⏱️ **পরীক্ষার সময়সীমা (Tempo d'Esame):**\n\nঅফিশিয়াল কুইজ পরীক্ষার জন্য আপনি পাবেন ঠিক **২০ মিনিট (20 minuti)**! ৩০টি প্রশ্নের জন্য এটা যথেষ্ট সময়—প্রতি প্রশ্নে গড়ে ৪০ সেকেন্ড।\n\nমারকোর সিক্রেট টিপস: কঠিন প্রশ্নে আটকে না থেকে প্রথমে নিশ্চিত প্রশ্নগুলোর উত্তর দিন, তারপর বাকিগুলো ঠান্ডা মাথায় চেক করুন! 🇮🇹✅`,
+        reply: `⏱️ **পরীক্ষার সময়সীমা (Tempo d'Esame):**\n\nঅফিশিয়াল কুইজ পরীক্ষার জন্য আপনি পাবেন ঠিক **২০ মিনিট (20 minuti)**! ৩০টি প্রশ্নের জন্য এটা যথেষ্ট সময়—প্রতি প্রশ্নে গড়ে ৪০ সেকেন্ড।\n\nসাব্বির ভাইয়ের সিক্রেট টিপস: কঠিন প্রশ্নে আটকে না থেকে প্রথমে নিশ্চিত প্রশ্নগুলোর উত্তর দিন, তারপর বাকিগুলো ঠান্ডা মাথায় চেক করুন! 🇮🇹✅`,
       };
     }
 
     if (cleanQuery.includes('foglio rosa') || cleanQuery.includes('ফোগলিও রোসা') || cleanQuery.includes('ফোগলিও')) {
       return {
-        reply: `📄 **ফোগলিও রোসা (Foglio Rosa) কী?**\n\nথিওরি পরীক্ষায় পাস করার পরই আপনি পাবেন 'Foglio Rosa'! এর মেয়াদ **১ বছর (12 mesi)** এবং এই সময়ের মধ্যে আপনি প্র্যাকটিক্যাল পরীক্ষার ৩টি সুযোগ (3 tentativi) পাবেন।\n\nমারকোর ড্রাইভিং টিপস: ফোগলিও রোসা দিয়ে গাড়ি ড্রাইভ করার সময় পাশে অবশ্যই কমপক্ষে ১০ বছরের অভিজ্ঞ লাইসেন্সধারী গাইড থাকতে হবে! 🚗`,
+        reply: `📄 **ফোগলিও রোসা (Foglio Rosa) কী?**\n\nথিওরি পরীক্ষায় পাস করার পরই আপনি পাবেন 'Foglio Rosa'! এর মেয়াদ **১ বছর (12 mesi)** এবং এই সময়ের মধ্যে আপনি প্র্যাকটিক্যাল পরীক্ষার ৩টি সুযোগ (3 tentativi) পাবেন।\n\nসাব্বির ভাইয়ের ড্রাইভিং টিপস: ফোগলিও রোসা দিয়ে গাড়ি ড্রাইভ করার সময় পাশে অবশ্যই কমপক্ষে ১০ বছরের অভিজ্ঞ লাইসেন্সধারী গাইড থাকতে হবে! 🚗`,
       };
     }
 
@@ -252,7 +252,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
 
     if (cleanQuery.includes('sosta') && cleanQuery.includes('fermata')) {
       return {
-        reply: `🅿️ **Sosta বনাম Fermata এর সহজ পার্থক্য:**\n\n• **Fermata (থামানো):** খুব অল্প সময়ের জন্য গাড়ি দাঁড় করানো (যেমন যাত্রী নামানো বা উঠানো)। চালককে অবশ্যই গাড়ির স্টিয়ারিংয়ে প্রস্তুত থাকতে হবে! VERO! ⏱️\n• **Sosta (পার্কিং):** গাড়ি রেখে চলে যাওয়া বা দীর্ঘ সময় রাখা। ইঞ্জিন বন্ধ থাকে।\n\nমারকোর গোল্ডেন রুল: যেখানে Fermata নিষেধ, সেখানে Sosta ও নিষেধ! কিন্তু যেখানে Sosta নিষেধ, সেখানে Fermata করা যেতে পারে (যদি বাধা সৃষ্টি না হয়)! 🚗`,
+        reply: `🅿️ **Sosta বনাম Fermata এর সহজ পার্থক্য:**\n\n• **Fermata (থামানো):** খুব অল্প সময়ের জন্য গাড়ি দাঁড় করানো (যেমন যাত্রী নামানো বা উঠানো)। চালককে অবশ্যই গাড়ির স্টিয়ারিংয়ে প্রস্তুত থাকতে হবে! VERO! ⏱️\n• **Sosta (পার্কিং):** গাড়ি রেখে চলে যাওয়া বা দীর্ঘ সময় রাখা। ইঞ্জিন বন্ধ থাকে।\n\nসাব্বির ভাইয়ের গোল্ডেন রুল: যেখানে Fermata নিষেধ, সেখানে Sosta ও নিষেধ! কিন্তু যেখানে Sosta নিষেধ, সেখানে Fermata করা যেতে পারে (যদি বাধা সৃষ্টি না হয়)! 🚗`,
       };
     }
 
@@ -273,7 +273,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
       return {
         reply: `Mamma Mia! 🤌 **কুইজ প্রশ্ন পেয়ে গেছি!**\n\nপরীক্ষা অনুযায়ী এর উত্তর **${
           matchedHotshot.isCorrect ? '✅ VERO (সত্য)' : '❌ FALSO (মিথ্যা)'
-        }**।\n\nমারকোর সহজ বিশ্লেষণ নিচে দেওয়া হলো:`,
+        }**।\n\nসাব্বির ভাইয়ের সহজ বিশ্লেষণ নিচে দেওয়া হলো:`,
         quiz: {
           isCorrect: matchedHotshot.isCorrect,
           questionIt: matchedHotshot.questionIt,
@@ -326,7 +326,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
     const foundTrap = trapWords.find((w) => cleanQuery.includes(w));
     if (foundTrap) {
       return {
-        reply: `Attenzione! ⚠️ **মারকোর ট্র্যাপ অ্যালার্ট: "${foundTrap.toUpperCase()}"**\n\nইতালিয়ান ড্রাইভিং লাইসেন্স কুইজে **${foundTrap}** (শুধুমাত্র / সবসময় / কোনো অবস্থাতেই না) শব্দগুলো থাকলে **৯৫% ক্ষেত্রে প্রশ্নটি FALSO (মিথ্যা)** হয়! কারণ ট্রাফিক বিধিতে প্রায় সবসময়ই কিছু ব্যতিক্রম থাকে।\n\nপ্রশ্নটি ভালো করে পড়ুন এবং এই ফাঁদে পা দেবেন না! 🤌`,
+        reply: `Attenzione! ⚠️ **সাব্বির ভাইয়ের ট্র্যাপ অ্যালার্ট: "${foundTrap.toUpperCase()}"**\n\nইতালিয়ান ড্রাইভিং লাইসেন্স কুইজে **${foundTrap}** (শুধুমাত্র / সবসময় / কোনো অবস্থাতেই না) শব্দগুলো থাকলে **৯৫% ক্ষেত্রে প্রশ্নটি FALSO (মিথ্যা)** হয়! কারণ ট্রাফিক বিধিতে প্রায় সবসময়ই কিছু ব্যতিক্রম থাকে।\n\nপ্রশ্নটি ভালো করে পড়ুন এবং এই ফাঁদে পা দেবেন না! 🤌`,
       };
     }
 
@@ -565,7 +565,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
               </div>
               <div className="text-left">
                 <div className="flex items-center gap-1.5">
-                  <h4 className="font-bold text-sm tracking-tight">Patente Live Support</h4>
+                  <h4 className="font-bold text-sm tracking-tight">Sabbir Vi • Patente Support</h4>
                   <span className="text-[10px] bg-emerald-600/80 px-1.5 py-0.2 rounded font-mono font-bold">
                     Official
                   </span>
@@ -738,7 +738,7 @@ export const PatenteChatbot: React.FC<PatenteChatbotProps> = ({
                 {isTyping && (
                   <div className="flex gap-2 items-center text-slate-500 text-xs italic bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full w-fit shadow-xs">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Marco sta scrivendo la risposta...</span>
+                    <span>সাব্বির ভাই উত্তর লিখছেন...</span>
                   </div>
                 )}
                 <div ref={messagesEndRef} />

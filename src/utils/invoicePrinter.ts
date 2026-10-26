@@ -7,7 +7,7 @@ export const generateInvoiceHtml = (invoice: InvoiceRecord): string => {
   const issuer = invoice.issuer || {
     name: 'Patente Guru Italia',
     brand: 'Autoscuola Digitale Patente B',
-    instructor: 'Marco Hossain & Patente Guru Team',
+    instructor: 'Sabbir Hossain & Patente Guru Team',
     location: 'Bolzano (BZ), Trentino-Alto Adige, Italia',
     email: 'info@patenteguru.it',
     website: 'https://patenteguru.it',

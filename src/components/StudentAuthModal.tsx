@@ -218,7 +218,7 @@ export const StudentAuthModal: React.FC<StudentAuthModalProps> = ({
 
     // 2. Validate Email Group Policy (Strict Real Provider Check)
     if (!isEmailValid(email)) {
-      setError('ভুয়া বা ভুল ইমেইল গ্রহণযোগ্য নয়। দয়া করে আপনার সচল আসল ইমেইল ঠিকানা দিন (যেমন: marco.rossi@gmail.com)।');
+      setError('ভুয়া বা ভুল ইমেইল গ্রহণযোগ্য নয়। দয়া করে আপনার সচল আসল ইমেইল ঠিকানা দিন (যেমন: sabbir.rossi@gmail.com বা user@gmail.com)।');
       return;
     }
 
