@@ -56,3 +56,6 @@ npm run dev
 ## ⚖️ Legal Disclaimer
 
 *Patente B Italia (বাংলা)* is an independent educational platform created to assist Bengali speakers in studying the Italian Highway Code (*Codice della Strada*). This platform is **NOT affiliated with, authorized, or sponsored by the Ministero delle Infrastrutture e dei Trasporti (MIT)** or the *Motorizzazione Civile*. All quiz questions are based on public domain ministerial decrees under Article 5 of Italian Law n. 633/1941.
+
+
+Got full access.
