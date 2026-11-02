@@ -10,10 +10,14 @@
     <link rel="alternate" hreflang="x-default" href="https://www.patenteguru.it/" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0B0F19" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Patente Guru" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="128x128" href="/favicon.png" />
-    <link rel="icon" type="image/png" href="/car-logo.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="icon" type="image/png" href="/icon-192x192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
     <title>Patente B Italia (বাংলা) | PatenteGuru.it — ইতালিয়ান ড্রাইভিং লাইসেন্স কুইজ ও বাংলা ব্যাখ্যা</title>
     <meta name="description" content="ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) ২০২৬ এর অফিশিয়াল ৭,১৬৫টি কুইজ বাংলা অনুবাদ, অডিও উচ্চারণ ও ২৪০টি রাউন্ড সহ অনুশীলন করুন। Quiz Patente B in Bangla." />
@@ -190,5 +194,19 @@
     </noscript>
     <div id="root" class="notranslate" translate="no"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').then(
+            function(reg) {
+              console.log('Patente Guru PWA ServiceWorker registration successful with scope:', reg.scope);
+            },
+            function(err) {
+              console.log('Patente Guru PWA ServiceWorker registration failed:', err);
+            }
+          );
+        });
+      }
+    </script>
   </body>
 </html>

@@ -35,6 +35,7 @@ import {
 import type { AppSettings } from './services/appSettingsService';
 import { trackViewContent, trackPurchase as trackPixelPurchase } from './utils/metaPixel';
 import { captureAndStoreUtm } from './utils/utmTracker';
+import { InstallAppBanner } from './components/InstallAppBanner';
 
 type ExtendedTab = AppTab | 'admin' | 'enrollment';
 
@@ -892,6 +893,9 @@ export function App() {
         onGoToCurriculum={() => setAppTab('curriculum')}
         onOpenStudentProfile={() => setIsStudentProfileOpen(true)}
       />
+
+      {/* Smart Mobile App Installation Banner */}
+      <InstallAppBanner />
 
       {/* Floating Theme Switch Feedback Toast */}
       {themeToast && (

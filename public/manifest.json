@@ -1,23 +1,32 @@
 {
-  "name": "PatenteGuru.it — Patente B Italia (বাংলা)",
-  "short_name": "PatenteGuru",
-  "description": "ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) ২০২৬ এর অফিশিয়াল ৭,১৬৫টি কুইজ বাংলা অনুবাদ, অডিও উচ্চারণ ও ২৪০টি রাউন্ড সহ অনুশীলন করুন।",
-  "start_url": "/",
+  "name": "Patente Guru — Patente B Italia (বাংলা)",
+  "short_name": "Patente Guru",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0B0F19",
-  "theme_color": "#00F5D4",
+  "theme_color": "#0B0F19",
+  "description": "ইতালিয়ান ড্রাইভিং লাইসেন্স (Patente B) এর অফিশিয়াল কুইজ বাংলা অনুবাদ ও ব্যাখ্যা সহ অনুশীলন করুন।",
+  "categories": ["education", "books"],
   "icons": [
     {
-      "src": "/favicon.png",
-      "sizes": "128x128",
-      "type": "image/png"
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/car-logo.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
-
