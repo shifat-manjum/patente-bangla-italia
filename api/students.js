@@ -76,8 +76,14 @@ export default async function handler(req, res) {
 
       const students = docs.map((doc) => {
         const { _id, passwordHash, ...rest } = doc;
+        let isVip = Boolean(rest.isVip);
+        if (isVip && rest.vipExpiresAt) {
+          const exp = new Date(rest.vipExpiresAt).getTime();
+          if (!isNaN(exp) && exp < Date.now()) isVip = false;
+        }
         return {
           ...rest,
+          isVip,
           _id: _id.toString(),
         };
       });

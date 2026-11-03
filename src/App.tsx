@@ -107,7 +107,6 @@ const ROUTE_SEO: Record<ExtendedTab, { title: string; description: string; path:
 
 // Lazy-loaded views & modals (keeps initial bundle ultra-fast!)
 const RoundsCurriculumView = lazy(() => import('./components/RoundsCurriculumView').then(m => ({ default: m.RoundsCurriculumView })));
-const EnrollmentModal = lazy(() => import('./components/EnrollmentModal').then(m => ({ default: m.EnrollmentModal })));
 const StudentAuthModal = lazy(() => import('./components/StudentAuthModal').then(m => ({ default: m.StudentAuthModal })));
 const TheorySummaryView = lazy(() => import('./components/TheorySummaryView').then(m => ({ default: m.TheorySummaryView })));
 const ExamSimulator = lazy(() => import('./components/ExamSimulator').then(m => ({ default: m.ExamSimulator })));
@@ -1137,24 +1136,16 @@ export function App() {
           />
         )}
 
-        {/* Official Driving Academy Enrollment Modal */}
+        {/* Official Driving Academy Paywall & Subscription Plans Modal */}
         {isPaywallOpen && (
-          <EnrollmentModal
+          <CoursePaymentModal
             isOpen={isPaywallOpen}
             onClose={() => setIsPaywallOpen(false)}
-            onContinueFree={() => setIsPaywallOpen(false)}
-            onViewFullPage={() => {
-              setIsPaywallOpen(false);
-              setAppTab('enrollment');
-            }}
-            onOpenPayment={() => {
-              setIsPaywallOpen(false);
-              setIsPaymentModalOpen(true);
-            }}
+            onSuccess={handlePaymentSuccess}
+            initialStudent={currentUser}
             attemptedRound={unlockedRound > appSettings.freeRoundsLimit ? unlockedRound : appSettings.freeRoundsLimit + 1}
             academyPriceEur={appSettings.academyPriceEur}
             regularPriceEur={appSettings.regularPriceEur}
-            freeRoundsLimit={appSettings.freeRoundsLimit}
           />
         )}
 
@@ -1280,11 +1271,11 @@ export function App() {
             <span className="truncate">
               {isVip
                 ? '🎓 সম্পূর্ণ কোর্স সক্রিয় • অফিসিয়াল রসিদ দেখুন'
-                : `🔥 ২৪০টি রাউন্ডের সম্পূর্ণ কোর্স আনলক (€${appSettings.academyPriceEur || 49})`}
+                : '🔥 সম্পূর্ণ কোর্স আনলক • মাত্র €১১ থেকে শুরু'}
             </span>
           </div>
           <span className="px-3 py-1 rounded-full bg-white text-slate-950 text-[11px] font-black shrink-0 shadow-sm ml-2">
-            {isVip ? 'রসিদ' : '💳 Pay Now'}
+            {isVip ? 'রসিদ' : '💳 প্ল্যান দেখুন'}
           </span>
         </button>
       </div>

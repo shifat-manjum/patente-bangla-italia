@@ -301,8 +301,16 @@ function verifyToken(token) {
 function sanitizePublicStudent(doc) {
   if (!doc) return null;
   const { _id, passwordHash, ...rest } = doc;
+  let isVip = Boolean(rest.isVip);
+  if (isVip && rest.vipExpiresAt) {
+    const exp = new Date(rest.vipExpiresAt).getTime();
+    if (!isNaN(exp) && exp < Date.now()) {
+      isVip = false;
+    }
+  }
   return {
     ...rest,
+    isVip,
     _id: _id ? _id.toString() : undefined,
   };
 }

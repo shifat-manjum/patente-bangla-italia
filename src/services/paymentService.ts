@@ -1,5 +1,65 @@
 export type PaymentMethodType = 'card' | 'postepay' | 'paypal' | 'applepay' | 'bonifico';
 
+export type SubscriptionPlanId = '1_month' | '3_months' | 'lifetime';
+
+export interface SubscriptionPlan {
+  id: SubscriptionPlanId;
+  nameBn: string;
+  durationLabelBn: string;
+  badgeNumberBn: string;
+  badgeUnitBn: string;
+  priceEur: number;
+  regularPriceEur: number;
+  monthlyRateBn: string;
+  isPopular?: boolean;
+  popularBadgeBn?: string;
+  durationDays: number | null;
+  descriptionBn: string;
+}
+
+export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
+  {
+    id: '1_month',
+    nameBn: '১ মাস মেয়াদী প্ল্যান',
+    durationLabelBn: '১ মাস মেয়াদী এক্সেস',
+    badgeNumberBn: '১',
+    badgeUnitBn: 'মাস',
+    priceEur: 11,
+    regularPriceEur: 15,
+    monthlyRateBn: '€১১ / মাস',
+    isPopular: false,
+    durationDays: 30,
+    descriptionBn: '৩০ দিনের জন্য ২৪০টি রাউন্ড ও সম্পূর্ণ কোর্স',
+  },
+  {
+    id: '3_months',
+    nameBn: '৩ মাস মেয়াদী প্ল্যান',
+    durationLabelBn: '৩ মাস মেয়াদী এক্সেস',
+    badgeNumberBn: '৩',
+    badgeUnitBn: 'মাস',
+    priceEur: 30,
+    regularPriceEur: 45,
+    monthlyRateBn: '€১০ / মাস',
+    isPopular: true,
+    popularBadgeBn: 'সবচেয়ে জনপ্রিয়',
+    durationDays: 90,
+    descriptionBn: '৯০ দিনের জন্য ২৪০টি রাউন্ড ও সম্পূর্ণ কোর্স (সর্বাধিক জনপ্রিয়)',
+  },
+  {
+    id: 'lifetime',
+    nameBn: 'লাইফটাইম প্ল্যান (Fino alla Patente)',
+    durationLabelBn: 'লাইসেন্স পাওয়ার আগ পর্যন্ত আনলিমিটেড',
+    badgeNumberBn: 'লাইফ',
+    badgeUnitBn: 'টাইম',
+    priceEur: 44,
+    regularPriceEur: 99,
+    monthlyRateBn: 'এককালীন পেমেন্ট • পাশ না করা পর্যন্ত',
+    isPopular: false,
+    durationDays: null,
+    descriptionBn: 'পাস করার আগ পর্যন্ত আজীবন আনলিমিটেড এক্সেস',
+  },
+];
+
 export interface InvoiceRecord {
   id: string; // e.g. "PG-2026-84729"
   date: string; // ISO string
@@ -10,8 +70,10 @@ export interface InvoiceRecord {
   codiceFiscale: string; // Italian Codice Fiscale
   address?: string;
   city?: string;
-  amount: number; // 49.00
+  amount: number; // e.g. 11, 30, 44
   currency: string; // "EUR"
+  planId?: SubscriptionPlanId;
+  vipExpiresAt?: string | null;
   taxExemptionNote: string;
   paymentMethod: PaymentMethodType;
   paymentMethodLabel: string;
@@ -71,7 +133,11 @@ export const getPaymentMethodLabel = (method: PaymentMethodType): string => {
   }
 };
 
-export const createInvoiceRecord = (formData: PaymentFormData, amount: number = 49.0): InvoiceRecord => {
+export const createInvoiceRecord = (
+  formData: PaymentFormData,
+  amount: number = 30.0,
+  planId: SubscriptionPlanId = '3_months'
+): InvoiceRecord => {
   const now = new Date();
   const formattedDate = now.toLocaleDateString('it-IT', {
     day: '2-digit',
@@ -80,6 +146,14 @@ export const createInvoiceRecord = (formData: PaymentFormData, amount: number = 
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const plan = SUBSCRIPTION_PLANS.find((p) => p.id === planId) || SUBSCRIPTION_PLANS[1];
+
+  let vipExpiresAt: string | null = null;
+  if (plan.durationDays) {
+    const exp = new Date(now.getTime() + plan.durationDays * 24 * 60 * 60 * 1000);
+    vipExpiresAt = exp.toISOString();
+  }
 
   return {
     id: generateInvoiceNumber(),
@@ -91,8 +165,10 @@ export const createInvoiceRecord = (formData: PaymentFormData, amount: number = 
     codiceFiscale: formData.codiceFiscale.trim().toUpperCase() || 'NON SPECIFICATO',
     address: formData.address.trim() || 'Italia',
     city: formData.city.trim() || 'Bolzano',
-    amount: typeof amount === 'number' && amount > 0 ? amount : 49.0,
+    amount: typeof amount === 'number' && amount > 0 ? amount : plan.priceEur,
     currency: 'EUR',
+    planId: plan.id,
+    vipExpiresAt,
     taxExemptionNote:
       "Operazione didattico-formativa esente da IVA ai sensi dell'art. 10, comma 1, n. 20 del D.P.R. 633/1972.",
     paymentMethod: formData.paymentMethod,
@@ -100,7 +176,11 @@ export const createInvoiceRecord = (formData: PaymentFormData, amount: number = 
     transactionId: generateTransactionId(formData.paymentMethod),
     status: 'PAGATO',
     courseDescription:
-      "Corso Completo Ufficiale Patente B 2026 - Accesso a tutti i 240 Round Ufficiali, Quiz Ministeriali con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica valida fino al conseguimento della patente.",
+      plan.id === '1_month'
+        ? 'Corso Patente B 2026 - Abbonamento 1 Mese (30 Giorni) a tutti i 240 Round con traduzioni in Bengali e simulatore.'
+        : plan.id === '3_months'
+        ? 'Corso Patente B 2026 - Abbonamento 3 Mesi (90 Giorni) a tutti i 240 Round con traduzioni in Bengali e simulatore.'
+        : 'Corso Completo Ufficiale Patente B 2026 - Accesso Illimitato Lifetime a tutti i 240 Round con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica.',
     issuer: {
       name: 'PatenteGuru.it / Patente Bangla Italia',
       brand: 'PatenteGuru Autoscuola Digitale',
@@ -141,4 +221,3 @@ export const getLatestInvoice = (studentEmail?: string): InvoiceRecord | null =>
   const list = getInvoices(studentEmail);
   return list.length > 0 ? list[0] : null;
 };
-

@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
-  CreditCard, 
-  ShieldCheck, 
-  Lock, 
-  Sparkles, 
-  Building2, 
-  Copy, 
   Check, 
-  Loader2,
-  FileText,
+  ShieldCheck, 
+  Loader2, 
+  Tag, 
   AlertCircle,
-  MessageCircle,
-  Tag
+  Building2,
+  Lock
 } from 'lucide-react';
+import { SUBSCRIPTION_PLANS } from '../services/paymentService';
 import type { 
+  SubscriptionPlanId, 
   PaymentMethodType, 
   PaymentFormData, 
   InvoiceRecord 
@@ -22,7 +19,7 @@ import type {
 import { 
   getAppSettings, 
   SETTINGS_CHANGE_EVENT,
-  validatePromoCode
+  validatePromoCode 
 } from '../services/appSettingsService';
 import type { PromoCodeItem } from '../services/appSettingsService';
 import { WHATSAPP_SUPPORT_NUMBER } from '../config/constants';
@@ -49,13 +46,16 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
   onSuccess: _onSuccess,
   initialStudent,
   attemptedRound = 21,
-  academyPriceEur,
-  regularPriceEur,
 }) => {
   const [appSettings, setAppSettings] = useState(() => getAppSettings());
-  const basePrice = academyPriceEur || appSettings.academyPriceEur || 49;
-  const regularPrice = regularPriceEur || appSettings.regularPriceEur || 120;
+  const [selectedPlanId, setSelectedPlanId] = useState<SubscriptionPlanId>('3_months');
+  const [showBillingInputs, setShowBillingInputs] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodType>('card');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [bonificoPendingSent, setBonificoPendingSent] = useState(false);
 
+  // Promo code state
   const [promoInput, setPromoInput] = useState<string>(() => {
     try {
       return localStorage.getItem('patente_referral_code') || '';
@@ -72,24 +72,9 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
     }
   });
   const [promoError, setPromoError] = useState<string | null>(null);
+  const [showPromoInput, setShowPromoInput] = useState(false);
 
-  const discountEur = appliedPromo ? Math.max(0, appliedPromo.discountEur || 0) : 0;
-  const activePrice = Math.max(10, basePrice - discountEur);
-
-  useEffect(() => {
-    const handleSettingsChanged = (e: any) => {
-      if (e?.detail) setAppSettings(e.detail);
-    };
-    window.addEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
-    return () => window.removeEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
-  }, []);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodType>('card');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [copiedIban, setCopiedIban] = useState(false);
-  const [bonificoPendingSent, setBonificoPendingSent] = useState(false);
-
-  // Form Fields
+  // Student Form Data
   const [formData, setFormData] = useState<PaymentFormData>({
     studentName: initialStudent?.name || '',
     studentEmail: initialStudent?.email || '',
@@ -98,19 +83,26 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
     address: '',
     city: 'Bolzano',
     paymentMethod: 'card',
-    cardNumber: '',
-    cardExpiry: '',
-    cardCvv: '',
   });
 
-  // Keep initial student updated if changed
+  useEffect(() => {
+    const handleSettingsChanged = (e: any) => {
+      if (e?.detail) setAppSettings(e.detail);
+    };
+    window.addEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+    return () => window.removeEventListener(SETTINGS_CHANGE_EVENT, handleSettingsChanged);
+  }, []);
+
   useEffect(() => {
     if (initialStudent) {
       setFormData((prev) => ({
         ...prev,
         studentName: prev.studentName || initialStudent.name || '',
         studentEmail: prev.studentEmail || initialStudent.email || '',
-        studentPhone: prev.studentPhone && prev.studentPhone !== '+39 ' ? prev.studentPhone : initialStudent.phone || '+39 ',
+        studentPhone:
+          prev.studentPhone && prev.studentPhone !== '+39 '
+            ? prev.studentPhone
+            : initialStudent.phone || '+39 ',
       }));
     }
   }, [initialStudent]);
@@ -128,11 +120,9 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleCopyIban = (iban: string) => {
-    navigator.clipboard.writeText(iban);
-    setCopiedIban(true);
-    setTimeout(() => setCopiedIban(false), 2500);
-  };
+  const currentPlan = SUBSCRIPTION_PLANS.find((p) => p.id === selectedPlanId) || SUBSCRIPTION_PLANS[1];
+  const discountEur = appliedPromo ? Math.max(0, appliedPromo.discountEur || 0) : 0;
+  const activePrice = Math.max(5, currentPlan.priceEur - discountEur);
 
   const handleApplyPromo = () => {
     setPromoError(null);
@@ -163,37 +153,34 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
     } catch {}
   };
 
-  const handleSubmitPayment = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitPayment = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setErrorMessage(null);
 
-    // Validation
-    if (!formData.studentName.trim()) {
-      setErrorMessage('দয়া করে আপনার সম্পূর্ণ নাম (Nome e Cognome) লিখুন।');
+    // Require student name & email
+    const cleanName = formData.studentName.trim();
+    const cleanEmail = formData.studentEmail.trim().toLowerCase();
+
+    if (!cleanName || !cleanEmail || !cleanEmail.includes('@')) {
+      setShowBillingInputs(true);
+      setErrorMessage('দয়া করে আপনার নাম ও সঠিক ইমেইল লিখুন (যেখানে পেমেন্ট কনফার্মেশন ও ইনভয়েস যাবে)।');
       return;
     }
 
-    if (!formData.studentEmail.trim() || !formData.studentEmail.includes('@')) {
-      setErrorMessage('দয়া করে একটি সঠিক ইমেইল অ্যাড্রেস লিখুন (যেখানে ইনভয়েস পাঠানো হবে)।');
-      return;
-    }
-
-    // If Bonifico Bancario: DO NOT create a free Fattura or unlock VIP automatically!
-    // Require student to send actual bank transfer receipt (CRO/Ricevuta) on WhatsApp so Admin verifies money arrived first.
+    // Handle Bonifico Bancario via WhatsApp
     if (selectedMethod === 'bonifico') {
       setBonificoPendingSent(true);
       const waNumber = WHATSAPP_SUPPORT_NUMBER.replace(/[^0-9]/g, '');
       const promoLine = appliedPromo
-        ? `🎁 Promo/Referral Code: ${appliedPromo.code} (-€${appliedPromo.discountEur} Sconto | Partner: ${appliedPromo.ownerName})\n`
+        ? `🎁 Promo Code: ${appliedPromo.code} (-€${appliedPromo.discountEur})\n`
         : '';
       const waText = encodeURIComponent(
-        `Ciao PatenteGuru! Ho scelto il pagamento tramite Bonifico Bancario SEPA di €${activePrice},00 per il Corso Completo Patente B (240 Round).\n\n` +
-        `👤 Nome: ${formData.studentName.trim()}\n` +
-        `📧 Email: ${formData.studentEmail.trim().toLowerCase()}\n` +
+        `Ciao PatenteGuru! Ho scelto il pagamento tramite Bonifico Bancario per il piano: ${currentPlan.nameBn} (€${activePrice},00).\n\n` +
+        `👤 Nome: ${cleanName}\n` +
+        `📧 Email: ${cleanEmail}\n` +
         `📱 Telefono: ${formData.studentPhone.trim()}\n` +
         promoLine +
-        `🏛️ Codice Fiscale: ${formData.codiceFiscale.trim() || 'N/A'}\n\n` +
-        `Invio qui la ricevuta contabile (CRO/TRN) del bonifico per l'attivazione del mio Corso Completo (240 Round) e l'emissione della Fattura.`
+        `Invio qui la ricevuta (CRO/TRN) del bonifico per l'attivazione immediata del mio account.`
       );
       window.open(`https://wa.me/${waNumber}?text=${waText}`, '_blank', 'noopener,noreferrer');
       return;
@@ -201,20 +188,21 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
     setIsProcessing(true);
 
-    // Real Stripe Checkout for Card, PostePay, Apple Pay, Google Pay, Satispay, Klarna
     try {
       trackPaymentStart(attemptedRound, activePrice);
-      trackInitiateCheckout(activePrice, 'EUR', 'Patente Bangla Pro Pass');
+      trackInitiateCheckout(activePrice, 'EUR', `Patente Guru ${currentPlan.nameBn}`);
+
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          studentName: formData.studentName.trim(),
-          studentEmail: formData.studentEmail.trim().toLowerCase(),
+          studentName: cleanName,
+          studentEmail: cleanEmail,
           studentPhone: formData.studentPhone.trim(),
           codiceFiscale: formData.codiceFiscale.trim(),
           address: formData.address.trim(),
           city: formData.city.trim(),
+          planId: currentPlan.id,
           priceEur: activePrice,
           promoCode: appliedPromo?.code || '',
         }),
@@ -225,7 +213,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
         throw new Error(data.error || 'Stripe পেমেন্ট গেটওয়েতে সংযোগ করতে সমস্যা হয়েছে।');
       }
 
-      // Redirect student to Stripe's official 256-bit SSL encrypted 3D-Secure checkout
+      // Redirect student to Stripe 256-bit SSL secure checkout
       window.location.href = data.url;
     } catch (err: any) {
       setIsProcessing(false);
@@ -235,466 +223,368 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-fadeIn overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto"
       role="dialog"
       aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isProcessing) {
+          onClose();
+        }
+      }}
     >
-      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full my-auto overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 transform transition-all max-h-[92vh] flex flex-col text-slate-800 dark:text-slate-100 text-left">
-        
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#18110E] p-5 sm:p-6 text-white relative shrink-0 border-b border-white/10">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isProcessing}
-            className="absolute top-4 right-4 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer disabled:opacity-50"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+      <div className="relative w-full max-w-md my-auto bg-[#0d131f] text-slate-100 rounded-[32px] border border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+        {/* Top Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isProcessing}
+          className="absolute top-4 right-4 p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer z-10 disabled:opacity-50"
+          aria-label="Close"
+        >
+          <X className="w-4 h-4" />
+        </button>
 
-          <div className="space-y-1.5 pr-12">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-black text-slate-200">
-              <Lock className="w-3.5 h-3.5 text-[#FB6C00]" />
-              <span>Checkout Sicuro SSL 256-bit • Ricevuta Fiscale Immediata</span>
+        {/* Modal Scrollable Content */}
+        <div className="p-5 sm:p-6 overflow-y-auto custom-scrollbar space-y-4">
+          
+          {/* Mascot Car Header Illustration */}
+          <div className="flex flex-col items-center justify-center text-center pt-2">
+            <div className="relative mb-2">
+              {/* Cute Yellow Car Mascot with Eyes */}
+              <div className="w-20 h-14 bg-gradient-to-b from-[#ffd233] to-[#f59e0b] rounded-t-[28px] rounded-b-[18px] relative shadow-lg shadow-amber-500/20 border-2 border-[#fbbf24] flex items-center justify-center">
+                {/* Windshield */}
+                <div className="w-13 h-7 bg-[#60a5fa] rounded-t-[14px] rounded-b-[6px] border border-blue-300/40 relative overflow-hidden flex items-center justify-center gap-2">
+                  {/* Cartoon Eye 1 */}
+                  <div className="w-3.5 h-3.5 bg-white rounded-full relative flex items-center justify-center shadow-xs">
+                    <div className="w-2 h-2 bg-[#1e293b] rounded-full translate-y-[-1px] translate-x-[1px]" />
+                  </div>
+                  {/* Cartoon Eye 2 */}
+                  <div className="w-3.5 h-3.5 bg-white rounded-full relative flex items-center justify-center shadow-xs">
+                    <div className="w-2 h-2 bg-[#1e293b] rounded-full translate-y-[-1px] translate-x-[1px]" />
+                  </div>
+                  {/* Glass Reflection */}
+                  <div className="absolute top-0 right-1 w-2 h-5 bg-white/30 rotate-12" />
+                </div>
+                {/* Wheels */}
+                <div className="absolute -bottom-2 -left-1 w-5 h-5 bg-slate-900 rounded-full border-2 border-slate-700 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-slate-400 rounded-full" />
+                </div>
+                <div className="absolute -bottom-2 -right-1 w-5 h-5 bg-slate-900 rounded-full border-2 border-slate-700 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-slate-400 rounded-full" />
+                </div>
+                {/* Headlights */}
+                <div className="absolute bottom-2 left-1 w-2 h-2 bg-amber-200 rounded-full" />
+                <div className="absolute bottom-2 right-1 w-2 h-2 bg-amber-200 rounded-full" />
+              </div>
+
+              {/* Floating Padlock Badge */}
+              <div className="absolute -bottom-2 -right-3 w-7 h-7 rounded-full bg-[#1e293b] border-2 border-[#334155] text-blue-400 flex items-center justify-center shadow-md">
+                <Lock className="w-3.5 h-3.5 text-blue-300" />
+              </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
-              অনলাইন কোর্স এনরোলমেন্ট ও পেমেন্ট (€{activePrice})
-            </h2>
-            <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed">
-              পাস করা পর্যন্ত এককালীন এক্সেস (Una Tantum) • Round #{attemptedRound} থেকে ২৪০ রাউন্ড এবং সাথে সাথে অফিসিয়াল ইনভয়েস রসিদ
-            </p>
-          </div>
-        </div>
 
-        {/* Scrollable Form Body */}
-        <form onSubmit={handleSubmitPayment} className="p-5 sm:p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
+            {/* Headline */}
+            <h2 className="text-2xl font-bold tracking-tight text-white font-serif mt-2">
+              এই অংশটা পুরো কোর্সে আছে
+            </h2>
+            <p className="text-xs sm:text-[13px] text-slate-400 mt-1.5 max-w-xs leading-relaxed">
+              ফ্রি ২১ দিনে রাউন্ড ১-২০ খোলা। বাকি সমস্ত রাউন্ড ও সম্পূর্ণ কোর্স পড়তে একটা Plan লাগবে।
+            </p>
+
+            {/* Founders Offer Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-bold mt-2.5">
+              <span>✨ Founders অফার: বিশেষ ছাড়</span>
+            </div>
+          </div>
+
+          {/* Error Message */}
           {errorMessage && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5 animate-shake">
+            <div className="p-3 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs flex items-start gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {/* Pricing Summary Box */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="space-y-0.5">
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-                Pacchetto Ufficiale Patente B 2026
-              </span>
-              <p className="text-sm font-black text-slate-900 dark:text-white">
-                ২৪০টি সম্পূর্ণ রাউন্ড + অডিও সিমুলেশন + ফুল সিলেবাস
-              </p>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                ✓ কোনো রিনিউ ফি নেই • লাইসেন্স পাস করার আগ পর্যন্ত আনলিমিটেড
-              </p>
-            </div>
+          {/* 3 Subscription Plan Cards */}
+          <div className="space-y-3 pt-1">
+            {SUBSCRIPTION_PLANS.map((plan) => {
+              const isSelected = selectedPlanId === plan.id;
+              const price = appliedPromo && isSelected ? activePrice : plan.priceEur;
 
-            <div className="text-right sm:border-l sm:border-slate-200 dark:sm:border-slate-700 sm:pl-4 shrink-0">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-                  €{activePrice},00
-                </span>
-                <span className="text-xs text-slate-400 line-through">
-                  €{appliedPromo ? basePrice : regularPrice}
-                </span>
-              </div>
-              {appliedPromo && (
-                <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 block">
-                  ✓ প্রোমো ছাড়: -€{appliedPromo.discountEur},00 ({appliedPromo.code})
-                </span>
-              )}
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
-                Esente IVA Art. 10 DPR 633/72
-              </span>
-            </div>
-          </div>
-
-          {/* Promo / Referral Code Input Box */}
-          <div className="p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-[#FB6C00]" />
-                <span>প্রোমো বা রেফারেল কোড আছে? (Codice Promo / Referral)</span>
-              </label>
-              {appliedPromo && (
-                <button
-                  type="button"
-                  onClick={handleRemovePromo}
-                  className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+              return (
+                <div
+                  key={plan.id}
+                  onClick={() => setSelectedPlanId(plan.id)}
+                  className={`relative p-3.5 rounded-2xl cursor-pointer transition-all border flex items-center justify-between select-none ${
+                    isSelected
+                      ? 'border-[#0ea5e9] bg-[#0c1e30] shadow-lg shadow-cyan-500/10 ring-1 ring-[#0ea5e9]/50'
+                      : 'border-slate-800 bg-[#111827]/70 hover:border-slate-700 hover:bg-[#111827]'
+                  }`}
                 >
-                  সরান (Remove)
-                </button>
-              )}
-            </div>
+                  {/* Most Popular Badge on 3-months card */}
+                  {plan.popularBadgeBn && (
+                    <div className="absolute -top-2.5 right-4 px-2.5 py-0.5 rounded-full bg-[#38bdf8] text-[#0f172a] text-[10px] font-black tracking-wide shadow-sm">
+                      {plan.popularBadgeBn}
+                    </div>
+                  )}
 
-            {appliedPromo ? (
-              <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/70 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <div>
-                    <span className="font-black text-emerald-800 dark:text-emerald-300">
-                      কোড <span className="font-mono underline">{appliedPromo.code}</span> সফলভাবে যুক্ত হয়েছে!
-                    </span>
-                    <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block">
-                      আপনি অতিরিক্ত <strong>€{appliedPromo.discountEur},00 ছাড়</strong> পেয়েছেন (নতুন ফি: €{activePrice},00)
-                    </span>
+                  <div className="flex items-center gap-3">
+                    {/* Left Duration Badge */}
+                    <div className="w-11 h-11 rounded-xl bg-slate-900 border border-slate-700/80 flex flex-col items-center justify-center text-cyan-400 shrink-0 leading-tight">
+                      <span className="text-sm font-black">{plan.badgeNumberBn}</span>
+                      <span className="text-[10px] font-bold text-slate-300">{plan.badgeUnitBn}</span>
+                    </div>
+
+                    {/* Price and Rate */}
+                    <div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl sm:text-2xl font-black text-white">
+                          €{price}
+                        </span>
+                        <span className="text-xs text-slate-500 line-through">
+                          €{plan.regularPriceEur}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 font-medium">
+                        {plan.monthlyRateBn}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Radio / Check Circle */}
+                  <div className="shrink-0 pl-2">
+                    {isSelected ? (
+                      <div className="w-6 h-6 rounded-full bg-[#0ea5e9] flex items-center justify-center text-[#0f172a] shadow-sm">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                    ) : (
+                      <div className="w-6 h-6 rounded-full border-2 border-slate-700 bg-slate-800/50" />
+                    )}
                   </div>
                 </div>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[10px]">
-                  -€{appliedPromo.discountEur}
-                </span>
-              </div>
+              );
+            })}
+          </div>
+
+          {/* Promo Code Toggle / Input */}
+          <div className="pt-1">
+            {!showPromoInput && !appliedPromo ? (
+              <button
+                type="button"
+                onClick={() => setShowPromoInput(true)}
+                className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Tag className="w-3.5 h-3.5" />
+                <span>প্রোমো বা রেফারেল কোড আছে? (Promo Code)</span>
+              </button>
             ) : (
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={promoInput}
-                  onChange={(e) => {
-                    setPromoInput(e.target.value.toUpperCase());
-                    if (promoError) setPromoError(null);
-                  }}
-                  placeholder="যেমন: FRIEND5 বা REF-XXXX"
-                  className="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold uppercase text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FB6C00]"
-                />
-                <button
-                  type="button"
-                  onClick={handleApplyPromo}
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-[#FB6C00] dark:hover:bg-[#e56000] text-white font-black text-xs transition cursor-pointer shrink-0"
-                >
-                  Apply কোড
-                </button>
-              </div>
-            )}
-
-            {promoError && (
-              <p className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
-                ⚠️ {promoError}
-              </p>
-            )}
-          </div>
-
-          {/* Payment Method Selector Tabs */}
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 block">
-              পেমেন্ট মাধ্যম নির্বাচন করুন (Metodo di Pagamento):
-            </label>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {/* Card / PostePay Evolution */}
-              <button
-                type="button"
-                onClick={() => setSelectedMethod('card')}
-                className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  selectedMethod === 'card'
-                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-black shadow-xs ring-2 ring-blue-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300'
-                }`}
-              >
-                <CreditCard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                <span className="text-xs font-bold leading-tight">Carta / PostePay</span>
-                <span className="text-[9px] text-slate-500 dark:text-slate-400">Visa / Mastercard</span>
-              </button>
-
-              {/* PostePay Gialla Standard */}
-              <button
-                type="button"
-                onClick={() => setSelectedMethod('postepay')}
-                className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  selectedMethod === 'postepay'
-                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 font-black shadow-xs ring-2 ring-amber-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300'
-                }`}
-              >
-                <div className="w-5 h-5 rounded-md bg-amber-400 text-slate-900 flex items-center justify-center text-[10px] font-black">
-                  P
-                </div>
-                <span className="text-xs font-bold leading-tight">PostePay</span>
-                <span className="text-[9px] text-slate-500 dark:text-slate-400">Poste Italiane</span>
-              </button>
-
-              {/* PayPal */}
-              <button
-                type="button"
-                onClick={() => setSelectedMethod('paypal')}
-                className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  selectedMethod === 'paypal'
-                    ? 'border-[#FB6C00] bg-orange-50 dark:bg-white/5 text-[#FB6C00] dark:text-[#FB6C00] font-black shadow-xs ring-2 ring-[#FB6C00]/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300'
-                }`}
-              >
-                <span className="text-sm font-black text-[#FB6C00]">🅿️ PayPal</span>
-                <span className="text-xs font-bold leading-tight">PayPal</span>
-                <span className="text-[9px] text-slate-500 dark:text-slate-400">Express Pay</span>
-              </button>
-
-              {/* Bonifico Bancario / SEPA */}
-              <button
-                type="button"
-                onClick={() => setSelectedMethod('bonifico')}
-                className={`p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  selectedMethod === 'bonifico'
-                    ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-black shadow-xs ring-2 ring-emerald-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-300'
-                }`}
-              >
-                <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-bold leading-tight">Bonifico</span>
-                <span className="text-[9px] text-slate-500 dark:text-slate-400">SEPA Bancario</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Student Billing & Invoice Information */}
-          <div className="space-y-3 pt-1">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-blue-600" />
-                <span>ইনভয়েস ও স্টুডেন্ট তথ্য (Dati Intestatario Fattura):</span>
-              </label>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                অফিসিয়াল রসিদের জন্য প্রযোজ্য
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1">
-                  আপনার সম্পূর্ণ নাম (Nome e Cognome) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoComplete="name"
-                  placeholder="e.g. Md Shifat Manjum"
-                  value={formData.studentName}
-                  onChange={(e) => setFormData((p) => ({ ...p, studentName: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1">
-                  ইমেইল অ্যাড্রেস (Email per Ricevuta) *
-                </label>
-                <input
-                  type="email"
-                  required
-                  autoComplete="email"
-                  placeholder="student@gmail.com"
-                  value={formData.studentEmail}
-                  onChange={(e) => setFormData((p) => ({ ...p, studentEmail: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1">
-                  মোবাইল / WhatsApp নম্বর (Telefono)
-                </label>
-                <input
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="+39 351 000 0000"
-                  value={formData.studentPhone}
-                  onChange={(e) => setFormData((p) => ({ ...p, studentPhone: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1">
-                  Codice Fiscale (ইতালিয়ান ট্যাক্স কোড)
-                </label>
-                <input
-                  type="text"
-                  placeholder="es. RSSMRA85M01H501Z"
-                  value={formData.codiceFiscale}
-                  onChange={(e) => setFormData((p) => ({ ...p, codiceFiscale: e.target.value.toUpperCase() }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-mono font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1">
-                  শহর / ঠিকানা (Città / Indirizzo in Italia)
-                </label>
-                <input
-                  type="text"
-                  placeholder="es. Bolzano, Milano, Bologna, Roma..."
-                  value={formData.city}
-                  onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Stripe Card & PostePay Gateway View */}
-          {(selectedMethod === 'card' || selectedMethod === 'postepay') && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 space-y-3.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4 text-blue-600" />
-                  <span>Stripe Official Checkout (3D-Secure 256-bit)</span>
-                </span>
-                <div className="flex items-center gap-1 text-[10px] font-black text-slate-600 dark:text-slate-300">
-                  <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border">VISA</span>
-                  <span className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border">Mastercard</span>
-                  <span className="px-2 py-0.5 rounded-md bg-amber-400 text-slate-900 font-bold">PostePay</span>
-                  <span className="px-2 py-0.5 rounded-md bg-black text-white font-bold"> Pay</span>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/60 space-y-2 text-xs">
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                  নিচের <strong>"Paga Ora €{activePrice},00 con Stripe"</strong> বাটনে ক্লিক করলে আপনাকে Stripe-এর অফিসিয়াল <strong>256-bit SSL নিরাপদ চেকআউট</strong> পেজে নিয়ে যাওয়া হবে।
-                </p>
-                <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-400">
-                  <li className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
-                    ✓ PostePay Evolution, Visa, Mastercard, Apple Pay ও Google Pay সাপোর্টেড
-                  </li>
-                  <li className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
-                    ✓ আপনার ব্যাংকের PosteID / 3D-Secure SMS ওটিপি দিয়ে সম্পূর্ণ সুরক্ষিত
-                  </li>
-                  <li className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold">
-                    ✓ পেমেন্ট সম্পন্ন হওয়ামাত্রই স্বয়ংক্রিয়ভাবে সব ২৪০টি রাউন্ড ওপেন হবে এবং অফিশিয়াল ইনভয়েস পাবেন
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {/* PayPal Gateway View */}
-          {selectedMethod === 'paypal' && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-orange-50/60 dark:bg-white/5 border border-orange-200 dark:border-white/10 space-y-3 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 border border-orange-100 dark:border-white/10 mx-auto flex items-center justify-center text-xl shadow-xs">
-                🅿️
-              </div>
-              <h4 className="text-sm font-black text-slate-900 dark:text-white">
-                PayPal Express Checkout
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
-                আপনার পেপ্যাল অ্যাকাউন্ট বা পেপ্যাল লিংক করা যেকোনো কার্ড থেকে মাত্র ১-ক্লিকে নিরাপদ পেমেন্ট সম্পন্ন হবে।
-              </p>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 dark:bg-white/10 text-[#FB6C00] dark:text-orange-200 text-[11px] font-bold">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#FB6C00]" />
-                <span>Protezione Acquisti PayPal al 100%</span>
-              </div>
-            </div>
-          )}
-
-          {/* Bonifico Bancario View */}
-          {selectedMethod === 'bonifico' && (
-            <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
-                  <Building2 className="w-4 h-4 text-emerald-600" />
-                  <span>Dati per il Bonifico Bancario SEPA</span>
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                  Verifica Contabile Richiesta
-                </span>
-              </div>
-
-              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-800/80 space-y-2 text-xs">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-slate-500 dark:text-slate-400">IBAN Ufficiale:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-black text-slate-900 dark:text-white text-xs sm:text-sm">
-                      IT89 X 03069 09606 100000184729
-                    </span>
+              <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>প্রোমো / রেফারেল কোড</span>
+                  </span>
+                  {appliedPromo && (
                     <button
                       type="button"
-                      onClick={() => handleCopyIban('IT89X0306909606100000184729')}
-                      className="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 transition cursor-pointer"
-                      title="Copia IBAN"
+                      onClick={handleRemovePromo}
+                      className="text-[11px] font-bold text-rose-400 hover:underline cursor-pointer"
                     >
-                      {copiedIban ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      সরান
+                    </button>
+                  )}
+                </div>
+
+                {appliedPromo ? (
+                  <div className="p-2 rounded-xl bg-emerald-950/50 border border-emerald-800 text-xs text-emerald-300 flex items-center justify-between">
+                    <span>
+                      ✓ <strong>{appliedPromo.code}</strong> কোডে €{appliedPromo.discountEur} ছাড় পেয়েছেন!
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-white text-[10px] font-bold">
+                      -€{appliedPromo.discountEur}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={promoInput}
+                      onChange={(e) => {
+                        setPromoInput(e.target.value.toUpperCase());
+                        if (promoError) setPromoError(null);
+                      }}
+                      placeholder="যেমন: FRIEND5"
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-mono font-bold uppercase text-white focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyPromo}
+                      className="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition cursor-pointer"
+                    >
+                      Apply
                     </button>
                   </div>
-                </div>
+                )}
+                {promoError && (
+                  <p className="text-[11px] text-rose-400 font-semibold">{promoError}</p>
+                )}
+              </div>
+            )}
+          </div>
 
-                <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-1.5">
-                  <span className="text-slate-500 dark:text-slate-400">Beneficiario:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">Shifat Manjum (PatenteGuru)</span>
-                </div>
-
-                <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-1.5">
-                  <span className="text-slate-500 dark:text-slate-400">Banca / Sede:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">Bolzano, Italia</span>
-                </div>
-
-                <div className="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-1.5">
-                  <span className="text-slate-500 dark:text-slate-400">Causale:</span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400">
-                    Iscrizione Patente B - {formData.studentName || 'Studente'}
-                  </span>
-                </div>
+          {/* Student Billing Input Fields (if not filled or toggled) */}
+          {(showBillingInputs || !formData.studentName || !formData.studentEmail) && (
+            <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5 text-left text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-300">
+                  শিক্ষার্থীর তথ্য (Student Info for Certificate & Invoice)
+                </span>
+                {formData.studentName && formData.studentEmail && (
+                  <button
+                    type="button"
+                    onClick={() => setShowBillingInputs(!showBillingInputs)}
+                    className="text-[11px] text-cyan-400 hover:underline"
+                  >
+                    {showBillingInputs ? 'লুকান' : 'পরিবর্তন'}
+                  </button>
+                )}
               </div>
 
-              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
-                <strong>⚠️ গুরুত্বপূর্ণ নির্দেশনা:</strong> বনিফিকো (Bank Transfer) পেমেন্ট আমাদের ব্যাংকে জমা হওয়ার আগে কোনো ফ্রি ফাত্তুরা (Fattura) বা সম্পূর্ণ কোর্স (২৪০ রাউন্ড এক্সেস) স্বয়ংক্রিয়ভাবে চালু হবে না। ব্যাংক থেকে <strong>€{activePrice},00</strong> পাঠানোর পর নিচের বাটনে ক্লিক করে আমাদের WhatsApp-এ রসিদ (Ricevuta / CRO) পাঠান। পেমেন্ট নিশ্চিত হওয়ার সাথে সাথে আপনার কোর্স অ্যাকাউন্ট ও অফিশিয়াল Fattura সক্রিয় করে দেওয়া হবে।
-              </div>
-
-              {bonificoPendingSent && (
-                <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-300 dark:border-emerald-700 text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                  ✓ WhatsApp ওপেন হয়েছে! অনুগ্রহ করে আপনার ব্যাংক ট্রান্সফারের রসিদ (Ricevuta / Screenshot) চ্যাটে পাঠিয়ে দিন। পেমেন্ট যাচাই সম্পন্ন হলেই আপনার কোর্স এক্সেস ও Fattura চালু হবে।
+              <div className="space-y-2">
+                <div>
+                  <label className="text-[11px] text-slate-400 block mb-1">
+                    সম্পূর্ণ নাম (Nome e Cognome)*
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.studentName}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, studentName: e.target.value }))
+                    }
+                    placeholder="যেমন: Md Arif Hossain"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                  />
                 </div>
-              )}
+                <div>
+                  <label className="text-[11px] text-slate-400 block mb-1">
+                    ইমেইল অ্যাড্রেস (Email Address)*
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.studentEmail}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, studentEmail: e.target.value }))
+                    }
+                    placeholder="arif@gmail.com"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-slate-400 block mb-1">
+                    WhatsApp মোবাইল নম্বর (ঐচ্ছিক)
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.studentPhone}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, studentPhone: e.target.value }))
+                    }
+                    placeholder="+39 351 000 0000"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Guarantee Badges */}
-          <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Attivazione Istantanea 240 Round (con Stripe)</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-              <span>Accesso Valido Fino al Conseguimento Esame</span>
-            </span>
+          {/* Features Checklist */}
+          <div className="space-y-1.5 text-center text-xs text-slate-300 pt-1">
+            <p className="flex items-center justify-center gap-1.5 text-slate-300">
+              <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span>২৪০টি রাউন্ড • ৭,১৬৫টি কুইজ • সম্পূর্ণ বাংলা অর্থ ও অডিও</span>
+            </p>
+            <p className="flex items-center justify-center gap-1.5 text-emerald-400 font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>১৪ দিনের মধ্যে টাকা ফেরতের গ্যারান্টি</span>
+            </p>
           </div>
 
           {/* Action CTA Button */}
-          <div className="pt-2 space-y-2">
+          <div className="pt-2">
             <button
-              type="submit"
+              type="button"
+              onClick={() => handleSubmitPayment()}
               disabled={isProcessing}
-              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/25 hover:scale-[1.01] active:scale-[0.98] transition cursor-pointer disabled:opacity-60"
+              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#0284c7] to-[#0ea5e9] hover:from-[#0369a1] hover:to-[#0284c7] text-white font-black text-sm sm:text-base shadow-lg shadow-cyan-500/25 transition active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isProcessing ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Stripe সুরক্ষিত পেমেন্ট পেজে রিডাইরেক্ট হচ্ছে...</span>
-                </>
-              ) : selectedMethod === 'bonifico' ? (
-                <>
-                  <MessageCircle className="w-4.5 h-4.5" />
-                  <span>WhatsApp-এ বনিফিকো রসিদ পাঠান • Invia Ricevuta (€{activePrice},00)</span>
+                  <span>Stripe গেটওয়েতে সংযোগ হচ্ছে...</span>
                 </>
               ) : (
-                <>
-                  <Lock className="w-4.5 h-4.5" />
-                  <span>
-                    নিরাপদে পেমেন্ট সম্পন্ন করুন (€{activePrice}) • Paga Ora €{activePrice},00 con Stripe
-                  </span>
-                </>
+                <span>পেমেন্ট করুন - €{activePrice}</span>
               )}
             </button>
+          </div>
 
+          {/* Accepted Payment Logos */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-[11px] text-slate-400">
+            <span className="px-2 py-0.5 rounded-md bg-slate-800/90 border border-slate-700 text-amber-300 font-bold">
+              🟡 PostePay
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-800/90 border border-slate-700 text-slate-200 font-bold">
+              💳 Carta / Visa
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-800/90 border border-slate-700 text-blue-400 font-bold">
+              🅿️ PayPal
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-slate-800/90 border border-slate-700 text-white font-bold">
+              🍎 Apple Pay
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedMethod('bonifico');
+                setShowBillingInputs(true);
+              }}
+              className="px-2 py-0.5 rounded-md bg-slate-800/90 border border-slate-700 text-emerald-400 font-bold hover:bg-slate-700 cursor-pointer flex items-center gap-1"
+            >
+              <Building2 className="w-3 h-3" />
+              <span>Bonifico Bancario</span>
+            </button>
+          </div>
+
+          {bonificoPendingSent && (
+            <div className="p-3 rounded-2xl bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-xs text-center space-y-1">
+              <p className="font-bold">✓ Bonifico রিকোয়েস্ট সফলভাবে হোয়াটসঅ্যাপে পাঠানো হয়েছে!</p>
+              <p className="text-[11px] text-emerald-400">
+                ব্যাংক ট্রান্সফারের রসিদ পাঠালে অ্যাডমিন সাথে সাথে কোর্স অ্যাক্টিভ করে দেবে।
+              </p>
+            </div>
+          )}
+
+          {/* Legal / Policy Disclaimer */}
+          <div className="text-center text-[10px] text-slate-500 space-y-1 pt-1 leading-relaxed">
+            <p>পেমেন্ট করলে আপনি মেনে নিচ্ছেন শর্তাবলি ও টাকা ফেরতের নীতি।</p>
+            <p>PatenteGuru Autoscuola • Stripe 256-bit SSL সিকিউর পেমেন্ট ও অফিশিয়াল ইনভয়েস</p>
+            <p className="text-slate-400 font-medium">সবসময় ফ্রি: রবিবারের সাপ্তাহিক Mock আর শব্দের অর্থ</p>
+          </div>
+
+          {/* Return to Home / Close */}
+          <div className="text-center pt-2 border-t border-slate-800/80">
             <button
               type="button"
               onClick={onClose}
-              disabled={isProcessing}
-              className="w-full py-2.5 px-4 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 text-xs font-bold text-center transition cursor-pointer"
+              className="text-xs font-bold text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer"
             >
-              পরে করবো (Annulla e Chiudi)
+              Home-এ ফিরুন (ফ্রি প্র্যাকটিসে ব্যাক করুন)
             </button>
           </div>
-        </form>
 
+        </div>
       </div>
     </div>
   );

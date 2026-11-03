@@ -34,6 +34,37 @@ async function parseBody(req) {
   }
 }
 
+// Multi-Tier Subscription Plans
+const PLAN_CONFIGS = {
+  '1_month': {
+    id: '1_month',
+    name: 'PatenteGuru - Abbonamento 1 Mese (€11)',
+    nameBn: '১ মাস মেয়াদী প্ল্যান',
+    priceEur: 11,
+    durationDays: 30,
+    description:
+      'Accesso completo a tutti i 240 Round con traduzioni e spiegazioni in Bengali per 30 giorni.',
+  },
+  '3_months': {
+    id: '3_months',
+    name: 'PatenteGuru - Abbonamento 3 Mesi (€30) [Più Popolare]',
+    nameBn: '৩ মাস মেয়াদী প্ল্যান (সবচেয়ে জনপ্রিয়)',
+    priceEur: 30,
+    durationDays: 90,
+    description:
+      'Accesso completo a tutti i 240 Round con traduzioni e spiegazioni in Bengali per 90 giorni.',
+  },
+  'lifetime': {
+    id: 'lifetime',
+    name: 'PatenteGuru - Accesso Illimitato Lifetime (€44) [Fino alla Patente]',
+    nameBn: 'লাইফটাইম প্ল্যান (পাস না করা পর্যন্ত)',
+    priceEur: 44,
+    durationDays: null,
+    description:
+      'Accesso illimitato senza scadenza a tutti i 240 Round fino al conseguimento della Patente B.',
+  },
+};
+
 export default async function handler(req, res) {
   setCors(res);
 
@@ -60,26 +91,37 @@ export default async function handler(req, res) {
       address = '',
       city = 'Bolzano',
       promoCode = '',
+      planId = '3_months',
     } = body;
 
     if (!studentEmail || !studentEmail.includes('@')) {
       return res.status(400).json({ error: 'Valid student email is required' });
     }
 
-    // Determine current academy price: check DB settings first, fallback to body.priceEur, then default €49
-    let basePriceEur = typeof body.priceEur === 'number' && body.priceEur > 0 ? body.priceEur : 49;
+    // Determine target plan
+    let selectedPlan = PLAN_CONFIGS[planId];
+    if (!selectedPlan) {
+      if (typeof body.priceEur === 'number') {
+        if (body.priceEur <= 15) selectedPlan = PLAN_CONFIGS['1_month'];
+        else if (body.priceEur <= 35) selectedPlan = PLAN_CONFIGS['3_months'];
+        else selectedPlan = PLAN_CONFIGS['lifetime'];
+      } else {
+        selectedPlan = PLAN_CONFIGS['3_months']; // Default to most popular
+      }
+    }
+
+    let basePriceEur = selectedPlan.priceEur;
+
+    // Optional override from MongoDB settings if defined
     let settingsPromoCodes = [];
     try {
       const settingsCol = await getCollection('settings');
       const settingsDoc = await settingsCol.findOne({ key: 'app_settings' });
-      if (settingsDoc && typeof settingsDoc.academyPriceEur === 'number' && settingsDoc.academyPriceEur > 0) {
-        basePriceEur = settingsDoc.academyPriceEur;
-      }
       if (settingsDoc && Array.isArray(settingsDoc.promoCodes)) {
         settingsPromoCodes = settingsDoc.promoCodes;
       }
     } catch (e) {
-      console.warn('Could not read price from settings, using fallback price:', e);
+      console.warn('Could not read settings from DB:', e);
     }
 
     // Validate Promo / Referral Code
@@ -94,7 +136,9 @@ export default async function handler(req, res) {
         { code: 'ITALIA10', discountEur: 10, ownerName: 'Community Influencer Partner', active: true },
       ];
       const promoList = settingsPromoCodes.length > 0 ? settingsPromoCodes : defaultPromos;
-      const matched = promoList.find((p) => String(p.code || '').toUpperCase() === cleanPromoCode && p.active !== false);
+      const matched = promoList.find(
+        (p) => String(p.code || '').toUpperCase() === cleanPromoCode && p.active !== false
+      );
 
       if (matched) {
         appliedCode = cleanPromoCode;
@@ -107,7 +151,8 @@ export default async function handler(req, res) {
       }
     }
 
-    const priceEur = Math.max(10, basePriceEur - discountEur);
+    // Minimum price is €5 after discount
+    const priceEur = Math.max(5, basePriceEur - discountEur);
 
     // Determine origin for redirection
     const host = req.headers.host || '';
@@ -124,13 +169,13 @@ export default async function handler(req, res) {
       branding_settings: {
         display_name: 'PatenteGuru Italia',
         background_color: '#0D1117',
-        button_color: '#FB6C00',
+        button_color: '#0284c7',
         border_style: 'rounded',
       },
       custom_text: {
         submit: {
           message:
-            'Attivazione immediata di tutti i 240 Round (7.165 Quiz) + Ricevuta Fiscale Ufficiale (Fattura PDF).',
+            `Attivazione immediata ${selectedPlan.nameBn} (Tutti i 240 Round + 7.165 Quiz) + Ricevuta Ufficiale.`,
         },
       },
       line_items: [
@@ -140,10 +185,9 @@ export default async function handler(req, res) {
             unit_amount: Math.round(priceEur * 100),
             product_data: {
               name: appliedCode
-                ? `Corso Completo Patente B 2026 (Promo: ${appliedCode})`
-                : 'Corso Completo Patente B 2026 - PatenteGuru',
-              description:
-                'Accesso Illimitato a 240 Round con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica fino al superamento dell’esame.',
+                ? `${selectedPlan.name} (Promo: ${appliedCode})`
+                : selectedPlan.name,
+              description: selectedPlan.description,
               images: ['https://patente-bangla-italia.vercel.app/car-logo.png'],
             },
           },
@@ -157,6 +201,9 @@ export default async function handler(req, res) {
         codiceFiscale: (codiceFiscale || '').trim().toUpperCase(),
         address: address.trim(),
         city: city.trim(),
+        planId: selectedPlan.id,
+        planName: selectedPlan.nameBn,
+        durationDays: selectedPlan.durationDays ? String(selectedPlan.durationDays) : 'lifetime',
         amount: String(priceEur),
         promoCode: appliedCode,
         discountEur: String(discountEur),
@@ -186,10 +233,11 @@ export default async function handler(req, res) {
       success: true,
       url: session.url,
       sessionId: session.id,
+      planId: selectedPlan.id,
+      priceEur,
     });
   } catch (err) {
     console.error('Stripe session creation error:', err);
     return res.status(500).json({ error: err.message || 'Payment session creation failed' });
   }
 }
-

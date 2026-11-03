@@ -48,14 +48,37 @@ export default async function handler(req, res) {
       const codiceFiscale = meta.codiceFiscale || 'REGOLARE';
       const address = meta.address || 'Italia';
       const city = meta.city || 'Bolzano';
-      const amount = session.amount_total ? session.amount_total / 100 : 49.0;
+      const amount = session.amount_total ? session.amount_total / 100 : 30.0;
       const transactionId = String(session.payment_intent || session.id);
       const promoCode = (meta.promoCode || '').trim().toUpperCase();
       const discountEur = Number(meta.discountEur) > 0 ? Number(meta.discountEur) : 0;
       const referrerName = meta.referrerName || '';
 
-      const invoiceNumber = `PG-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+      // Plan determination
+      let planId = meta.planId;
+      if (!planId) {
+        if (amount <= 15) planId = '1_month';
+        else if (amount <= 35) planId = '3_months';
+        else planId = 'lifetime';
+      }
+
+      let durationDays = null;
+      if (meta.durationDays && meta.durationDays !== 'lifetime') {
+        durationDays = Number(meta.durationDays) || null;
+      } else if (planId === '1_month') {
+        durationDays = 30;
+      } else if (planId === '3_months') {
+        durationDays = 90;
+      }
+
       const now = new Date();
+      let vipExpiresAt = null;
+      if (durationDays && durationDays > 0) {
+        const exp = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+        vipExpiresAt = exp.toISOString();
+      }
+
+      const invoiceNumber = `PG-2026-${Math.floor(10000 + Math.random() * 90000)}`;
       const formattedDate = now.toLocaleDateString('it-IT', {
         day: '2-digit',
         month: '2-digit',
@@ -63,6 +86,13 @@ export default async function handler(req, res) {
         hour: '2-digit',
         minute: '2-digit',
       });
+
+      const courseDescription =
+        planId === '1_month'
+          ? 'Corso Patente B 2026 - Abbonamento 1 Mese (30 Giorni) a tutti i 240 Round con traduzioni in Bengali e simulatore.'
+          : planId === '3_months'
+          ? 'Corso Patente B 2026 - Abbonamento 3 Mesi (90 Giorni) a tutti i 240 Round con traduzioni in Bengali e simulatore.'
+          : 'Corso Completo Ufficiale Patente B 2026 - Accesso Illimitato Lifetime a tutti i 240 Round con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica.';
 
       const invoice = {
         id: invoiceNumber,
@@ -76,6 +106,8 @@ export default async function handler(req, res) {
         city,
         amount,
         currency: 'EUR',
+        planId,
+        vipExpiresAt,
         ...(promoCode ? { promoCode, discountEur, referrerName } : {}),
         taxExemptionNote:
           "Operazione didattico-formativa esente da IVA ai sensi dell'art. 10, comma 1, n. 20 del D.P.R. 633/1972.",
@@ -83,8 +115,7 @@ export default async function handler(req, res) {
         paymentMethodLabel: 'Stripe Checkout (Carta / PostePay / Apple Pay)',
         transactionId,
         status: 'PAGATO',
-        courseDescription:
-          "Corso Completo Ufficiale Patente B 2026 - Accesso Illimitato a tutti i 240 Round con spiegazioni in Bengali, Simulatore Orale e Assistenza Didattica.",
+        courseDescription,
         issuer: {
           name: 'PatenteGuru.it / Patente Bangla Italia',
           brand: 'PatenteGuru Autoscuola Digitale',
@@ -95,7 +126,7 @@ export default async function handler(req, res) {
         },
       };
 
-      // 1. Update Student in MongoDB Atlas (all 240 rounds unlocked!)
+      // 1. Update Student in MongoDB Atlas (VIP unlocked with plan & expiry)
       if (studentEmail) {
         try {
           const studentsCol = await getCollection('students');
@@ -106,6 +137,8 @@ export default async function handler(req, res) {
                 name: studentName,
                 phone: studentPhone || undefined,
                 isVip: true,
+                vipPlan: planId,
+                vipExpiresAt,
                 vipUnlockedAt: now.toISOString(),
                 transactionId,
                 ...(promoCode ? { referredByCode: promoCode, paidAmountEur: amount } : { paidAmountEur: amount }),
@@ -146,6 +179,8 @@ export default async function handler(req, res) {
         studentEmail,
         studentName,
         transactionId,
+        planId,
+        vipExpiresAt,
         invoice,
       });
     }
@@ -160,4 +195,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message || 'Payment verification failed' });
   }
 }
-
