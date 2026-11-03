@@ -1,5 +1,5 @@
 // Patente Guru Service Worker
-const CACHE_NAME = 'patente-guru-v1';
+const CACHE_NAME = 'patente-guru-v2';
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -50,23 +50,27 @@ self.addEventListener('fetch', (event) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            // Avoid caching huge video / audio files automatically
-            if (!event.request.url.match(/\.(mp4|wav|mp3|zip)$/i)) {
-              cache.put(event.request, responseToCache).catch(() => {});
-            }
+            cache.put(event.request, responseToCache).catch(() => {});
           });
         }
         return networkResponse;
       })
-      .catch(async () => {
-        const cachedResponse = await caches.match(event.request);
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        // If navigation request fails, return cached index.html
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
+      .catch(() => {
+        // Fallback to cache if network fails
+        return caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Optional offline fallback for navigation
+          if (event.request.mode === 'navigate') {
+            return caches.match('/');
+          }
+          return new Response('Network error occurred and no cache available', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: new Headers({ 'Content-Type': 'text/plain' })
+          });
+        });
       })
   );
 });
