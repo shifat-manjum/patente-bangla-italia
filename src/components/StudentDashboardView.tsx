@@ -4,14 +4,10 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Clock, 
-  BookOpen, 
   Award, 
   Flame, 
   GraduationCap, 
-  ArrowRight,
-  Headphones,
   MessageCircle,
-  Lock,
 } from 'lucide-react';
 import type { StudentProfile } from '../services/studentService';
 import { WHATSAPP_GROUP_URL } from '../config/constants';
@@ -65,134 +61,99 @@ interface StudentDashboardViewProps {
 
 export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
   student,
-  activeRound,
+  activeRound: _activeRound,
   completedRoundsCount,
   totalQuestionsSolved,
   errorCount,
   isVip = false,
   freeRoundsLimit = 20,
-  academyPriceEur = 49,
-  regularPriceEur = 120,
+  academyPriceEur: _academyPriceEur,
+  regularPriceEur: _regularPriceEur,
   onContinueRound,
   onGoToCurriculum,
-  onGoToTheory,
+  onGoToTheory: _onGoToTheory,
   onGoToExam,
   onGoToErrors,
   onOpenEnrollment,
 }) => {
   const dynamicStreak = getDynamicStreak();
   const maxRounds = isVip ? 240 : Math.min(240, Math.max(0, freeRoundsLimit));
+
   // Readiness score estimation based on actual progress
-  const roundRatio = Math.min(1, completedRoundsCount / maxRounds);
-  const questionsRatio = Math.min(1, totalQuestionsSolved / 150);
-  const errorPenalty = totalQuestionsSolved > 20 ? Math.min(0.2, (errorCount / totalQuestionsSolved)) : 0;
-  const readinessScore = Math.min(100, Math.max(10, Math.round((roundRatio * 0.65 + questionsRatio * 0.35 - errorPenalty) * 100)));
+  const roundProgress = (completedRoundsCount / maxRounds) * 60;
+  const questionProgress = Math.min(30, (totalQuestionsSolved / 1500) * 30);
+  const accuracyPenalty = Math.min(20, errorCount * 0.5);
+  const readinessScore = Math.min(
+    99,
+    Math.max(15, Math.round(roundProgress + questionProgress - accuracyPenalty + 10))
+  );
 
   return (
-    <div className="space-y-6 pb-24 md:pb-12">
-      {/* High-Impact VIP Enrollment Card (Visible to all students who want to enroll) */}
-      {!isVip && (
-        <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-r from-red-600 via-orange-600 to-amber-600 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-white/20 animate-fadeIn">
-          <div className="flex items-center gap-3.5 text-center sm:text-left">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 shadow-inner">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-wider">
-                <span>⚡ স্পেশাল এনরোলমেন্ট অফার</span>
-                {regularPriceEur > academyPriceEur && (
-                  <span className="bg-white text-slate-900 px-1.5 py-0.2 rounded-full font-black">
-                    Save €{regularPriceEur - academyPriceEur}
-                  </span>
-                )}
-              </div>
-              <h3 className="text-base sm:text-lg font-black leading-snug">
-                সম্পূর্ণ কোর্স ও ২৪০টি রাউন্ড আনলক করুন (€{academyPriceEur})
-              </h3>
-              <p className="text-xs text-white/90">
-                নিয়মিত মূল্য <span className="line-through opacity-75">€{regularPriceEur}</span> • সীমিত সময়ের বিশেষ অফারে মাত্র €{academyPriceEur} • পাস করা পর্যন্ত আনলিমিটেড এক্সেস
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onOpenEnrollment}
-            className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-black text-sm shadow-xl hover:scale-105 active:scale-95 transition cursor-pointer shrink-0 flex items-center justify-center gap-2"
-          >
-            <span>💳 Pay Now (€{academyPriceEur}) / এখনই ভর্তি হন</span>
-          </button>
-        </div>
-      )}
-
-      {/* Student Welcome & Quick Resume Hero */}
+    <div className="space-y-6 max-w-7xl mx-auto animate-fadeIn text-left">
+      {/* Student Welcome & Action Center Hero */}
       <div className="bg-gradient-to-r from-[#170E18] via-[#0D1117] to-[#18110E] rounded-3xl p-6 sm:p-8 text-white border border-white/10 shadow-lg relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-xl">
+          <div className="space-y-3 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-xs font-bold text-slate-200">
-                <GraduationCap className="w-4 h-4 text-white" />
+                <GraduationCap className="w-4 h-4 text-[#FB6C00]" />
                 <span>Official Italian Patente B Academy</span>
               </div>
-              <a
-                href={WHATSAPP_GROUP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => trackWhatsAppJoin('dashboard_badge')}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/40 text-xs font-black text-emerald-300 transition cursor-pointer"
-                title="Join official student WhatsApp group for instant exam notices"
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-[#25D366] fill-current" />
-                <span>WhatsApp Group • Updates</span>
-              </a>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
               Welcome back, {student?.name || 'Student'}! 👋
             </h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-slate-300 leading-relaxed max-w-xl">
               Your preparation for the Italian ministerial driving theory exam is in progress. Practice 15–20 minutes daily to secure a first-attempt pass.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            {/* 4 Action Buttons in ONE Row - Same Format & Signature Orange */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3">
+              {/* 1. Start Practicing (Directly loads Round 1) */}
               <button
                 type="button"
-                onClick={() => onContinueRound(activeRound)}
-                className="py-3 px-6 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-sm flex items-center gap-2 transition cursor-pointer shadow-lg shadow-[#FB6C00]/25 active:scale-95"
+                onClick={() => onContinueRound(1)}
+                className="py-3 px-4 rounded-xl bg-[#FB6C00] hover:bg-[#E73F1E] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-[#FB6C00]/25 transition active:scale-95 cursor-pointer text-center"
+                title="রাউন্ড ১ অনুশীলন শুরু করুন"
               >
-                <Play className="w-4 h-4 fill-current text-white" />
-                <span>Continue Round #{activeRound}</span>
+                <Play className="w-4 h-4 fill-current text-white shrink-0" />
+                <span className="truncate">Start Practicing</span>
               </button>
 
+              {/* 2. Start Official Exam Simulation */}
               <button
                 type="button"
                 onClick={onGoToExam}
-                className="py-3 px-5 rounded-full bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-white/20 transition cursor-pointer"
+                className="py-3 px-4 rounded-xl bg-[#FB6C00] hover:bg-[#E73F1E] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-[#FB6C00]/25 transition active:scale-95 cursor-pointer text-center"
+                title="অফিশিয়াল ২০ মিনিটের মক টেস্ট শুরু করুন"
               >
-                <Clock className="w-4 h-4 text-slate-300" />
-                <span>Start Official Exam Simulation</span>
+                <Clock className="w-4 h-4 text-white shrink-0" />
+                <span className="truncate">Start Official Exam Simulation</span>
               </button>
 
-              {!isVip && (
-                <button
-                  type="button"
-                  onClick={onOpenEnrollment}
-                  className="py-3 px-5 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-[#FB6C00]/25 transition hover:scale-105 active:scale-95 cursor-pointer"
-                >
-                  <GraduationCap className="w-4 h-4 text-white" />
-                  <span>একাডেমিতে ভর্তি হন (€{academyPriceEur})</span>
-                </button>
-              )}
+              {/* 3. একাডেমিতে ভর্তি হন */}
+              <button
+                type="button"
+                onClick={onOpenEnrollment}
+                className="py-3 px-4 rounded-xl bg-[#FB6C00] hover:bg-[#E73F1E] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-[#FB6C00]/25 transition active:scale-95 cursor-pointer text-center"
+                title="কোর্স প্ল্যান ও মেম্বারশিপ দেখুন"
+              >
+                <GraduationCap className="w-4 h-4 text-white shrink-0" />
+                <span className="truncate">একাডেমিতে ভর্তি হন</span>
+              </button>
 
+              {/* 4. WhatsApp Group */}
               <a
                 href={WHATSAPP_GROUP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackWhatsAppJoin('dashboard_hero_button')}
-                className="py-3 px-5 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-[#25D366]/40 transition cursor-pointer"
-                title="WhatsApp স্টুডেন্ট কমিউনিটি গ্রুপে যুক্ত হোন"
+                className="py-3 px-4 rounded-xl bg-[#FB6C00] hover:bg-[#E73F1E] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-[#FB6C00]/25 transition active:scale-95 cursor-pointer text-center"
+                title="অফিসিয়াল WhatsApp স্টুডেন্ট গ্রুপে যুক্ত হোন"
               >
-                <MessageCircle className="w-4 h-4 text-[#25D366] fill-current" />
-                <span>WhatsApp Group</span>
+                <MessageCircle className="w-4 h-4 text-white fill-current shrink-0" />
+                <span className="truncate">WhatsApp Group</span>
               </a>
             </div>
           </div>
@@ -209,7 +170,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
                 <path
-                  className="text-white"
+                  className="text-[#FB6C00]"
                   strokeDasharray={`${readinessScore}, 100`}
                   strokeWidth="3.5"
                   strokeLinecap="round"
@@ -234,9 +195,9 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 4 Quick Stat Cards (Fully Dynamic & Interactive in Clean Obsidian / Daytime Crisp) */}
+      {/* 4 Minimalist Quick Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* 1. Solved Questions (Clickable to Curriculum) */}
+        {/* 1. Solved Questions */}
         <div
           onClick={onGoToCurriculum}
           className="bg-white dark:bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5 cursor-pointer hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition-all active:scale-[0.98] group"
@@ -245,14 +206,14 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Solved Questions</span>
             <div className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white group-hover:scale-110 transition-transform">
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {totalQuestionsSolved}
           </p>
           <div className="flex items-center justify-between text-[11px] pt-0.5">
-            <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white font-bold group-hover:underline">
+            <span className="text-slate-600 dark:text-slate-300 group-hover:text-[#FB6C00] font-bold group-hover:underline">
               অনুশীলন করুন ➔
             </span>
             <span className="text-slate-400 dark:text-slate-500 text-[10px]">
@@ -261,7 +222,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           </div>
         </div>
 
-        {/* 2. Completed Rounds (Clickable to Curriculum) */}
+        {/* 2. Completed Rounds */}
         <div
           onClick={onGoToCurriculum}
           className="bg-white dark:bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5 cursor-pointer hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition-all active:scale-[0.98] group"
@@ -270,14 +231,14 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Completed Rounds</span>
             <div className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white group-hover:scale-110 transition-transform">
-              <Award className="w-4 h-4" />
+              <Award className="w-4 h-4 text-[#FB6C00]" />
             </div>
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             {completedRoundsCount} <span className="text-sm font-bold text-slate-400 dark:text-slate-500">/ {maxRounds}</span>
           </p>
           <div className="flex items-center justify-between text-[11px] pt-0.5">
-            <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white font-bold group-hover:underline">
+            <span className="text-slate-600 dark:text-slate-300 group-hover:text-[#FB6C00] font-bold group-hover:underline">
               সিলেবাস খুলুন ➔
             </span>
             <span className="text-slate-400 dark:text-slate-500 text-[10px]">
@@ -286,7 +247,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           </div>
         </div>
 
-        {/* 3. Errors to Review (Clickable to Mistakes) */}
+        {/* 3. Errors to Review */}
         <div 
           onClick={onGoToErrors}
           className="bg-white dark:bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5 cursor-pointer hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition-all active:scale-[0.98] group"
@@ -302,7 +263,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             {errorCount}
           </p>
           <div className="flex items-center justify-between text-[11px] pt-0.5">
-            <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white font-bold group-hover:underline">
+            <span className="text-slate-600 dark:text-slate-300 group-hover:text-[#E73F1E] font-bold group-hover:underline">
               {errorCount > 0 ? 'ভুলগুলো শুধরান ➔' : 'কোনো ভুল নেই ✅'}
             </span>
             <span className="text-slate-400 dark:text-slate-500 text-[10px]">
@@ -311,9 +272,9 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           </div>
         </div>
 
-        {/* 4. Daily Streak (Clickable to Continue Round) */}
+        {/* 4. Daily Streak */}
         <div
-          onClick={() => onContinueRound(activeRound)}
+          onClick={() => onContinueRound(1)}
           className="bg-white dark:bg-[#12161F] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs dark:shadow-sm space-y-1.5 cursor-pointer hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition-all active:scale-[0.98] group"
           title="ধারাবাহিক অনুশীলন করতে ক্লিক করুন"
         >
@@ -327,139 +288,12 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             {dynamicStreak} {dynamicStreak === 1 ? 'Day' : 'Days'} 🔥
           </p>
           <div className="flex items-center justify-between text-[11px] pt-0.5">
-            <span className="text-slate-600 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white font-bold group-hover:underline">
-              রাউন্ড #{activeRound} শুরু ➔
+            <span className="text-slate-600 dark:text-slate-300 group-hover:text-[#FB6C00] font-bold group-hover:underline">
+              অনুশীলন শুরু ➔
             </span>
             <span className="text-slate-400 dark:text-slate-500 text-[10px]">
               দৈনিক টার্গেট
             </span>
-          </div>
-        </div>
-      </div>
-
-      {/* High-Converting Academy Pro Pass Upgrade Card for Unpaid Students */}
-      {!isVip && (
-        <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#1A1215] via-[#12161F] to-[#1D130E] border border-orange-500/30 text-white shadow-xl relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-xs font-black text-orange-400">
-              <GraduationCap className="w-4 h-4 text-orange-400" />
-              <span>Patente Bangla Academy Pro Pass • এককালীন মাত্র €{academyPriceEur}</span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              ২৪০টি সম্পূর্ণ রাউন্ড ও পাস করা পর্যন্ত আনলিমিটেড প্রস্তুতি
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              ইতালির অফিশিয়াল ২০২৬ কুইজ সিলেবাসের সব ৭,১৬৫টি প্রশ্ন, নির্ভুল বাংলা অনুবাদ, অডিও উচ্চারণ এবং অফিসিয়াল মক টেস্ট আনলক করুন।
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-slate-200 pt-1">
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span>
-                <span>২৪০টি রাউন্ডের সম্পূর্ণ আনলক</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span>
-                <span>প্রতিটি প্রশ্নের বাংলা অর্থ ও অডিও</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span>
-                <span>আনলিমিটেড অফিসিয়াল মক টেস্ট</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span>
-                <span>ইতালি ভ্যাট ইনভয়েস (Fattura Fiscale PDF)</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={onOpenEnrollment}
-              className="w-full sm:w-auto lg:w-full py-3.5 px-8 rounded-full bg-gradient-to-r from-[#E52E2D] to-[#FB6C00] hover:from-[#d02524] hover:to-[#e55e00] text-white font-black text-sm shadow-xl shadow-[#FB6C00]/30 hover:scale-105 active:scale-95 transition cursor-pointer flex items-center justify-center gap-2 text-center"
-            >
-              <GraduationCap className="w-4 h-4 text-white" />
-              <span>একাডেমিতে ভর্তি হন (€{academyPriceEur})</span>
-            </button>
-            <span className="text-[11px] text-slate-400 font-semibold text-center">
-              লাইফটাইম এক্সেস • কোনো মাসিক সাবস্ক্রিপশন নেই
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Feature Navigation Cards (App Hub in Adaptive Style) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Card 1: 240 Rounds */}
-        <div 
-          onClick={onGoToCurriculum}
-          className="bg-white dark:bg-[#12161F] rounded-2xl p-5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group shadow-xs dark:shadow-sm"
-        >
-          <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white flex items-center justify-center">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition">
-              240 Rounds Course Syllabus
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Foundation Assessment (Rounds 1–20) and complete chapter-by-chapter curriculum according to the Italian Highway Code.
-            </p>
-          </div>
-          <div className="pt-4 flex items-center text-xs font-black text-slate-700 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white gap-1">
-            <span>Explore Syllabus</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </div>
-
-        {/* Card 2: Theory Summaries */}
-        <div 
-          onClick={onGoToTheory}
-          className="bg-white dark:bg-[#12161F] rounded-2xl p-5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group shadow-xs dark:shadow-sm"
-        >
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white flex items-center justify-center">
-                <GraduationCap className="w-5 h-5" />
-              </div>
-              {!student && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-500/10 text-[#FB6C00] border border-orange-500/20">
-                  <Lock className="w-3 h-3" />
-                  রেজিস্ট্রেশন আবশ্যক
-                </span>
-              )}
-            </div>
-            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition">
-              Theory Summaries (25 Chapters)
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              3 Golden Rules per chapter in Italian and Bengali + common exam trap keywords. Master rules in 90 seconds.
-            </p>
-          </div>
-          <div className="pt-4 flex items-center text-xs font-black text-slate-700 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white gap-1">
-            <span>{student ? 'Read Cheat Sheets' : 'রেজিস্টার করে থিওরি পড়ুন'}</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </div>
-
-        {/* Card 3: Oral Audio Exam Mode */}
-        <div 
-          onClick={onGoToExam}
-          className="bg-white dark:bg-[#12161F] rounded-2xl p-5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/25 hover:bg-slate-50 dark:hover:bg-[#151B27] transition cursor-pointer flex flex-col justify-between group shadow-xs dark:shadow-sm"
-        >
-          <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white flex items-center justify-center">
-              <Headphones className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-black text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition">
-              Official Oral Exam Simulation
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Exact replica of the Motorizzazione Civile test with headphone audio pronunciation (30 questions, 20 mins, max 3 errors).
-            </p>
-          </div>
-          <div className="pt-4 flex items-center text-xs font-black text-slate-700 dark:text-slate-300 group-hover:text-slate-950 dark:group-hover:text-white gap-1">
-            <span>Launch Simulation</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
       </div>
