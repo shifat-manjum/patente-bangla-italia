@@ -1,6 +1,7 @@
 import React from 'react';
 import type { NavTab } from './Header';
 import { CarLogo } from './CarLogo';
+import { InstallAppBanner } from './InstallAppBanner';
 
 interface FooterProps {
   setActiveTab: (tab: NavTab) => void;
@@ -105,6 +106,9 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab, onOpenAbout, onOpe
             </ul>
           </div>
         </div>
+
+        {/* Fixed 40% / 60% App Install & Video Section — Directly on top of the 100% Gratis & Privato section */}
+        <InstallAppBanner />
 
         {/* Student Document Utility Card — Cross-Promotion with MyPdfTools.it */}
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border border-emerald-500/30 dark:border-emerald-500/20 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">

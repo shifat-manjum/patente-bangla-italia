@@ -1,5 +1,5 @@
 // Patente Guru Service Worker
-const CACHE_NAME = 'patente-guru-v2';
+const CACHE_NAME = 'patente-guru-v4';
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -10,7 +10,15 @@ const CORE_ASSETS = [
   '/car-logo.png'
 ];
 
+const isLocalhost =
+  self.location.hostname === 'localhost' ||
+  self.location.hostname === '127.0.0.1';
+
 self.addEventListener('install', (event) => {
+  if (isLocalhost) {
+    self.skipWaiting();
+    return;
+  }
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(CORE_ASSETS).catch((err) => {
@@ -22,6 +30,19 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
+  if (isLocalhost) {
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .then(() => self.registration.unregister())
+        .then(() => self.clients.matchAll())
+        .then((clients) => {
+          clients.forEach((client) => client.navigate(client.url));
+        })
+    );
+    return;
+  }
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
@@ -37,8 +58,19 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests and http/https
+  if (isLocalhost) {
+    return;
+  }
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+  if (
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/node_modules/')
+  ) {
     return;
   }
 
@@ -46,7 +78,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // If valid response, clone and cache for offline
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -56,12 +87,10 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // Fallback to cache if network fails
         return caches.match(event.request).then((cachedResponse) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          // Optional offline fallback for navigation
           if (event.request.mode === 'navigate') {
             return caches.match('/');
           }
